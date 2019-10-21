@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="FETTER:jar">
+    <output-path>$PROJECT_DIR$</output-path>
+    <root id="archive" name="FETTER.jar">
+      <element id="module-output" name="FETTER" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/JISA.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-reflect.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-test.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk7.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk8.jar" path-in-jar="/" />
+      <element id="file-copy" path="$PROJECT_DIR$/fEt.png" />
+    </root>
+  </artifact>
+</component>
