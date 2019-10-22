@@ -9,6 +9,9 @@ class Output(mainWindow: MainWindow) : Grid("Output Curve", 1) {
     val sourceGate = Fields("Source-Gate Parameters")
 
     val enabled = basic.addCheckBox("Enabled", false)
+
+    init {basic.addSeparator()}
+
     val intTime = basic.addDoubleField("Integration Time [s]", 1.0 / 50.0)
     val delTime = basic.addDoubleField("Delay Time [s]", 0.5)
 
@@ -48,12 +51,19 @@ class Output(mainWindow: MainWindow) : Grid("Output Curve", 1) {
 
         val disabled = !enabled.get()
 
-        intTime.setDisabled(disabled)
-        delTime.setDisabled(disabled)
+        intTime.isDisabled = disabled
+        delTime.isDisabled = disabled
 
         sourceDrain.setFieldsDisabled(disabled)
         sourceGate.setFieldsDisabled(disabled)
 
+    }
+
+    fun disable(flag: Boolean) {
+        basic.setFieldsDisabled(flag)
+        sourceDrain.setFieldsDisabled(flag)
+        sourceGate.setFieldsDisabled(flag)
+        if (!flag) updateEnabled()
     }
 
 }

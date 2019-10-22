@@ -6,11 +6,13 @@ class MainWindow : Tabs("FETTER - FET Characterisation Suite") {
     val config        = ConfigStore("FETTER")
     val connections   = Connections(this)
     val configuration = Configuration(this)
+    val temperature   = Temperature(this)
     val output        = Output(this)
     val transfer      = Transfer(this)
+    val measure       = Measure(this)
 
     init {
-        addAll(connections, configuration, output, transfer)
+        addAll(connections, configuration, temperature, output, transfer, measure)
         setMaximised(true)
         setExitOnClose(true)
     }
@@ -19,7 +21,6 @@ class MainWindow : Tabs("FETTER - FET Characterisation Suite") {
 
 fun main() {
 
-    val mainWindow = MainWindow()
-    mainWindow.show()
+    MainWindow().show()
 
 }
