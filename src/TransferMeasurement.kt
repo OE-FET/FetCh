@@ -73,7 +73,7 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
 
             for (vSD in sdVoltages) {
 
-                sdSMU.voltage = vSG
+                sdSMU.voltage = vSD
 
                 sleep(delTime)
 

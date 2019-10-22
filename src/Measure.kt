@@ -23,8 +23,10 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     val toolbarStart = addToolbarButton("Start", this::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", this::stopMeasurement)
     val grid  = Grid(1)
+    val measurements = HashMap<String, Measurement>()
 
     init {
+        toolbarStop.isDisabled = true
         setGrowth(true, false)
         setIcon(Icon.FLASK)
         addAll(basic, grid)
@@ -76,7 +78,7 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
                 throw Exception("Source-Drain and Source-Gate channels must be configured.")
             }
 
-            val measurements = HashMap<String, Measurement>()
+            measurements.clear()
 
             if (doOutput) {
 
@@ -153,14 +155,20 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                             val plot = Plot("Transfer Curve", "Source-Drain Voltage [V]", "Drain Current [A]")
 
-                            plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V")
+                            plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V").showMarkers(false)
+                            plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
+                            plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                            plot.useMouseCommands(true)
                             plots.add(plot)
 
                         } else if (measurement is OutputMeasurement) {
 
                             val plot = Plot("Output Curve", "Source-Gate Voltage [V]", "Drain Current [A]")
 
-                            plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V")
+                            plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V").showMarkers(false)
+                            plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
+                            plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                            plot.useMouseCommands(true)
                             plots.add(plot)
 
                         }
@@ -190,14 +198,20 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                         val plot = Plot("Transfer Curve", "Source-Drain Voltage [V]", "Drain Current [A]")
 
-                        plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V")
+                        plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V").showMarkers(false)
+                        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
+                        plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                        plot.useMouseCommands(true)
                         plots.add(plot)
 
                     } else if (measurement is OutputMeasurement) {
 
                         val plot = Plot("Output Curve", "Source-Gate Voltage [V]", "Drain Current [A]")
 
-                        plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V")
+                        plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V").showMarkers(false)
+                        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
+                        plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                        plot.useMouseCommands(true)
                         plots.add(plot)
 
                     }
@@ -227,7 +241,7 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     fun disable(flag: Boolean) {
         start.isDisabled = flag
         toolbarStart.isDisabled = flag
-        toolbarStop.isDisabled = flag
+        toolbarStop.isDisabled = !flag
 
         basic.setFieldsDisabled(flag)
         mainWindow.temperature.disable(flag)
@@ -236,6 +250,10 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     }
 
     fun stopMeasurement() {
+
+        for ((name, measurement) in measurements) {
+            measurement.stop()
+        }
 
     }
 
