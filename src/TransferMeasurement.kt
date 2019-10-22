@@ -108,7 +108,10 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
             Col("SD Voltage", "V"),
             Col("SD Current", "A"),
             Col("SG Voltage", "V"),
-            Col("SG Current", "A")
+            Col("SG Current", "A"),
+            Col("Four Point Probe 1", "V"),
+            Col("Four Point Probe 2", "V"),
+            Col("Temperature", "K")
         )
 
     }
