@@ -115,7 +115,7 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
 
     override fun onInterrupt() {
 
-        Util.errLog.println("Output measurement interrupted.")
+        Util.errLog.println("Transfer measurement interrupted.")
 
     }
 

@@ -1,9 +1,9 @@
 import jisa.Util
 import jisa.enums.Icon
 import jisa.experiment.Measurement
-import jisa.gui.Fields
-import jisa.gui.GUI
-import jisa.gui.Grid
+import jisa.gui.*
+import java.io.File
+import java.io.PrintStream
 import java.lang.Exception
 import java.nio.file.Paths
 
@@ -12,23 +12,47 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     val basic = Fields("Data Output Settings")
     val name = basic.addTextField("Name")
     val dir = basic.addDirectorySelect("Output Directory")
-    val start = basic.addButton("Start Measurement", this::runMeasurement)
+
+    init { basic.addSeparator() }
+
+    val length = basic.addDoubleField("Channel Length [m]")
+    val width  = basic.addDoubleField("Channel Width [m]")
+    val thick  = basic.addDoubleField("Channel Thickness [m]")
+
+    val start        = basic.addButton("Start Measurement", this::runMeasurement)
+    val toolbarStart = addToolbarButton("Start", this::runMeasurement)
+    val toolbarStop  = addToolbarButton("Stop", this::stopMeasurement)
+    val grid  = Grid(1)
 
     init {
         setGrowth(true, false)
         setIcon(Icon.FLASK)
-        add(basic)
+        addAll(basic, grid)
+        basic.loadFromConfig("measure-basic", mainWindow.config)
     }
 
     fun runMeasurement() {
 
+        grid.clear()
         disable(true)
 
         try {
 
             val fileName = name.get()
-            val fileDir = dir.get()
-            val path = Paths.get(fileDir, fileName).toString()
+            val fileDir  = dir.get()
+            val path     = Paths.get(fileDir, fileName).toString()
+
+            if (fileName == "" || fileDir == "") {
+                throw Exception("You must specify an output name and directory.")
+            }
+
+            // Output size information to file
+            val output   = File("$path-info.txt").printWriter()
+            output.printf("Name: %s%n", name.get())
+            output.printf("Length: %e%n", length.get())
+            output.printf("Width: %e%n", width.get())
+            output.printf("Thickness: %e%n", thick.get())
+            output.close()
 
             // Get which measurements to do
             val doTemperature = mainWindow.temperature.enabled.get()
@@ -46,6 +70,10 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
             // If we are to use temperature set-points we need a temperature controller
             if (doTemperature && tc == null) {
                 throw Exception("Temperature dependent measurements require a temperature controller.")
+            }
+
+            if (sdSMU == null || sgSMU == null) {
+                throw Exception("Source-Drain and Source-Gate channels must be configured.")
             }
 
             val measurements = HashMap<String, Measurement>()
@@ -69,7 +97,7 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
                     mainWindow.output.delTime.get()
                 )
 
-                measurements["output"] = output
+                measurements["Output"] = output
 
             }
 
@@ -92,7 +120,7 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
                     mainWindow.transfer.delTime.get()
                 )
 
-                measurements["transfer"] = transfer
+                measurements["Transfer"] = transfer
 
             }
 
@@ -109,12 +137,34 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                 for (T in temperatures) {
 
+                    val plots   = Grid(2)
+                    val section = Section("%s K".format(T), plots)
+
+                    grid.add(section)
+
                     tc.targetTemperature = T
                     tc.waitForStableTemperature(T, stabPerc, stabTime)
 
                     for ((name, measurement) in measurements) {
 
-                        measurement.newResults("%s-%sK-%s.csv".format(path, T, name))
+                        val results = measurement.newResults("%s-%sK-%s.csv".format(path, T, name))
+
+                        if (measurement is TransferMeasurement) {
+
+                            val plot = Plot("Transfer Curve", "Source-Drain Voltage [V]", "Drain Current [A]")
+
+                            plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V")
+                            plots.add(plot)
+
+                        } else if (measurement is OutputMeasurement) {
+
+                            val plot = Plot("Output Curve", "Source-Gate Voltage [V]", "Drain Current [A]")
+
+                            plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V")
+                            plots.add(plot)
+
+                        }
+
                         measurement.run()
 
                         if (measurement.wasStopped()) {
@@ -127,9 +177,31 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
             } else {
 
+                val plots   = Grid(2)
+                val section = Section("No Temperature Control", plots)
+
+                grid.add(section)
+
                 for ((name, measurement) in measurements) {
 
-                    measurement.newResults("%s-%s.csv".format(path, name))
+                    val results = measurement.newResults("%s-%s.csv".format(path, name))
+
+                    if (measurement is TransferMeasurement) {
+
+                        val plot = Plot("Transfer Curve", "Source-Drain Voltage [V]", "Drain Current [A]")
+
+                        plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V")
+                        plots.add(plot)
+
+                    } else if (measurement is OutputMeasurement) {
+
+                        val plot = Plot("Output Curve", "Source-Gate Voltage [V]", "Drain Current [A]")
+
+                        plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V")
+                        plots.add(plot)
+
+                    }
+
                     measurement.run()
 
                     if (measurement.wasStopped()) {
@@ -154,10 +226,17 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     fun disable(flag: Boolean) {
         start.isDisabled = flag
+        toolbarStart.isDisabled = flag
+        toolbarStop.isDisabled = flag
+
         basic.setFieldsDisabled(flag)
         mainWindow.temperature.disable(flag)
         mainWindow.output.disable(flag)
         mainWindow.transfer.disable(flag)
+    }
+
+    fun stopMeasurement() {
+
     }
 
 }
