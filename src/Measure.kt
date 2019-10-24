@@ -3,13 +3,12 @@ import jisa.enums.Icon
 import jisa.experiment.Measurement
 import jisa.gui.*
 import java.io.File
-import java.io.PrintStream
 import java.lang.Exception
 import java.nio.file.Paths
 import java.util.*
 import kotlin.collections.HashMap
 
-class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
+class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     val basic = Fields("Data Output Settings")
     val name  = basic.addTextField("Name")
@@ -35,15 +34,21 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     var axisScale      = Plot.AxisType.LOGARITHMIC
 
     init {
+
         toolbarStop.isDisabled = true
+
         setGrowth(true, false)
         setIcon(Icon.FLASK)
+
         addAll(basic, grid)
+
         basic.loadFromConfig("measure-basic", mainWindow.config)
+
     }
 
-    fun runMeasurement() {
+    private fun runMeasurement() {
 
+        // Reset everything
         grid.clear()
         generatedPlots.clear()
         measurements.clear()
@@ -51,10 +56,12 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
         try {
 
+            // Get file path and name to use, combine into single path String
             val fileName = name.get()
             val fileDir  = dir.get()
             val path     = Paths.get(fileDir, fileName).toString()
 
+            // Make sure something was actually written in those fields
             if (fileName == "" || fileDir == "") {
                 throw Exception("You must specify an output name and directory.")
             }
@@ -69,26 +76,28 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
             // Get which measurements to do
             val doTemperature = mainWindow.temperature.enabled.get()
-            val doOutput = mainWindow.output.enabled.get()
-            val doTransfer = mainWindow.transfer.enabled.get()
+            val doOutput      = mainWindow.output.enabled.get()
+            val doTransfer    = mainWindow.transfer.enabled.get()
 
             // Get the configured instruments
             val sdSMU = mainWindow.configuration.sourceDrain.get()
             val sgSMU = mainWindow.configuration.sourceGate.get()
-            val fpp1 = mainWindow.configuration.fourPP1.get()
-            val fpp2 = mainWindow.configuration.fourPP2.get()
-            val tc = mainWindow.configuration.tControl.get()
-            val tm = mainWindow.configuration.tMeter.get()
+            val fpp1  = mainWindow.configuration.fourPP1.get()
+            val fpp2  = mainWindow.configuration.fourPP2.get()
+            val tc    = mainWindow.configuration.tControl.get()
+            val tm    = mainWindow.configuration.tMeter.get()
 
             // If we are to use temperature set-points we need a temperature controller
             if (doTemperature && tc == null) {
                 throw Exception("Temperature dependent measurements require a temperature controller.")
             }
 
+            // Whatever we are doing, these two SMUs MUST be configured
             if (sdSMU == null || sgSMU == null) {
                 throw Exception("Source-Drain and Source-Gate channels must be configured.")
             }
 
+            // Check which measurements we are doing, pre-configure them
             if (doOutput) {
 
                 val output = OutputMeasurement(sdSMU, sgSMU, fpp1, fpp2, tm)
@@ -135,6 +144,7 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
             }
 
+            // If we're controlling temperature, then we will need to loop over all temperature set-points
             if (doTemperature) {
 
                 val temperatures = Util.makeLinearArray(
@@ -153,46 +163,12 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                     grid.add(section)
 
+                    // Change temperature and wait for stability
                     tc.targetTemperature = T
+                    tc.useAutoHeater()
                     tc.waitForStableTemperature(T, stabPerc, stabTime)
 
-                    for ((name, measurement) in measurements) {
-
-                        val results = measurement.newResults("%s-%sK-%s.csv".format(path, T, name))
-
-                        if (measurement is TransferMeasurement) {
-
-                            val plot = Plot("Transfer Curve", "Source-Drain Voltage [V]", "Drain Current [A]")
-
-                            plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V").showMarkers(false)
-                            plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                            plot.setYAxisType(axisScale)
-                            plot.useMouseCommands(true)
-                            plots.add(plot)
-
-                            generatedPlots["%s-%sK-%s.svg".format(fileName, T, name)] = plot
-
-                        } else if (measurement is OutputMeasurement) {
-
-                            val plot = Plot("Output Curve", "Source-Gate Voltage [V]", "Drain Current [A]")
-
-                            plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V").showMarkers(false)
-                            plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                            plot.setYAxisType(axisScale)
-                            plot.useMouseCommands(true)
-                            plots.add(plot)
-
-                            generatedPlots["%s-%sK-%s.svg".format(fileName, T, name)] = plot
-
-                        }
-
-                        measurement.performMeasurement()
-
-                        if (measurement.wasStopped()) {
-                            throw InterruptedException("Measurement Stopped");
-                        }
-
-                    }
+                    singleMeasurement(T, plots, fileName, path)
 
                 }
 
@@ -203,43 +179,7 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                 grid.add(section)
 
-                for ((name, measurement) in measurements) {
-
-                    val results = measurement.newResults("%s-%s.csv".format(path, name))
-
-                    if (measurement is TransferMeasurement) {
-
-                        val plot = Plot("Transfer Curve", "Source-Drain Voltage [V]", "Drain Current [A]")
-
-                        plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V").showMarkers(false)
-                        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                        plot.setYAxisType(axisScale)
-                        plot.useMouseCommands(true)
-                        plots.add(plot)
-
-                        generatedPlots["%s-%s.svg".format(fileName, name)] = plot
-
-                    } else if (measurement is OutputMeasurement) {
-
-                        val plot = Plot("Output Curve", "Source-Gate Voltage [V]", "Drain Current [A]")
-
-                        plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V").showMarkers(false)
-                        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                        plot.setYAxisType(axisScale)
-                        plot.useMouseCommands(true)
-                        plots.add(plot)
-
-                        generatedPlots["%s-%s.svg".format(fileName, name)] = plot
-
-                    }
-
-                    measurement.performMeasurement()
-
-                    if (measurement.wasStopped()) {
-                        throw InterruptedException("Measurement Stopped");
-                    }
-
-                }
+                singleMeasurement(-1.0, plots, fileName, path)
 
             }
 
@@ -255,26 +195,68 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     }
 
-    fun disable(flag: Boolean) {
-        start.isDisabled = flag
+    private fun singleMeasurement(T: Double, plots: Container, fileName: String, path: String) {
+
+        for ((name, measurement) in measurements) {
+
+            val pattern = if (T > -1) "%s-%sK-%s".format(path, T, name) else  "%s-%s".format(path, name)
+            val results = measurement.newResults("$pattern.csv")
+            val plot    = Plot("$name Curve")
+
+            // Which type of measurement are we doing (need to plot different columns depending on which)
+            when (measurement) {
+
+                is TransferMeasurement ->
+                    plot.createSeries().watch(results, 2, 3).split(1, "SG: %s V").showMarkers(false)
+
+                is OutputMeasurement ->
+                    plot.createSeries().watch(results, 4, 3).split(0, "SD: %s V").showMarkers(false)
+
+            }
+
+            // Make sure to add points in the order they are plotted (rather than sorting by x-value)
+            plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
+            plot.setYAxisType(axisScale)
+            plot.useMouseCommands(true)
+            plots.add(plot)
+
+            generatedPlots["$fileName-$name.svg"] = plot
+
+            // Do the measurement
+            measurement.performMeasurement()
+
+            // If it was interrupted then interrupt the whole thing
+            if (measurement.wasStopped()) {
+                throw InterruptedException("Measurement Stopped");
+            }
+
+        }
+
+    }
+
+    private fun disable(flag: Boolean) {
+
+        start.isDisabled        = flag
         toolbarStart.isDisabled = flag
-        toolbarStop.isDisabled = !flag
+        toolbarStop.isDisabled  = !flag
 
         basic.setFieldsDisabled(flag)
         mainWindow.temperature.disable(flag)
         mainWindow.output.disable(flag)
         mainWindow.transfer.disable(flag)
+
     }
 
-    fun stopMeasurement() {
+    private fun stopMeasurement() {
 
-        for ((name, measurement) in measurements) {
-            if (measurement.isRunning) measurement.stop()
+        // Stop all and any measurements that might be running
+        for ((_, measurement) in measurements) {
+            measurement.stop()
         }
 
     }
 
-    fun writePlots() {
+    private fun writePlots() {
 
         val directory = GUI.directorySelect()
 
@@ -302,7 +284,7 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     }
 
-    fun setScale(scale: Plot.AxisType) {
+    private fun setScale(scale: Plot.AxisType) {
 
         axisScale = scale
 
