@@ -202,6 +202,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
             val pattern = if (T > -1) "%s-%sK-%s".format(path, T, name) else  "%s-%s".format(path, name)
             val results = measurement.newResults("$pattern.csv")
+            val table   = Table("$name Data", results)
             val plot    = Plot("$name Curve")
 
             // Which type of measurement are we doing (need to plot different columns depending on which)
@@ -219,6 +220,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
             plot.setYAxisType(axisScale)
             plot.useMouseCommands(true)
+            plots.add(table)
             plots.add(plot)
 
             generatedPlots["$fileName-$name.svg"] = plot
