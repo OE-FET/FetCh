@@ -6,14 +6,15 @@ import java.io.File
 import java.io.PrintStream
 import java.lang.Exception
 import java.nio.file.Paths
+import java.util.*
+import kotlin.collections.HashMap
 
 class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     val basic = Fields("Data Output Settings")
-    val name = basic.addTextField("Name")
-    val dir = basic.addDirectorySelect("Output Directory")
-
-    init { basic.addSeparator() }
+    val name  = basic.addTextField("Name")
+    val dir   = basic.addDirectorySelect("Output Directory")
+    val sep   = basic.addSeparator()
 
     val length = basic.addDoubleField("Channel Length [m]")
     val width  = basic.addDoubleField("Channel Width [m]")
@@ -22,8 +23,16 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     val start        = basic.addButton("Start Measurement", this::runMeasurement)
     val toolbarStart = addToolbarButton("Start", this::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", this::stopMeasurement)
+    val sep1         = addToolbarSeparator()
+    val linScale     = addToolbarButton("Linear Scale") { setScale(Plot.AxisType.LINEAR) }
+    val logScale     = addToolbarButton("Logarithmic Scale") { setScale(Plot.AxisType.LOGARITHMIC) }
+    val sep2         = addToolbarSeparator()
+    val savePlots    = addToolbarButton("Save Plots", this::writePlots)
+
     val grid  = Grid(1)
-    val measurements = HashMap<String, Measurement>()
+    val measurements   = HashMap<String, Measurement>()
+    val generatedPlots = HashMap<String, Plot>()
+    var axisScale      = Plot.AxisType.LOGARITHMIC
 
     init {
         toolbarStop.isDisabled = true
@@ -36,6 +45,8 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     fun runMeasurement() {
 
         grid.clear()
+        generatedPlots.clear()
+        measurements.clear()
         disable(true)
 
         try {
@@ -77,8 +88,6 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
             if (sdSMU == null || sgSMU == null) {
                 throw Exception("Source-Drain and Source-Gate channels must be configured.")
             }
-
-            measurements.clear()
 
             if (doOutput) {
 
@@ -157,9 +166,11 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                             plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V").showMarkers(false)
                             plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                            plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                            plot.setYAxisType(axisScale)
                             plot.useMouseCommands(true)
                             plots.add(plot)
+
+                            generatedPlots["%s-%sK-%s.svg".format(fileName, T, name)] = plot
 
                         } else if (measurement is OutputMeasurement) {
 
@@ -167,13 +178,15 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                             plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V").showMarkers(false)
                             plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                            plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                            plot.setYAxisType(axisScale)
                             plot.useMouseCommands(true)
                             plots.add(plot)
 
+                            generatedPlots["%s-%sK-%s.svg".format(fileName, T, name)] = plot
+
                         }
 
-                        measurement.run()
+                        measurement.performMeasurement()
 
                         if (measurement.wasStopped()) {
                             throw InterruptedException("Measurement Stopped");
@@ -200,9 +213,11 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                         plot.createSeries().watch(results, 2, 3).split(1, "S-G: %s V").showMarkers(false)
                         plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                        plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                        plot.setYAxisType(axisScale)
                         plot.useMouseCommands(true)
                         plots.add(plot)
+
+                        generatedPlots["%s-%s.svg".format(fileName, name)] = plot
 
                     } else if (measurement is OutputMeasurement) {
 
@@ -210,13 +225,15 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
                         plot.createSeries().watch(results, 4, 3).split(0, "S-D: %s V").showMarkers(false)
                         plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-                        plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                        plot.setYAxisType(axisScale)
                         plot.useMouseCommands(true)
                         plots.add(plot)
 
+                        generatedPlots["%s-%s.svg".format(fileName, name)] = plot
+
                     }
 
-                    measurement.run()
+                    measurement.performMeasurement()
 
                     if (measurement.wasStopped()) {
                         throw InterruptedException("Measurement Stopped");
@@ -252,7 +269,45 @@ class Measure(val mainWindow: MainWindow) : Grid("Measurement", 1) {
     fun stopMeasurement() {
 
         for ((name, measurement) in measurements) {
-            measurement.stop()
+            if (measurement.isRunning) measurement.stop()
+        }
+
+    }
+
+    fun writePlots() {
+
+        val directory = GUI.directorySelect()
+
+        if (directory != null) {
+
+            val errors = LinkedList<String>()
+
+            for ((name, plot) in generatedPlots) {
+
+                try {
+                    plot.saveSVG(Paths.get(directory, name).toString())
+                } catch (e: Exception) {
+                    errors.add(e.message ?: "Unknown Error")
+                }
+
+            }
+
+            if (errors.isEmpty()) {
+                GUI.infoAlert("Plots saved.")
+            } else {
+                GUI.errorAlert("Some plot(s) failed to save:\n\n" + errors.joinToString("\n\n"))
+            }
+
+        }
+
+    }
+
+    fun setScale(scale: Plot.AxisType) {
+
+        axisScale = scale
+
+        for ((_, plot) in generatedPlots) {
+            plot.setYAxisType(axisScale)
         }
 
     }
