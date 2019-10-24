@@ -35,6 +35,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     init {
 
+        logScale.isDisabled = true
         toolbarStop.isDisabled = true
 
         setGrowth(true, false)
@@ -291,6 +292,9 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
         for ((_, plot) in generatedPlots) {
             plot.setYAxisType(axisScale)
         }
+
+        logScale.isDisabled = (axisScale == Plot.AxisType.LOGARITHMIC)
+        linScale.isDisabled = (axisScale == Plot.AxisType.LINEAR)
 
     }
 

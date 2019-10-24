@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="FETTER:jar">
+  <artifact type="jar" build-on-make="true" name="FETTER:jar">
     <output-path>$PROJECT_DIR$</output-path>
     <root id="archive" name="FETTER.jar">
       <element id="module-output" name="FETTER" />
