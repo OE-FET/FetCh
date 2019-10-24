@@ -15,6 +15,7 @@ class MainWindow : Tabs("FETTER - FET Characterisation Suite") {
         addAll(connections, configuration, temperature, output, transfer, measure)
         setMaximised(true)
         setExitOnClose(true)
+        setIcon(MainWindow::class.java.getResource("fEt.png"))
     }
 
 }
