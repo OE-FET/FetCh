@@ -77,8 +77,8 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
             // Get which measurements to do
             val doTemperature = mainWindow.temperature.enabled.get()
-            val doOutput      = mainWindow.output.enabled.get()
             val doTransfer    = mainWindow.transfer.enabled.get()
+            val doOutput      = mainWindow.output.enabled.get()
 
             // Get the configured instruments
             val sdSMU = mainWindow.configuration.sourceDrain.get()
@@ -99,29 +99,6 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             }
 
             // Check which measurements we are doing, pre-configure them
-            if (doOutput) {
-
-                val output = OutputMeasurement(sdSMU, sgSMU, fpp1, fpp2, tm)
-
-                output.configureSD(
-                    mainWindow.output.minSDV.get(),
-                    mainWindow.output.maxSDV.get(),
-                    mainWindow.output.numSDV.get(),
-                    mainWindow.output.symSDV.get()
-                ).configureSG(
-                    mainWindow.output.minSGV.get(),
-                    mainWindow.output.maxSGV.get(),
-                    mainWindow.output.numSGV.get(),
-                    mainWindow.output.symSGV.get()
-                ).configureTimes(
-                    mainWindow.output.intTime.get(),
-                    mainWindow.output.delTime.get()
-                )
-
-                measurements["Output"] = output
-
-            }
-
             if (doTransfer) {
 
                 val transfer = TransferMeasurement(sdSMU, sgSMU, fpp1, fpp2, tm)
@@ -142,6 +119,29 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
                 )
 
                 measurements["Transfer"] = transfer
+
+            }
+
+            if (doOutput) {
+
+                val output = OutputMeasurement(sdSMU, sgSMU, fpp1, fpp2, tm)
+
+                output.configureSD(
+                    mainWindow.output.minSDV.get(),
+                    mainWindow.output.maxSDV.get(),
+                    mainWindow.output.numSDV.get(),
+                    mainWindow.output.symSDV.get()
+                ).configureSG(
+                    mainWindow.output.minSGV.get(),
+                    mainWindow.output.maxSGV.get(),
+                    mainWindow.output.numSGV.get(),
+                    mainWindow.output.symSGV.get()
+                ).configureTimes(
+                    mainWindow.output.intTime.get(),
+                    mainWindow.output.delTime.get()
+                )
+
+                measurements["Output"] = output
 
             }
 
@@ -208,10 +208,10 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             // Which type of measurement are we doing (need to plot different columns depending on which)
             when (measurement) {
 
-                is TransferMeasurement ->
+                is OutputMeasurement ->
                     plot.createSeries().watch(results, 2, 3).split(1, "SG: %s V").showMarkers(false)
 
-                is OutputMeasurement ->
+                is TransferMeasurement ->
                     plot.createSeries().watch(results, 4, 3).split(0, "SD: %s V").showMarkers(false)
 
             }
@@ -245,8 +245,8 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
         basic.setFieldsDisabled(flag)
         mainWindow.temperature.disable(flag)
-        mainWindow.output.disable(flag)
         mainWindow.transfer.disable(flag)
+        mainWindow.output.disable(flag)
 
     }
 

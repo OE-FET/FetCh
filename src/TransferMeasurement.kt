@@ -5,7 +5,8 @@ import jisa.devices.VMeter
 import jisa.experiment.Col
 import jisa.experiment.Measurement
 
-class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) : Measurement() {
+class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) :
+    Measurement() {
 
     private var minVSD = 0.0
     private var maxVSD = 60.0
@@ -36,7 +37,7 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
         return this
     }
 
-    fun configureTimes(integration: Double, delay: Double) : TransferMeasurement {
+    fun configureTimes(integration: Double, delay: Double): TransferMeasurement {
         intTime = integration
         delTime = (delay * 1000).toInt()
         return this
@@ -67,13 +68,13 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
         fpp1?.turnOn()
         fpp2?.turnOn()
 
-        for (vSG in sgVoltages) {
+        for (vSD in sdVoltages) {
 
-            sgSMU.voltage = vSG
+            sdSMU.voltage = vSD
 
-            for (vSD in sdVoltages) {
+            for (vSG in sgVoltages) {
 
-                sdSMU.voltage = vSD
+                sgSMU.voltage = vSG
 
                 sleep(delTime)
 
@@ -118,7 +119,7 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
 
     override fun onInterrupt() {
 
-        Util.errLog.println("Transfer measurement interrupted.")
+        Util.errLog.println("Output measurement interrupted.")
 
     }
 
