@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="JISA" level="project" />
+    <orderEntry type="library" name="JISA-JavaFx" level="project" />
   </component>
 </module>

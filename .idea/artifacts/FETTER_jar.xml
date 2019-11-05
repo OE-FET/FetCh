@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="FETTER:jar">
+  <artifact type="jar" name="FETTER:jar">
     <output-path>$PROJECT_DIR$</output-path>
-    <root id="archive" name="FETTER.jar">
+    <root id="archive" name="FETTER-8.jar">
       <element id="module-output" name="FETTER" />
       <element id="extracted-dir" path="$PROJECT_DIR$/src/JISA.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib.jar" path-in-jar="/" />
