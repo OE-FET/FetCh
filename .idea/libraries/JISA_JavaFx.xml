@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="JISA-JavaFx">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/JISA-JavaFx.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/src/JISA-JavaFx.jar!/" />
+    </SOURCES>
+  </library>
+</component>
