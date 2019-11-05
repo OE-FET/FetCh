@@ -6,7 +6,7 @@
 
 ## Getting and Running FETTER
 
-1. Make sure you have Java 8 (with JavaFx) or Java 11 ([link](https://github.com/ojdkbuild/ojdkbuild))
+1. Make sure you have Java 8 (with JavaFx) or Java 11 ([link](https://github.com/ojdkbuild/ojdkbuild/blob/master/README.md))
 2. Download the JAR file for the version you have installed:
     - [Java 8](https://github.com/OE-FET/FETTER/raw/master/FETTER-8.jar)
     - [Java 11 (includes JavaFx)](https://github.com/OE-FET/FETTER/raw/master/FETTER-11.jar)
