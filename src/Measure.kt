@@ -60,7 +60,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             // Get file path and name to use, combine into single path String
             val fileName = name.get()
             val fileDir  = dir.get()
-            val path     = Paths.get(fileDir, fileName).toString()
+            val path     = Util.joinPath(fileDir, fileName)
 
             // Make sure something was actually written in those fields
             if (fileName == "" || fileDir == "") {
@@ -228,6 +228,9 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             // Do the measurement
             measurement.performMeasurement()
 
+            // Finalise results, closing file-stream if needed.
+            Util.runRegardless(measurement.results::finalise)
+
             // If it was interrupted then interrupt the whole thing
             if (measurement.wasStopped()) {
                 throw InterruptedException("Measurement Stopped");
@@ -270,7 +273,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             for ((name, plot) in generatedPlots) {
 
                 try {
-                    plot.saveSVG(Paths.get(directory, name).toString())
+                    plot.saveSVG(Util.joinPath(directory, name))
                 } catch (e: Exception) {
                     errors.add(e.message ?: "Unknown Error")
                 }
