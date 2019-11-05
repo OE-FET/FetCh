@@ -9,7 +9,7 @@
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-test.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk7.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk8.jar" path-in-jar="/" />
-      <element id="file-copy" path="$PROJECT_DIR$/src/fEt.png" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/fetter/gui/fEt.png" />
     </root>
   </artifact>
 </component>
