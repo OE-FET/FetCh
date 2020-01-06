@@ -6,6 +6,7 @@ import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.experiment.Col
 import jisa.experiment.Measurement
+import jisa.maths.Range
 
 class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) :
     Measurement() {
@@ -47,8 +48,11 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
 
     override fun run() {
 
-        val sdVoltages = if (symVSD) Util.makeSymLinearArray(minVSD, maxVSD, numVSD) else Util.makeLinearArray(minVSD, maxVSD, numVSD);
-        val sgVoltages = if (symVSG) Util.makeSymLinearArray(minVSG, maxVSG, numVSG) else Util.makeLinearArray(minVSG, maxVSG, numVSG);
+        var sdVoltages = Range.linear(minVSD, maxVSD, numVSD)
+        var sgVoltages = Range.linear(minVSG, maxVSG, numVSG)
+
+        if (symVSD) sdVoltages = sdVoltages.mirror()
+        if (symVSG) sgVoltages = sgVoltages.mirror()
 
         sdSMU.turnOff()
         sgSMU.turnOff()
