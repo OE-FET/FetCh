@@ -3,12 +3,12 @@ package fetter.gui
 import fetter.measurement.OutputMeasurement
 import fetter.measurement.TransferMeasurement
 import jisa.Util
+import jisa.control.RTask
 import jisa.enums.Icon
 import jisa.experiment.Measurement
 import jisa.gui.*
 import java.io.File
 import java.lang.Exception
-import java.nio.file.Paths
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -166,13 +166,36 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
                     val plots   = Grid(2)
                     val section = Section("%s K".format(T), plots)
 
+                    val stabNotice = Doc("Temperature Stabilising");
+
+                    stabNotice.addHeading("Temperature Change in Progress")
+                        .setAlignment(Doc.Align.CENTRE)
+                    stabNotice.addText("Waiting for the temperature controller to report a stable temperature within range of the current set-point before continuing...")
+                        .setAlignment(Doc.Align.CENTRE)
+
+                    val stabPlot   = Plot("Temperature", "Time [s]", "Temperature [K]")
+                    val tempSeries = stabPlot.createSeries().setName("Temperature").showMarkers(false).setColour(Colour.BLUE)
+                    val targSeries = stabPlot.createSeries().setName("Set-Point").showMarkers(false).setColour(Colour.CORNFLOWERBLUE).setLineDash(Series.Dash.DOTTED)
+
+                    val task = RTask(1000) { task ->
+
+                        tempSeries.addPoint(task.secFromStart, tc.temperature)
+                        targSeries.addPoint(task.secFromStart, T)
+
+                    }
+
+                    task.start()
+
+                    plots.addAll(stabNotice, stabPlot)
+
                     grid.add(section)
 
                     // Change temperature and wait for stability
                     tc.targetTemperature = T
                     tc.useAutoHeater()
                     tc.waitForStableTemperature(T, stabPerc, stabTime)
-
+                    task.stop()
+                    plots.clear()
                     singleMeasurement(T, plots, fileName, path)
 
                 }
@@ -224,8 +247,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
             plot.setYAxisType(axisScale)
             plot.useMouseCommands(true)
-            plots.add(table)
-            plots.add(plot)
+            plots.addAll(table, plot)
 
             generatedPlots["$fileName-$name.svg"] = plot
 
@@ -233,7 +255,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             measurement.performMeasurement()
 
             // Finalise results, closing file-stream if needed.
-            Util.runRegardless(measurement.results::finalise)
+            measurement.results.finalise()
 
             // If it was interrupted then interrupt the whole thing
             if (measurement.wasStopped()) {
