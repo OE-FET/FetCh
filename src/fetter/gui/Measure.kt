@@ -251,16 +251,12 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
             generatedPlots["$fileName-$name.svg"] = plot
 
-            // Do the measurement
-            measurement.performMeasurement()
-
-            // Finalise results, closing file-stream if needed.
-            measurement.results.finalise()
-
-            // If it was interrupted then interrupt the whole thing
-            if (measurement.wasStopped()) {
-                throw InterruptedException("Measurement Stopped");
+            try {
+                measurement.start()
+            } finally {
+                measurement.results.finalise()
             }
+
 
         }
 

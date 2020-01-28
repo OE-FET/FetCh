@@ -6,6 +6,7 @@ import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.experiment.Col
 import jisa.experiment.Measurement
+import jisa.experiment.ResultTable
 import jisa.maths.Range
 
 class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) :
@@ -46,7 +47,7 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
         return this
     }
 
-    override fun run() {
+    override fun run(results: ResultTable) {
 
         var sdVoltages = Range.linear(minVSD, maxVSD, numVSD)
         var sgVoltages = Range.linear(minVSG, maxVSG, numVSG)
