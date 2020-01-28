@@ -9,7 +9,7 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 
-class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) :
+class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val gdSMU: SMU?, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) :
     Measurement() {
 
     private var minVSD = 0.0
@@ -57,12 +57,14 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
 
         sdSMU.turnOff()
         sgSMU.turnOff()
+        gdSMU?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
 
         // Configure initial source modes
         sdSMU.voltage = minVSD
         sgSMU.voltage = minVSG
+        gdSMU?.voltage = 0.0
 
         // Configure integration times
         sdSMU.integrationTime = intTime
@@ -72,6 +74,7 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
 
         sdSMU.turnOn()
         sgSMU.turnOn()
+        gdSMU?.turnOn()
         fpp1?.turnOn()
         fpp2?.turnOn()
 
@@ -103,6 +106,7 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val
 
         sdSMU.turnOff()
         sgSMU.turnOff()
+        gdSMU?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
 

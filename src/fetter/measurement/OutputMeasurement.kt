@@ -9,7 +9,7 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 
-class OutputMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) : Measurement() {
+class OutputMeasurement(val sdSMU: SMU, val sgSMU: SMU, val gdSMU: SMU?, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) : Measurement() {
 
     private var minVSD = 0.0
     private var maxVSD = 60.0
@@ -65,12 +65,14 @@ class OutputMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val f
 
         sdSMU.turnOff()
         sgSMU.turnOff()
+        gdSMU?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
 
         // Configure initial source modes
         sdSMU.voltage = minVSD
         sgSMU.voltage = minVSG
+        gdSMU?.voltage = 0.0
 
         // Configure integration times
         sdSMU.integrationTime = intTime
@@ -80,6 +82,7 @@ class OutputMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val f
 
         sdSMU.turnOn()
         sgSMU.turnOn()
+        gdSMU?.turnOn()
         fpp1?.turnOn()
         fpp2?.turnOn()
 
@@ -111,6 +114,7 @@ class OutputMeasurement(val sdSMU: SMU, val sgSMU: SMU, val fpp1: VMeter?, val f
 
         sdSMU.turnOff()
         sgSMU.turnOff()
+        gdSMU?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
 

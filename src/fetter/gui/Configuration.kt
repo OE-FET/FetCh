@@ -9,6 +9,7 @@ import jisa.gui.Grid
  */
 class Configuration(mainWindow : MainWindow) : Grid("Configuration", 2) {
 
+    val ground      = Configurator.SMU("Ground Channel (for SPA)", "gndu", mainWindow.config, mainWindow.connections)
     val sourceDrain = Configurator.SMU("Source-Drain Channel", "sdSMU", mainWindow.config, mainWindow.connections)
     val sourceGate  = Configurator.SMU("Source-Gate Channel", "sgSMU", mainWindow.config, mainWindow.connections)
     val fourPP1     = Configurator.VMeter("Four Point Probe Channel 1", "fpp1", mainWindow.config, mainWindow.connections)
@@ -22,6 +23,7 @@ class Configuration(mainWindow : MainWindow) : Grid("Configuration", 2) {
         setIcon(Icon.COGS)
 
         addAll(
+            ground,
             sourceDrain,
             sourceGate,
             fourPP1,

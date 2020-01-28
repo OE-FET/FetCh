@@ -59,6 +59,15 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
         measurements.clear()
         disable(true)
 
+        // Get the configured instruments
+        val gdSMU = mainWindow.configuration.ground.get()
+        val sdSMU = mainWindow.configuration.sourceDrain.get()
+        val sgSMU = mainWindow.configuration.sourceGate.get()
+        val fpp1  = mainWindow.configuration.fourPP1.get()
+        val fpp2  = mainWindow.configuration.fourPP2.get()
+        val tc    = mainWindow.configuration.tControl.get()
+        val tm    = mainWindow.configuration.tMeter.get()
+
         try {
 
             // Get file path and name to use, combine into single path String
@@ -84,14 +93,6 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             val doTransfer    = mainWindow.transfer.enabled.get()
             val doOutput      = mainWindow.output.enabled.get()
 
-            // Get the configured instruments
-            val sdSMU = mainWindow.configuration.sourceDrain.get()
-            val sgSMU = mainWindow.configuration.sourceGate.get()
-            val fpp1  = mainWindow.configuration.fourPP1.get()
-            val fpp2  = mainWindow.configuration.fourPP2.get()
-            val tc    = mainWindow.configuration.tControl.get()
-            val tm    = mainWindow.configuration.tMeter.get()
-
             // If we are to use temperature set-points we need a temperature controller
             if (doTemperature && tc == null) {
                 throw Exception("Temperature dependent measurements require a temperature controller.")
@@ -105,9 +106,9 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             // Check which measurements we are doing, pre-configure them
             if (doTransfer) {
 
-                val transfer = TransferMeasurement(sdSMU, sgSMU, fpp1, fpp2, tm)
+                val tMeasure = TransferMeasurement(sdSMU, sgSMU, gdSMU, fpp1, fpp2, tm)
 
-                transfer.configureSD(
+                tMeasure.configureSD(
                     mainWindow.transfer.minSDV.get(),
                     mainWindow.transfer.maxSDV.get(),
                     mainWindow.transfer.numSDV.get(),
@@ -122,15 +123,15 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
                     mainWindow.transfer.delTime.get()
                 )
 
-                measurements["Transfer"] = transfer
+                measurements["Transfer"] = tMeasure
 
             }
 
             if (doOutput) {
 
-                val output = OutputMeasurement(sdSMU, sgSMU, fpp1, fpp2, tm)
+                val oMeasure = OutputMeasurement(sdSMU, sgSMU, gdSMU, fpp1, fpp2, tm)
 
-                output.configureSD(
+                oMeasure.configureSD(
                     mainWindow.output.minSDV.get(),
                     mainWindow.output.maxSDV.get(),
                     mainWindow.output.numSDV.get(),
@@ -145,7 +146,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
                     mainWindow.output.delTime.get()
                 )
 
-                measurements["Output"] = output
+                measurements["Output"] = oMeasure
 
             }
 
