@@ -11,6 +11,8 @@ import java.io.File
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
@@ -26,20 +28,14 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
     val start        = basic.addButton("Start Measurement", this::runMeasurement)
     val toolbarStart = addToolbarButton("Start", this::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", this::stopMeasurement)
-    val sep1         = addToolbarSeparator()
-    val linScale     = addToolbarButton("Linear Scale") { setScale(Plot.AxisType.LINEAR) }
-    val logScale     = addToolbarButton("Logarithmic Scale") { setScale(Plot.AxisType.LOGARITHMIC) }
-    val sep2         = addToolbarSeparator()
     val savePlots    = addToolbarButton("Save Plots", this::writePlots)
 
     val grid  = Grid(1)
     val measurements   = HashMap<String, Measurement>()
     val generatedPlots = HashMap<String, Plot>()
-    var axisScale      = Plot.AxisType.LOGARITHMIC
 
     init {
 
-        logScale.isDisabled = true
         toolbarStop.isDisabled = true
 
         setGrowth(true, false)
@@ -236,19 +232,44 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             // Which type of measurement are we doing (need to plot different columns depending on which)
             when (measurement) {
 
-                is OutputMeasurement ->
-                    plot.createSeries().watch(results, 2, 3).split(1, "SG: %s V").showMarkers(false)
+                is OutputMeasurement -> {
 
-                is TransferMeasurement ->
-                    plot.createSeries().watch(results, 4, 3).split(0, "SD: %s V").showMarkers(false)
+                    plot.createSeries()
+                        .watch(results, { it[2] }, { abs(it[3]) })
+                        .split(1, "D (%s V)")
+                        .showMarkers(false)
+
+                    plot.setYAxisType(Plot.AxisType.LINEAR)
+                    plot.setXLabel("SD Voltage [V]")
+                    plot.setYLabel("Current [A]")
+
+                }
+
+                is TransferMeasurement -> {
+
+                    plot.createSeries()
+                        .watch(results, { it[4] }, { abs(it[3]) })
+                        .split(0, "D (%s V)")
+                        .showMarkers(false)
+
+                    plot.createSeries()
+                        .watch(results, { it[4] }, { abs(it[5]) })
+                        .split(0, "G (%s V)")
+                        .showMarkers(false)
+                        .setLineDash(Series.Dash.DOTTED)
+
+                    plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
+                    plot.setXLabel("SG Voltage [V]")
+                    plot.setYLabel("Current [A]")
+
+                }
 
             }
 
             // Make sure to add points in the order they are plotted (rather than sorting by x-value)
             plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-            plot.setYAxisType(axisScale)
             plot.useMouseCommands(true)
-            plots.addAll(table, plot)
+            plots.addAll(plot)
 
             generatedPlots["$fileName-$name.svg"] = plot
 
@@ -310,19 +331,6 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             }
 
         }
-
-    }
-
-    private fun setScale(scale: Plot.AxisType) {
-
-        axisScale = scale
-
-        for ((_, plot) in generatedPlots) {
-            plot.setYAxisType(axisScale)
-        }
-
-        logScale.isDisabled = (axisScale == Plot.AxisType.LOGARITHMIC)
-        linScale.isDisabled = (axisScale == Plot.AxisType.LINEAR)
 
     }
 
