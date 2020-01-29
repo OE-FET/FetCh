@@ -291,7 +291,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     private fun disable(flag: Boolean) {
 
-        bSection.isExpanded = !flag
+        bSection.isExpanded     = !flag
         start.isDisabled        = flag
         toolbarStart.isDisabled = flag
         toolbarStop.isDisabled  = !flag
