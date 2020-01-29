@@ -236,7 +236,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             val results = measurement.newResults("$pattern.csv")
             val table   = Table("$name Data", results)
             val plot    = Plot("$name Curve")
-            val drain    = plot.createSeries().showMarkers(false)
+            val drain   = plot.createSeries().showMarkers(false)
             val gate    = plot.createSeries().showMarkers(false).setLineDash(Series.Dash.DOTTED)
 
             // Which type of measurement are we doing (need to plot different columns depending on which)
