@@ -261,6 +261,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
                     plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
                     plot.setXLabel("SG Voltage [V]")
                     plot.setYLabel("Current [A]")
+                    plot.setLegendColumns(2)
 
                 }
 
