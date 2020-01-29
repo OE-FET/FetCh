@@ -2,6 +2,7 @@ package fetter.gui
 
 import fetter.measurement.OutputMeasurement
 import fetter.measurement.TransferMeasurement
+import javafx.scene.layout.Background
 import jisa.Util
 import jisa.control.RTask
 import jisa.enums.Icon
@@ -12,14 +13,21 @@ import java.lang.Exception
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.abs
-import kotlin.math.absoluteValue
+
+const val SET_SD     = 0
+const val SET_SG     = 1
+const val SD_VOLTAGE = 2
+const val SD_CURRENT = 3
+const val SG_VOLTAGE = 4
+const val SG_CURRENT = 5
 
 class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
-    val basic = Fields("Data Output Settings")
-    val name  = basic.addTextField("Name")
-    val dir   = basic.addDirectorySelect("Output Directory")
-    val sep   = basic.addSeparator()
+    val basic    = Fields("Data Output Settings").apply { getPane().style = "-fx-background-color: white;" }
+    val bSection = Section(basic.title, basic)
+    val name     = basic.addTextField("Name")
+    val dir      = basic.addDirectorySelect("Output Directory")
+    val sep      = basic.addSeparator()
 
     val length = basic.addDoubleField("Channel Length [m]")
     val width  = basic.addDoubleField("Channel Width [m]")
@@ -41,7 +49,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
         setGrowth(true, false)
         setIcon(Icon.FLASK)
 
-        addAll(basic, grid)
+        addAll(bSection, grid)
 
         basic.loadFromConfig("measure-basic", mainWindow.config)
 
@@ -228,46 +236,42 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
             val results = measurement.newResults("$pattern.csv")
             val table   = Table("$name Data", results)
             val plot    = Plot("$name Curve")
+            val drain    = plot.createSeries().showMarkers(false)
+            val gate    = plot.createSeries().showMarkers(false).setLineDash(Series.Dash.DOTTED)
 
             // Which type of measurement are we doing (need to plot different columns depending on which)
             when (measurement) {
 
                 is OutputMeasurement -> {
 
-                    plot.createSeries()
-                        .watch(results, { it[2] }, { abs(it[3]) })
-                        .split(1, "D (%s V)")
-                        .showMarkers(false)
+                    drain.watch(results, { row -> row[SD_VOLTAGE] }, { row -> abs(row[SD_CURRENT]) })
+                          .split(SET_SG, "D (SG: %s V)")
+
+                    gate.watch(results, { row -> row[SD_VOLTAGE] }, { row -> abs(row[SG_CURRENT]) })
+                        .split(SET_SG, "G (SG: %s V)")
 
                     plot.setYAxisType(Plot.AxisType.LINEAR)
-                    plot.setXLabel("SD Voltage [V]")
-                    plot.setYLabel("Current [A]")
+                    plot.xLabel = "SD Voltage [V]"
 
                 }
 
                 is TransferMeasurement -> {
 
-                    plot.createSeries()
-                        .watch(results, { it[4] }, { abs(it[3]) })
-                        .split(0, "D (%s V)")
-                        .showMarkers(false)
+                    drain.watch(results, { row -> row[SG_VOLTAGE] }, { row -> abs(row[SD_CURRENT]) })
+                          .split(SET_SD, "D (SD: %s V)")
 
-                    plot.createSeries()
-                        .watch(results, { it[4] }, { abs(it[5]) })
-                        .split(0, "G (%s V)")
-                        .showMarkers(false)
-                        .setLineDash(Series.Dash.DOTTED)
+                    gate.watch(results, { row -> row[SG_VOLTAGE] }, { row -> abs(row[SG_CURRENT]) })
+                        .split(SET_SD, "G (SD: %s V)")
 
                     plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
-                    plot.setXLabel("SG Voltage [V]")
-                    plot.setYLabel("Current [A]")
-                    plot.setLegendColumns(2)
+                    plot.xLabel = "SG Voltage [V]"
 
                 }
 
             }
 
             // Make sure to add points in the order they are plotted (rather than sorting by x-value)
+            plot.yLabel = "Current [A]"
             plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
             plot.useMouseCommands(true)
             plots.addAll(plot)
@@ -287,6 +291,7 @@ class Measure(private val mainWindow: MainWindow) : Grid("Measurement", 1) {
 
     private fun disable(flag: Boolean) {
 
+        bSection.isExpanded = !flag
         start.isDisabled        = flag
         toolbarStart.isDisabled = flag
         toolbarStop.isDisabled  = !flag
