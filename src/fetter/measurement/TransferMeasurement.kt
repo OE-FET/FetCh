@@ -9,8 +9,14 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 
-class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val gdSMU: SMU?, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) :
-    Measurement() {
+class TransferMeasurement(
+    val sdSMU: SMU,
+    val sgSMU: SMU,
+    val gdSMU: SMU?,
+    val fpp1: VMeter?,
+    val fpp2: VMeter?,
+    val tm: TMeter?
+) : Measurement() {
 
     private var minVSD = 0.0
     private var maxVSD = 60.0
@@ -25,6 +31,9 @@ class TransferMeasurement(val sdSMU: SMU, val sgSMU: SMU, val gdSMU: SMU?, val f
     private var intTime = 1.0 / 50.0
     private var delTime = 500
 
+    /**
+     * Configure the source-drain parameters
+     */
     fun configureSD(start: Double, stop: Double, steps: Int, sym: Boolean): TransferMeasurement {
         minVSD = start
         maxVSD = stop

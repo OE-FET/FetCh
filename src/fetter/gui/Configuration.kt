@@ -3,11 +3,12 @@ package fetter.gui
 import jisa.enums.Icon
 import jisa.gui.Configurator
 import jisa.gui.Grid
+import jisa.gui.Section
 
 /**
  * Instrument configuration tab
  */
-class Configuration(mainWindow : MainWindow) : Grid("Configuration", 2) {
+class Configuration(mainWindow : MainWindow) : Grid("Configuration", 1) {
 
     val ground      = Configurator.SMU("Ground Channel (for SPA)", "gndu", mainWindow.config, mainWindow.connections)
     val sourceDrain = Configurator.SMU("Source-Drain Channel", "sdSMU", mainWindow.config, mainWindow.connections)
@@ -23,13 +24,10 @@ class Configuration(mainWindow : MainWindow) : Grid("Configuration", 2) {
         setIcon(Icon.COGS)
 
         addAll(
-            ground,
-            sourceDrain,
-            sourceGate,
-            fourPP1,
-            fourPP2,
-            tControl,
-            tMeter
+            Section("SPA Grounding", Grid(1, ground)).apply { isExpanded = false },
+            Section("SMU Channels", Grid(2, sourceDrain, sourceGate)).apply { isExpanded = false },
+            Section("Voltage Probes", Grid(2, fourPP1, fourPP2)).apply { isExpanded = false },
+            Section("Temperature", Grid(2, tControl, tMeter)).apply { isExpanded = false }
         )
     }
 

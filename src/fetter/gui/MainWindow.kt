@@ -5,6 +5,7 @@ import jisa.gui.Tabs
 
 class MainWindow : Tabs("FETTER - FET Characterisation Suite") {
 
+    val welcome       = Welcome()
     val config        = ConfigStore("FETTER")
     val connections   = Connections(this)
     val configuration = Configuration(this)
@@ -14,7 +15,7 @@ class MainWindow : Tabs("FETTER - FET Characterisation Suite") {
     val measure       = Measure(this)
 
     init {
-        addAll(connections, configuration, temperature, output, transfer, measure)
+        addAll(welcome, connections, configuration, temperature, output, transfer, measure)
         setMaximised(true)
         setExitOnClose(true)
         setIcon(MainWindow::class.java.getResource("fEt.png"))

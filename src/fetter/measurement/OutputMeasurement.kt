@@ -9,7 +9,14 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 
-class OutputMeasurement(val sdSMU: SMU, val sgSMU: SMU, val gdSMU: SMU?, val fpp1: VMeter?, val fpp2: VMeter?, val tm: TMeter?) : Measurement() {
+class OutputMeasurement(
+    val sdSMU: SMU,
+    val sgSMU: SMU,
+    val gdSMU: SMU?,
+    val fpp1: VMeter?,
+    val fpp2: VMeter?,
+    val tm: TMeter?
+) : Measurement() {
 
     private var minVSD = 0.0
     private var maxVSD = 60.0
@@ -46,7 +53,7 @@ class OutputMeasurement(val sdSMU: SMU, val sgSMU: SMU, val gdSMU: SMU?, val fpp
 
     }
 
-    fun configureTimes(integration: Double, delay: Double) : OutputMeasurement {
+    fun configureTimes(integration: Double, delay: Double): OutputMeasurement {
 
         intTime = integration
         delTime = (delay * 1000).toInt()
