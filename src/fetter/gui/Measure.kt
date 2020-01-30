@@ -35,6 +35,7 @@ object Measure : Grid("Measurement", 1) {
     val grid = Grid(1)
     val measurements   = HashMap<String, Measurement>()
     val generatedPlots = HashMap<String, Plot>()
+    var runThread      = Thread.currentThread()
 
     init {
 
@@ -50,6 +51,8 @@ object Measure : Grid("Measurement", 1) {
     }
 
     private fun runMeasurement() {
+
+        runThread = Thread.currentThread()
 
         // Reset everything
         grid.clear()
@@ -83,7 +86,7 @@ object Measure : Grid("Measurement", 1) {
 
             // Check which measurements we are doing, pre-configure them
             if (Transfer.isEnabled) measurements["Transfer"] = Transfer.getMeasurement(instruments)
-            if (Output.isEnabled) measurements["Output"] = Output.getMeasurement(instruments)
+            if (Output.isEnabled)   measurements["Output"]   = Output.getMeasurement(instruments)
 
             // If we're controlling temperature, then we will need to loop over all temperature set-points
             if (Temperature.isEnabled) {
@@ -103,11 +106,17 @@ object Measure : Grid("Measurement", 1) {
             GUI.infoAlert("Measurement Complete", "The measurement completed without error.")
 
         } catch (e: InterruptedException) {
+
             GUI.warningAlert("Measurement Stopped", "The measurement was stopped before completion.")
+
         } catch (e: Exception) {
+
             GUI.errorAlert("Measurement Error", "Measurement Error", e.message, 600.0)
+
         } finally {
+
             disable(false)
+
         }
 
     }
@@ -244,6 +253,8 @@ object Measure : Grid("Measurement", 1) {
         for ((_, measurement) in measurements) {
             measurement.stop()
         }
+
+        runThread.interrupt()
 
     }
 
