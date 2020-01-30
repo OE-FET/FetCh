@@ -11,9 +11,6 @@ import jisa.experiment.ResultTable
 import jisa.gui.*
 import java.io.File
 import java.lang.Exception
-import java.nio.file.Files
-import java.util.*
-import java.util.function.BiPredicate
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.math.abs
@@ -71,6 +68,7 @@ object Measure : Grid("Measurement", 1) {
         progress.setStatus("Please Wait...")
         progress.setProgress(-1.0)
         progress.show()
+        bSection.isExpanded = false
 
         // Reset everything
         grid.clear()
@@ -88,18 +86,16 @@ object Measure : Grid("Measurement", 1) {
             temperatures.add(if (temp.isBlank()) "-1" else temp)
         }
 
-        for (temp in temperatures) {
+        for (temp in temperatures.sortedBy { it.toDouble() }) {
 
-            val T = temp.toDouble()
+            val T            = temp.toDouble()
             val outputFile   = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-${temp}K-Output.csv" else "$name-Output.csv"))
             val transferFile = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-${temp}K-Transfer.csv" else "$name-Transfer.csv"))
-            val name         = if(T > -1) "$T K" else "No Temperature Control"
+            val sectionName  = if(T > -1) "$T K" else "No Temperature Control"
             val cols         = (if (makeTables.get()) 1 else 0) + (if (makePlots.get()) 1 else 0)
             val container    = Grid(cols)
 
             println(outputFile.absolutePath)
-
-            grid.add(Section(name, container))
 
             if (outputFile.exists()) {
 
@@ -118,6 +114,8 @@ object Measure : Grid("Measurement", 1) {
                 if (makePlots.get())  container.add(makePlot("Transfer", TransferMeasurement::class, data))
 
             }
+
+            grid.add(Section(sectionName, container))
 
         }
 
