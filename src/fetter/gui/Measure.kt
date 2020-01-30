@@ -78,21 +78,21 @@ object Measure : Grid("Measurement", 1) {
 
         val name      = file.name.removeSuffix("-info.txt")
         val directory = file.parentFile
-        val files     = directory.listFiles { _, n -> n.matches(Regex("$name-(Transfer|Output)(?:-([0-9]+\\.?[0-9]*)K)?\\.csv")) } ?: return
+        val files     = directory.listFiles { _, n -> n.matches(Regex("$name(?:-([0-9]+\\.?[0-9]*)K)?-(Transfer|Output)\\.csv")) } ?: return
 
         val temperatures = HashSet<String>()
 
         for (found in files) {
-            val match = Regex("$name-(Transfer|Output)(?:-([0-9]+\\.?[0-9]*)K)?\\.csv").find(found.name) ?: continue
-            val temp  = match.groupValues[2]
+            val match = Regex("$name(?:-([0-9]+\\.?[0-9]*)K)?-(Transfer|Output)\\.csv").find(found.name) ?: continue
+            val temp  = match.groupValues[1]
             temperatures.add(if (temp.isBlank()) "-1" else temp)
         }
 
         for (temp in temperatures) {
 
             val T = temp.toDouble()
-            val outputFile   = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-Output-${temp}K.csv" else "$name-Output.csv"))
-            val transferFile = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-Transfer-${temp}K.csv" else "$name-Transfer.csv"))
+            val outputFile   = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-${temp}K-Output.csv" else "$name-Output.csv"))
+            val transferFile = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-${temp}K-Transfer.csv" else "$name-Transfer.csv"))
             val name         = if(T > -1) "$T K" else "No Temperature Control"
             val cols         = (if (makeTables.get()) 1 else 0) + (if (makePlots.get()) 1 else 0)
             val container    = Grid(cols)
