@@ -14,6 +14,7 @@ object TempChangePlot : Plot("Temperature", "Time [s]", "Temperature [K]") {
         .setName("Temperature")
         .showMarkers(false)
         .setColour(Colour.BLUE)
+
     private val targSeries = createSeries()
         .setName("Set-Point")
         .showMarkers(false)

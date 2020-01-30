@@ -19,18 +19,20 @@ object Measure : Grid("Measurement", 1) {
     val bSection = Section(basic.title, basic)
     val name     = basic.addTextField("Name")
     val dir      = basic.addDirectorySelect("Output Directory")
-    val sep      = basic.addSeparator()
+    val sep1     = basic.addSeparator()
 
-    val length   = basic.addDoubleField("Channel Length [m]")
-    val width    = basic.addDoubleField("Channel Width [m]")
-    val thick    = basic.addDoubleField("Channel Thickness [m]")
+    val length     = basic.addDoubleField("Channel Length [m]")
+    val width      = basic.addDoubleField("Channel Width [m]")
+    val thick      = basic.addDoubleField("Channel Thickness [m]")
+    val sep2       = basic.addSeparator()
+    val makeTables = basic.addCheckBox("Display Tables", true)
+    val makePlots  = basic.addCheckBox("Display Plots", true)
+    val start      = basic.addButton("Start Measurement", this::runMeasurement)
 
-    val start        = basic.addButton("Start Measurement", this::runMeasurement)
     val toolbarStart = addToolbarButton("Start", this::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", this::stopMeasurement)
-    val savePlots    = addToolbarButton("Save Plots", this::writePlots)
 
-    val grid           = Grid(1)
+    val grid = Grid(1)
     val measurements   = HashMap<String, Measurement>()
     val generatedPlots = HashMap<String, Plot>()
 
@@ -62,8 +64,8 @@ object Measure : Grid("Measurement", 1) {
 
             // Get file path and name to use, combine into single path String
             val fileName = name.get()
-            val fileDir  = dir.get()
-            val path     = Util.joinPath(fileDir, fileName)
+            val fileDir = dir.get()
+            val path = Util.joinPath(fileDir, fileName)
 
             // Make sure something was actually written in those fields
             if (fileName == "" || fileDir == "") {
@@ -81,7 +83,7 @@ object Measure : Grid("Measurement", 1) {
 
             // Check which measurements we are doing, pre-configure them
             if (Transfer.isEnabled) measurements["Transfer"] = Transfer.getMeasurement(instruments)
-            if (Output.isEnabled)   measurements["Output"]   = Output.getMeasurement(instruments)
+            if (Output.isEnabled) measurements["Output"] = Output.getMeasurement(instruments)
 
             // If we're controlling temperature, then we will need to loop over all temperature set-points
             if (Temperature.isEnabled) {
@@ -145,7 +147,9 @@ object Measure : Grid("Measurement", 1) {
 
     private fun singleMeasurement(T: Double, fileName: String, path: String) {
 
-        val container = Grid(2)
+        val cols      = (if (makeTables.get()) 1 else 0) + (if(makePlots.get()) 1 else 0)
+        val container = Grid(cols)
+
         grid.add(Section(if (T > -1) "$T K" else "No Temperature Control", container))
 
         for ((name, measurement) in measurements) {
@@ -155,7 +159,6 @@ object Measure : Grid("Measurement", 1) {
             val results = measurement.newResults("$pattern.csv")
 
             // Create table, plot and series
-            val table = Table("$name Data", results)
             val plot  = Plot("$name Curve")
             val drain = plot.createSeries().showMarkers(false)
             val gate  = plot.createSeries().showMarkers(false).setLineDash(Series.Dash.DOTTED)
@@ -163,7 +166,7 @@ object Measure : Grid("Measurement", 1) {
             // Which type of measurement are we doing (need to plot different columns depending on which)
             when (measurement) {
 
-                is OutputMeasurement -> {
+                is OutputMeasurement   -> {
 
                     drain.watch(results, { row -> row[SD_VOLTAGE] }, { row -> abs(row[SD_CURRENT]) })
                         .split(SET_SG, "D (SG: %s V)")
@@ -195,8 +198,18 @@ object Measure : Grid("Measurement", 1) {
             plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
             plot.yLabel = "Current [A]"
             plot.useMouseCommands(true)
+            plot.addSaveButton("Save")
+            plot.addToolbarSeparator()
+            plot.addToolbarButton("Linear") { plot.setYAxisType(Plot.AxisType.LINEAR) }
+            plot.addToolbarButton("Logarithmic") { plot.setYAxisType(Plot.AxisType.LOGARITHMIC) }
 
-            container.addAll(table, plot)
+            if (makeTables.get()) {
+                container.add(Table("$name Data", results))
+            }
+
+            if (makePlots.get()) {
+                container.add(plot)
+            }
 
             generatedPlots["$fileName-$name.svg"] = plot
 
