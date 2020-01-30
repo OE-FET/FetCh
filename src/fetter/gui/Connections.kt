@@ -1,14 +1,11 @@
 package fetter.gui
 
-import jisa.control.ConfigStore
-import jisa.devices.SMU
 import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.enums.Icon
-import jisa.gui.Connector
 import jisa.gui.ConnectorGrid
 
-class Connections(mainWindow: MainWindow) : ConnectorGrid("Connections", mainWindow.config) {
+object Connections : ConnectorGrid("Connections", Settings) {
 
     val smu1    = addSMU("SMU 1")
     val smu2    = addSMU("SMU 2")

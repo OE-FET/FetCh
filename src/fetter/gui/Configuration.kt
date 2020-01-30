@@ -1,5 +1,6 @@
 package fetter.gui
 
+import fetter.measurement.Instruments
 import jisa.enums.Icon
 import jisa.gui.Configurator
 import jisa.gui.Grid
@@ -8,15 +9,15 @@ import jisa.gui.Section
 /**
  * Instrument configuration tab
  */
-class Configuration(mainWindow : MainWindow) : Grid("Configuration", 1) {
+object Configuration : Grid("Configuration", 1) {
 
-    val ground      = Configurator.SMU("Ground Channel (for SPA)", "gndu", mainWindow.config, mainWindow.connections)
-    val sourceDrain = Configurator.SMU("Source-Drain Channel", "sdSMU", mainWindow.config, mainWindow.connections)
-    val sourceGate  = Configurator.SMU("Source-Gate Channel", "sgSMU", mainWindow.config, mainWindow.connections)
-    val fourPP1     = Configurator.VMeter("Four Point Probe Channel 1", "fpp1", mainWindow.config, mainWindow.connections)
-    val fourPP2     = Configurator.VMeter("Four Point Probe Channel 2", "fpp2", mainWindow.config, mainWindow.connections)
-    val tControl    = Configurator.TC("Temperature Control", "tc", mainWindow.config, mainWindow.connections)
-    val tMeter      = Configurator.TMeter("Temperature Sensor", "tm", mainWindow.config, mainWindow.connections)
+    val ground      = Configurator.SMU("Ground Channel (for SPA)", "gndu", Settings, Connections)
+    val sourceDrain = Configurator.SMU("Source-Drain Channel", "sdSMU", Settings, Connections)
+    val sourceGate  = Configurator.SMU("Source-Gate Channel", "sgSMU", Settings, Connections)
+    val fourPP1     = Configurator.VMeter("Four Point Probe Channel 1", "fpp1", Settings, Connections)
+    val fourPP2     = Configurator.VMeter("Four Point Probe Channel 2", "fpp2", Settings, Connections)
+    val tControl    = Configurator.TC("Temperature Control", "tc", Settings, Connections)
+    val tMeter      = Configurator.TMeter("Temperature Sensor", "tm", Settings, Connections)
 
     init {
 
@@ -29,6 +30,20 @@ class Configuration(mainWindow : MainWindow) : Grid("Configuration", 1) {
             Section("Voltage Probes", Grid(2, fourPP1, fourPP2)).apply { isExpanded = false },
             Section("Temperature", Grid(2, tControl, tMeter)).apply { isExpanded = false }
         )
+    }
+
+    fun getInstruments(): Instruments {
+
+        return Instruments(
+            sourceDrain.get(),
+            sourceGate.get(),
+            ground.get(),
+            fourPP1.get(),
+            fourPP2.get(),
+            tControl.get(),
+            tMeter.get()
+        )
+
     }
 
 }

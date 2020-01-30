@@ -3,19 +3,10 @@ package fetter.gui
 import jisa.control.ConfigStore
 import jisa.gui.Tabs
 
-class MainWindow : Tabs("FETTER - FET Characterisation Suite") {
-
-    val welcome       = Welcome()
-    val config        = ConfigStore("FETTER")
-    val connections   = Connections(this)
-    val configuration = Configuration(this)
-    val temperature   = Temperature(this)
-    val output        = Output(this)
-    val transfer      = Transfer(this)
-    val measure       = Measure(this)
+object MainWindow : Tabs("FETTER - FET Characterisation Suite") {
 
     init {
-        addAll(welcome, connections, configuration, temperature, output, transfer, measure)
+        addAll(Welcome, Connections, Configuration, Temperature, Output, Transfer, Measure)
         setMaximised(true)
         setExitOnClose(true)
         setIcon(MainWindow::class.java.getResource("fEt.png"))

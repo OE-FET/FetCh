@@ -3,8 +3,9 @@ package fetter.gui
 import jisa.enums.Icon
 import jisa.gui.Fields
 import jisa.gui.Grid
+import jisa.maths.Range
 
-class Temperature(mainWindow: MainWindow) : Grid("Temperature", 1) {
+object Temperature : Grid("Temperature", 1) {
 
     val basic    = Fields("Temperature Set-Points")
     val enabled  = basic.addCheckBox("Enabled", false)
@@ -21,7 +22,7 @@ class Temperature(mainWindow: MainWindow) : Grid("Temperature", 1) {
         setGrowth(true, false)
         add(basic)
         setIcon(Icon.SNOWFLAKE)
-        basic.loadFromConfig("temp-basic", mainWindow.config)
+        basic.loadFromConfig("temp-basic", Settings)
         enabled.setOnChange(this::updateEnabled)
         updateEnabled()
 
@@ -38,5 +39,12 @@ class Temperature(mainWindow: MainWindow) : Grid("Temperature", 1) {
         basic.setFieldsDisabled(flag)
         if (!flag) updateEnabled()
     }
+
+    val isEnabled: Boolean
+        get() = enabled.get()
+
+
+    val values: Range<Double>
+        get() = Range.linear(minT.get(), maxT.get(), numT.get())
 
 }

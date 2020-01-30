@@ -5,7 +5,7 @@ import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.gui.Grid
 
-class Welcome : Grid("Welcome", 1) {
+object Welcome : Grid("Welcome", 1) {
 
     val doc = Doc("Welcome")
 

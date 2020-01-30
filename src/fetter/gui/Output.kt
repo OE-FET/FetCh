@@ -1,10 +1,13 @@
 package fetter.gui
 
+import fetter.measurement.Instruments
+import fetter.measurement.OutputMeasurement
 import jisa.enums.Icon
+import jisa.experiment.Measurement
 import jisa.gui.Fields
 import jisa.gui.Grid
 
-class Output(mainWindow: MainWindow) : Grid("Output Curve", 1) {
+object Output : Grid("Output Curve", 1) {
 
     val basic   = Fields("Basic Parameters")
     val enabled = basic.addCheckBox("Enabled", false)
@@ -33,9 +36,9 @@ class Output(mainWindow: MainWindow) : Grid("Output Curve", 1) {
         setGrowth(true, false)
         setIcon(Icon.RHEOSTAT)
 
-        basic.loadFromConfig("transfer-basic", mainWindow.config)
-        sourceDrain.loadFromConfig("transfer-sd", mainWindow.config)
-        sourceGate.loadFromConfig("transfer-sg", mainWindow.config)
+        basic.loadFromConfig("transfer-basic", Settings)
+        sourceDrain.loadFromConfig("transfer-sd", Settings)
+        sourceGate.loadFromConfig("transfer-sg", Settings)
 
         enabled.setOnChange(this::updateEnabled)
         updateEnabled()
@@ -60,5 +63,42 @@ class Output(mainWindow: MainWindow) : Grid("Output Curve", 1) {
         sourceGate.setFieldsDisabled(flag)
         if (!flag) updateEnabled()
     }
+
+    fun getMeasurement(devices: Instruments) : Measurement {
+
+        if (devices.sdSMU == null || devices.sgSMU == null) {
+            throw Exception("Source-Drain and Source-Gate SMU channels must be configured!")
+        }
+
+        val measurement = OutputMeasurement(
+            devices.sdSMU,
+            devices.sgSMU,
+            devices.gdSMU,
+            devices.fpp1,
+            devices.fpp2,
+            devices.tm
+        )
+
+        measurement.configureSD(
+            minSDV.get(),
+            maxSDV.get(),
+            numSDV.get(),
+            symSDV.get()
+        ).configureSG(
+            minSGV.get(),
+            maxSGV.get(),
+            numSGV.get(),
+            symSGV.get()
+        ).configureTimes(
+            intTime.get(),
+            delTime.get()
+        )
+
+        return measurement
+
+    }
+
+    val isEnabled: Boolean
+        get() = enabled.get()
 
 }
