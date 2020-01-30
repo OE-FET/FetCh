@@ -1,7 +1,9 @@
 <h1 align="center"><img src="https://i.imgur.com/T76Fz4y.png"/><br/>FETTER - FET Characterisation Tool</h1>
 
 <p align="center">
-  <img src="https://i.imgur.com/vdnEdVg.png"/>
+  <a href="https://i.imgur.com/vdnEdVg.png">
+    <img src="https://i.imgur.com/fCnrpq8.png"/>  
+  </a>
 </p>
 
 ## Getting and Running FETTER
