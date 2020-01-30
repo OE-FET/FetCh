@@ -9,11 +9,15 @@ object Temperature : Grid("Temperature", 1) {
 
     val basic    = Fields("Temperature Set-Points")
     val enabled  = basic.addCheckBox("Enabled", false)
-    val bSep1    = basic.addSeparator()
+
+    init { basic.addSeparator() }
+
     val minT     = basic.addDoubleField("Start [K]", 300.0)
     val maxT     = basic.addDoubleField("Stop [K]", 50.0)
     val numT     = basic.addIntegerField("No. Steps", 6)
-    val bsep2    = basic.addSeparator()
+
+    init { basic.addSeparator() }
+
     val stabPerc = basic.addDoubleField("Stability Range [%]", 1.0)
     val stabTime = basic.addDoubleField("Stability Time [s]", 600.0)
 
@@ -31,7 +35,7 @@ object Temperature : Grid("Temperature", 1) {
     fun updateEnabled() {
 
         basic.setFieldsDisabled(!enabled.get())
-        enabled.setDisabled(false)
+        enabled.isDisabled = false
 
     }
 
@@ -46,5 +50,11 @@ object Temperature : Grid("Temperature", 1) {
 
     val values: Range<Double>
         get() = Range.linear(minT.get(), maxT.get(), numT.get())
+
+    val stabilityPercentage : Double
+        get() = stabPerc.get()
+
+    val stabilityTime : Long
+        get() = (stabTime.get() * 1000.0).toLong()
 
 }
