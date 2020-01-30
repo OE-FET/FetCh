@@ -137,13 +137,19 @@ object Measure : Grid("Measurement", 1) {
 
             grid.add(section)
 
-            // Change temperature and wait for stability
-            tc.targetTemperature = T
-            tc.useAutoHeater()
-            tc.waitForStableTemperature(T, stabPerc, stabTime)
+            try {
 
-            TempChangePlot.stop()
-            grid.remove(section)
+                // Change temperature and wait for stability
+                tc.targetTemperature = T
+                tc.useAutoHeater()
+                tc.waitForStableTemperature(T, stabPerc, stabTime)
+
+            } finally {
+
+                TempChangePlot.stop()
+                grid.remove(section)
+
+            }
 
             singleMeasurement(T, fileName, path)
 
