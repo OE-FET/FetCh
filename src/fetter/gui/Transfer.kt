@@ -31,7 +31,7 @@ object Transfer : Grid("Transfer Curve", 1) {
     val maxSGV      = sourceGate.addDoubleField("Stop [V]", 50.0)
     val numSGV      = sourceGate.addIntegerField("No. Steps", 61)
 
-    init { Output.sourceGate.addSeparator() }
+    init { sourceGate.addSeparator() }
 
     val symSGV      = Output.sourceGate.addCheckBox("Sweep Both Ways", true)
 
@@ -41,9 +41,9 @@ object Transfer : Grid("Transfer Curve", 1) {
         setGrowth(true, false)
         setIcon(Icon.TRANSISTOR)
 
-        basic.loadFromConfig("output-basic", Settings)
-        sourceDrain.loadFromConfig("output-sd", Settings)
-        sourceGate.loadFromConfig("output-sg", Settings)
+        basic.loadFromConfig("tf-basic", Settings)
+        sourceDrain.loadFromConfig("tf-sd", Settings)
+        sourceGate.loadFromConfig("tf-sg", Settings)
 
         enabled.setOnChange(this::updateEnabled)
         updateEnabled()

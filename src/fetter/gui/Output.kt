@@ -42,9 +42,9 @@ object Output : Grid("Output Curve", 1) {
         setGrowth(true, false)
         setIcon(Icon.RHEOSTAT)
 
-        basic.loadFromConfig("transfer-basic", Settings)
-        sourceDrain.loadFromConfig("transfer-sd", Settings)
-        sourceGate.loadFromConfig("transfer-sg", Settings)
+        basic.loadFromConfig("op-basic", Settings)
+        sourceDrain.loadFromConfig("op-sd", Settings)
+        sourceGate.loadFromConfig("op-sg", Settings)
 
         enabled.setOnChange(this::updateEnabled)
         updateEnabled()
