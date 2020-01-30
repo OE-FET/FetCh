@@ -23,6 +23,9 @@ object TempChangePlot : Plot("Temperature", "Time [s]", "Temperature [K]") {
 
     fun start(T: Double, tm: TMeter) {
 
+        tempSeries.clear()
+        targSeries.clear()
+
         task = RTask(1000) { task ->
             tempSeries.addPoint(task.secFromStart, tm.temperature)
             targSeries.addPoint(task.secFromStart, T)
