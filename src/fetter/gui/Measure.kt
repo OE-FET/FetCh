@@ -1,5 +1,6 @@
 package fetter.gui
 
+import fetter.analysis.FETMeasurement
 import fetter.measurement.OutputMeasurement
 import fetter.measurement.TransferMeasurement
 import jisa.Util
@@ -12,7 +13,6 @@ import jisa.gui.*
 import java.io.File
 import java.lang.Exception
 import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
@@ -28,7 +28,9 @@ object Measure : Grid("Measurement", 1) {
     val length       = basic.addDoubleField("Channel Length [m]")
     val width        = basic.addDoubleField("Channel Width [m]")
     val thick        = basic.addDoubleField("Channel Thickness [m]")
-    val sep2         = basic.addSeparator()
+
+    init { basic.addSeparator() }
+
     val makeTables   = basic.addCheckBox("Display Tables", true)
     val makePlots    = basic.addCheckBox("Display Plots", true)
     val start        = basic.addButton("Start Measurement", this::runMeasurement)
@@ -38,7 +40,7 @@ object Measure : Grid("Measurement", 1) {
 
     init { addToolbarSeparator() }
 
-    val loadButton   = addToolbarButton("Load Data", this::loadMeasurement)
+    val loadButton   = addToolbarButton("Load Previous Measurement", this::loadMeasurement)
 
     val grid         = Grid(1)
     val measurements = HashMap<String, Measurement>()
@@ -77,48 +79,21 @@ object Measure : Grid("Measurement", 1) {
         grid.clear()
         measurements.clear()
 
-        val name      = file.name.removeSuffix("-info.txt")
-        val directory = file.parentFile
-        val files     = directory.listFiles { _, n -> n.matches(Regex("$name(?:-([0-9]+\\.?[0-9]*)K)?-(Transfer|Output)\\.csv")) } ?: return
+        for (data in FETMeasurement(file.name.removeSuffix("-info.txt"), file.parent)) {
 
-        val temperatures = HashSet<String>()
-
-        for (found in files) {
-
-            val match = Regex("$name(?:-([0-9]+\\.?[0-9]*)K)?-(Transfer|Output)\\.csv").find(found.name) ?: continue
-            val temp  = match.groupValues[1]
-
-            temperatures.add(if (temp.isBlank()) "-1" else temp)
-
-        }
-
-        for (temp in temperatures.sortedBy { it.toDouble() }) {
-
-            val T            = temp.toDouble()
-            val outputFile   = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-${temp}K-Output.csv" else "$name-Output.csv"))
-            val transferFile = File(Util.joinPath(directory.absolutePath, if (T > -1) "$name-${temp}K-Transfer.csv" else "$name-Transfer.csv"))
-            val sectionName  = if(T > -1) "$T K" else "No Temperature Control"
+            val temperature  = data.temperature
+            val sectionName  = if(temperature > -1) "$temperature K" else "No Temperature Control"
             val cols         = (if (makeTables.get()) 1 else 0) + (if (makePlots.get()) 1 else 0)
             val container    = Grid(cols)
 
-            println(outputFile.absolutePath)
-
-            if (outputFile.exists()) {
-
-                val data = ResultList.loadFile(outputFile.absolutePath)
-
-                if (makeTables.get()) container.add(Table("Output Data", data))
-                if (makePlots.get())  container.add(makePlot("Output", OutputMeasurement::class, data))
-
+            if (data.output != null) {
+                if (makeTables.get()) container.add(Table("Output Data", data.output))
+                if (makePlots.get())  container.add(makePlot("Output", OutputMeasurement::class, data.output))
             }
 
-            if (transferFile.exists()) {
-
-                val data = ResultList.loadFile(transferFile.absolutePath)
-
-                if (makeTables.get()) container.add(Table("Transfer Data", data))
-                if (makePlots.get())  container.add(makePlot("Transfer", TransferMeasurement::class, data))
-
+            if (data.transfer != null) {
+                if (makeTables.get()) container.add(Table("Transfer Data", data.transfer))
+                if (makePlots.get())  container.add(makePlot("Transfer", TransferMeasurement::class, data.transfer))
             }
 
             grid.add(Section(sectionName, container))
