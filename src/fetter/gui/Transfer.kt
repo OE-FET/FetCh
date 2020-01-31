@@ -33,7 +33,7 @@ object Transfer : Grid("Transfer Curve", 1) {
 
     init { sourceGate.addSeparator() }
 
-    val symSGV      = Output.sourceGate.addCheckBox("Sweep Both Ways", true)
+    val symSGV      = sourceGate.addCheckBox("Sweep Both Ways", true)
 
     init {
 
