@@ -1,4 +1,4 @@
-<h1 align="center"><img src="https://i.imgur.com/T76Fz4y.png"/><br/>FETTER - FET Characterisation Tool</h1>
+<h1 align="center"><img src="https://i.imgur.com/4Me4gtE.png"/><br/>FETTER - FET Characterisation Tool</h1>
 
 <p align="center">
   <a href="https://i.imgur.com/vdnEdVg.png">
