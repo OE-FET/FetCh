@@ -3,7 +3,7 @@ package fetter.gui
 import jisa.control.ConfigStore
 import jisa.gui.Tabs
 
-object MainWindow : Tabs("FETTER - FET Characterisation Suite") {
+object MainWindow : Tabs("FetCh - FET Characterisation Suite") {
 
     init {
         addAll(Welcome, Connections, Configuration, Temperature, Output, Transfer, Measure)

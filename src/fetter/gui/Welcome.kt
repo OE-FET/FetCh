@@ -17,7 +17,7 @@ object Welcome : Grid("Welcome", 1) {
 
         doc.addImage(Welcome::class.java.getResource("fEt.png"))
             .setAlignment(Doc.Align.CENTRE)
-        doc.addHeading("FETTER")
+        doc.addHeading("FetCh: FET Characterisation")
             .setAlignment(Doc.Align.CENTRE)
         doc.addText("William Wood 2020")
             .setAlignment(Doc.Align.CENTRE)
