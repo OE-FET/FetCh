@@ -1,4 +1,4 @@
-<h1 align="center"><img src="https://i.imgur.com/4Me4gtE.png"/><br/>FETTER - FET Characterisation Tool</h1>
+<h1 align="center"><img src="https://i.imgur.com/4Me4gtE.png"/><br/>FetCh - FET Characterisation Suite</h1>
 
 <p align="center">
   <a href="https://i.imgur.com/vdnEdVg.png">
@@ -6,8 +6,8 @@
   </a>
 </p>
 
-## Getting and Running FETTER
+## Getting and Running FetCh
 
 1. Make sure you have Java 11 or newer ([download](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot))
-2. Download the executable jar file: [FETTER-11.jar](https://github.com/OE-FET/FETTER/raw/master/FETTER-11.jar)
+2. Download the executable jar file: [FetCh.jar](https://github.com/OE-FET/FETTER/raw/master/FetCh.jar)
 3. Run the jar file (you should just need to double-click it)
