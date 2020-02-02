@@ -111,6 +111,7 @@ object Measure : Grid("Measurement", 1) {
         // Reset everything
         grid.clear()
         measurements.clear()
+        bSection.isExpanded = false
         disable(true)
 
         // Get the configured instruments
@@ -278,6 +279,8 @@ object Measure : Grid("Measurement", 1) {
             if (makeTables.get()) container.add(Table("$name Data", results))
             if (makePlots.get())  container.add(makePlot(name, measurement::class, results))
 
+            scrollToEnd()
+
             try {
                 measurement.start()
             } finally {
@@ -291,7 +294,6 @@ object Measure : Grid("Measurement", 1) {
 
     private fun disable(flag: Boolean) {
 
-        bSection.isExpanded     = !flag
         start.isDisabled        = flag
         toolbarStart.isDisabled = flag
         toolbarStop.isDisabled  = !flag
