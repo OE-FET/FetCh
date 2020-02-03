@@ -12,16 +12,14 @@ import kotlin.collections.LinkedHashMap
 class FETMeasurement(private val name: String, path: String) : Iterable<FETMeasurement.TPoint> {
 
     private val transferCurves = LinkedHashMap<Double, ResultTable>()
-    private val outputCurves = LinkedHashMap<Double, ResultTable>()
-    private val directory = File(path)
-    private val temperatures = LinkedList<Double>()
-    private val attributes = LinkedHashMap<String, String>()
+    private val outputCurves   = LinkedHashMap<Double, ResultTable>()
+    private val directory      = File(path)
+    private val temperatures   = LinkedList<Double>()
+    private val attributes     = LinkedHashMap<String, String>()
 
     init {
 
-        val files = directory.listFiles { _, n ->
-            n.matches(Regex("$name(?:-([0-9]+\\.?[0-9]*)K)?-(Transfer|Output)\\.csv"))
-        }
+        val files = directory.listFiles()
 
         if (files != null) {
 
@@ -29,7 +27,7 @@ class FETMeasurement(private val name: String, path: String) : Iterable<FETMeasu
 
             for (found in files) {
 
-                val match = Regex("$name(?:-([0-9]+\\.?[0-9]*)K)?-(Transfer|Output)\\.csv").find(found.name) ?: continue
+                val match = Regex("$name(?:-([0-9]+\\.?[0-9]*)K)?-(Transfer|Output)\\.csv").matchEntire(found.name) ?: continue
                 val temp = if (match.groupValues[1].isBlank()) "-1" else match.groupValues[1]
                 temps[temp.toDouble()] = temp
 
