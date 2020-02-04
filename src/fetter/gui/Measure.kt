@@ -1,13 +1,14 @@
 package fetter.gui
 
 import fetter.analysis.FETMeasurement
+import fetter.analysis.OCurve
+import fetter.analysis.TCurve
 import fetter.measurement.OutputMeasurement
 import fetter.measurement.TransferMeasurement
 import jisa.Util
 import jisa.devices.TC
 import jisa.enums.Icon
 import jisa.experiment.Measurement
-import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.gui.*
 import java.io.File
@@ -27,7 +28,9 @@ object Measure : Grid("Measurement", 1) {
 
     val length       = basic.addDoubleField("Channel Length [m]")
     val width        = basic.addDoubleField("Channel Width [m]")
-    val thick        = basic.addDoubleField("Channel Thickness [m]")
+    val thick        = basic.addDoubleField("Dielectric Thickness [m]")
+    val dielectric   = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
+    val dielConst    = basic.addDoubleField("Dielectric Constant", 1.0)
 
     init { basic.addSeparator() }
 
@@ -56,6 +59,31 @@ object Measure : Grid("Measurement", 1) {
         addAll(bSection, grid)
 
         basic.loadFromConfig("measure-basic", Settings)
+
+        dielectric.setOnChange(this::setDielectric)
+        setDielectric()
+
+    }
+
+    private fun setDielectric() {
+
+        when (dielectric.get()) {
+
+            0 -> {
+                dielConst.isDisabled = true
+                dielConst.set(2.05)
+            }
+
+            1 -> {
+                dielConst.isDisabled = true
+                dielConst.set(2.22)
+            }
+
+            2 -> {
+                dielConst.isDisabled = false
+            }
+
+        }
 
     }
 
@@ -87,13 +115,17 @@ object Measure : Grid("Measurement", 1) {
             val container    = Grid(cols)
 
             if (data.output != null) {
-                if (makeTables.get()) container.add(Table("Output Data", data.output))
-                if (makePlots.get())  container.add(makePlot("Output", OutputMeasurement::class, data.output))
+
+                if (makeTables.get()) container.add(Table("Output Data", data.output.data))
+                if (makePlots.get())  container.add(OutputPlot(data.output))
+
             }
 
             if (data.transfer != null) {
-                if (makeTables.get()) container.add(Table("Transfer Data", data.transfer))
-                if (makePlots.get())  container.add(makePlot("Transfer", TransferMeasurement::class, data.transfer))
+
+                if (makeTables.get()) container.add(Table("Transfer Data", data.transfer.data))
+                if (makePlots.get())  container.add(TransferPlot(data.transfer))
+
             }
 
             grid.add(Section(sectionName, container))
@@ -134,7 +166,8 @@ object Measure : Grid("Measurement", 1) {
                 printf("Name: %s%n", name.get())
                 printf("Length: %e%n", length.get())
                 printf("Width: %e%n", width.get())
-                printf("Thickness: %e%n", thick.get())
+                printf("Dielectric Thickness: %e%n", thick.get())
+                printf("Dielectric Constant: %s%n", dielConst.get())
                 close()
             }
 
@@ -211,58 +244,6 @@ object Measure : Grid("Measurement", 1) {
 
     private fun singleMeasurement(fileName: String, path: String) = singleMeasurement(-1.0, fileName, path)
 
-    private fun makePlot(name: String, measurement: KClass<out Measurement>, results: ResultTable) : Plot {
-
-        // Create table, plot and series
-        val plot  = Plot("$name Curve")
-        val drain = plot.createSeries().showMarkers(false)
-        val gate  = plot.createSeries().showMarkers(false).setLineDash(Series.Dash.DOTTED)
-
-        // Which type of measurement are we doing (need to plot different columns depending on which)
-        when (measurement) {
-
-            OutputMeasurement::class -> {
-
-                drain.watch(results, { row -> row[SD_VOLTAGE] }, { row -> abs(row[SD_CURRENT]) })
-                    .split(SET_SG, "D (SG: %s V)")
-
-                gate.watch(results, { row -> row[SD_VOLTAGE] }, { row -> abs(row[SG_CURRENT]) })
-                    .split(SET_SG, "G (SG: %s V)")
-
-                plot.setYAxisType(Plot.AxisType.LINEAR)
-                plot.xLabel = "SD Voltage [V]"
-
-            }
-
-            TransferMeasurement::class -> {
-
-                drain.watch(results, { row -> row[SG_VOLTAGE] }, { row -> abs(row[SD_CURRENT]) })
-                    .split(SET_SD, "D (SD: %s V)")
-
-                gate.watch(results, { row -> row[SG_VOLTAGE] }, { row -> abs(row[SG_CURRENT]) })
-                    .split(SET_SD, "G (SD: %s V)")
-
-                plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
-                plot.xLabel = "SG Voltage [V]"
-
-            }
-
-        }
-
-        // Make sure to add points in the order they are plotted (rather than sorting by x-value)
-        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-        plot.yLabel = "Current [A]"
-        plot.setAutoMode()
-        plot.useMouseCommands(true)
-        plot.addSaveButton("Save")
-        plot.addToolbarSeparator()
-        plot.addToolbarButton("Linear") { plot.setYAxisType(Plot.AxisType.LINEAR) }
-        plot.addToolbarButton("Logarithmic") { plot.setYAxisType(Plot.AxisType.LOGARITHMIC) }
-
-        return plot
-
-    }
-
     private fun singleMeasurement(T: Double, fileName: String, path: String) {
 
         val cols = (if (makeTables.get()) 1 else 0) + (if (makePlots.get()) 1 else 0)
@@ -277,7 +258,17 @@ object Measure : Grid("Measurement", 1) {
             val results = measurement.newResults("$pattern.csv")
 
             if (makeTables.get()) container.add(Table("$name Data", results))
-            if (makePlots.get())  container.add(makePlot(name, measurement::class, results))
+            if (makePlots.get())  container.add(
+
+                when (measurement) {
+
+                    is OutputMeasurement   -> OutputPlot(OCurve(length.get(), width.get(), FETMeasurement.EPSILON * dielConst.get() / thick.get(), results))
+                    is TransferMeasurement -> TransferPlot(TCurve(length.get(), width.get(), FETMeasurement.EPSILON * dielConst.get() / thick.get(), results))
+                    else                   -> Plot("Plot")
+
+                }
+
+            )
 
             scrollToEnd()
 

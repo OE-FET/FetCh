@@ -1,6 +1,5 @@
 package fetter.gui
 
-import jisa.control.ConfigStore
 import jisa.gui.Tabs
 
 object MainWindow : Tabs("FetCh - FET Characterisation Suite") {

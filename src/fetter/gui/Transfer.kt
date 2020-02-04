@@ -37,6 +37,8 @@ object Transfer : Grid("Transfer Curve", 1) {
 
     init {
 
+        symSDV.isVisible = false
+
         addAll(basic, Grid(2, sourceDrain, sourceGate))
         setGrowth(true, false)
         setIcon(Icon.TRANSISTOR)

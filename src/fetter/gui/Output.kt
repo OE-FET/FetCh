@@ -38,6 +38,8 @@ object Output : Grid("Output Curve", 1) {
 
     init {
 
+        symSGV.isVisible = false
+
         addAll(basic, Grid(2, sourceDrain, sourceGate))
         setGrowth(true, false)
         setIcon(Icon.RHEOSTAT)

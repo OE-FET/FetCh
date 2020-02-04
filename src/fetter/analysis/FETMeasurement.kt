@@ -2,7 +2,6 @@ package fetter.analysis
 
 import jisa.Util
 import jisa.experiment.ResultList
-import jisa.experiment.ResultTable
 import java.io.File
 import java.lang.IndexOutOfBoundsException
 import java.util.*
@@ -11,13 +10,31 @@ import kotlin.collections.LinkedHashMap
 
 class FETMeasurement(private val name: String, path: String) : Iterable<FETMeasurement.TPoint> {
 
-    private val transferCurves = LinkedHashMap<Double, ResultTable>()
-    private val outputCurves   = LinkedHashMap<Double, ResultTable>()
+    private val transferCurves = LinkedHashMap<Double, TCurve>()
+    private val outputCurves   = LinkedHashMap<Double, OCurve>()
     private val directory      = File(path)
     private val temperatures   = LinkedList<Double>()
-    private val attributes     = LinkedHashMap<String, String>()
+    private val attributes     = LinkedHashMap<String, Double>()
+    val length : Double
+    val width  : Double
+    val thick  : Double
+    val dielec : Double
 
     init {
+
+        val infoFile = File(Util.joinPath(path, "$name-info.txt"))
+
+        if (!infoFile.exists()) {
+            throw Exception("Cannot find device info for specified measurement")
+        }
+
+        infoFile.bufferedReader().run {
+            length = readLine().removePrefix("Length: ").toDoubleOrNull() ?: 40e-6
+            width  = readLine().removePrefix("Width: ").toDoubleOrNull() ?: 1000e-6
+            thick  = readLine().removePrefix("Dielectric Thickness: ").toDoubleOrNull() ?: 400e-9
+            dielec = readLine().removePrefix("Dielectric Constant: ").toDoubleOrNull() ?: 2.05
+            close()
+        }
 
         val files = directory.listFiles()
 
@@ -50,8 +67,8 @@ class FETMeasurement(private val name: String, path: String) : Iterable<FETMeasu
                     )
                 )
 
-                if (outputFile.exists()) outputCurves[t] = ResultList.loadFile(outputFile.absolutePath)
-                if (transferFile.exists()) transferCurves[t] = ResultList.loadFile(transferFile.absolutePath)
+                if (outputFile.exists())   outputCurves[t]   = OCurve(length, width, dielec * EPSILON / thick, ResultList.loadFile(outputFile.absolutePath))
+                if (transferFile.exists()) transferCurves[t] = TCurve(length, width, dielec * EPSILON / thick, ResultList.loadFile(transferFile.absolutePath))
 
             }
 
@@ -66,21 +83,21 @@ class FETMeasurement(private val name: String, path: String) : Iterable<FETMeasu
 
     fun hasTransferCurve(temperature: Double): Boolean = transferCurves.containsKey(temperature)
 
-    fun getOutputCurve(temperature: Double): ResultTable = outputCurves[temperature]
+    fun getOutputCurve(temperature: Double): OCurve = outputCurves[temperature]
         ?: throw IndexOutOfBoundsException("No output curve for that temperature exists")
 
-    fun getTransferCurve(temperature: Double): ResultTable = transferCurves[temperature]
+    fun getTransferCurve(temperature: Double): TCurve = transferCurves[temperature]
         ?: throw IndexOutOfBoundsException("No transfer curve for that temperature exists")
 
     fun hasAttribute(key: String): Boolean = attributes.containsKey(key)
 
-    fun getAttribute(key: String): String = attributes[key] ?: throw IndexOutOfBoundsException()
+    fun getAttribute(key: String): Double = attributes[key] ?: throw IndexOutOfBoundsException()
 
-    fun setAttribute(key: String, value: String) {
-        attributes[key] = value
+    fun setAttribute(key: String, value: Number) {
+        attributes[key] = value.toDouble()
     }
 
-    class TPoint(val temperature: Double, val output: ResultTable?, val transfer: ResultTable?)
+    class TPoint(val temperature: Double, val output: OCurve?, val transfer: TCurve?)
 
     override fun iterator(): Iterator<TPoint> = object : Iterator<TPoint> {
 
@@ -99,6 +116,10 @@ class FETMeasurement(private val name: String, path: String) : Iterable<FETMeasu
             )
         }
 
+    }
+
+    companion object {
+        const val EPSILON = 8.85418782e-12;
     }
 
 }
