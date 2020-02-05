@@ -39,7 +39,7 @@ class OutputPlot(data: OCurve) : Plot("Output Curve", "SD Voltage [V]", "Current
 
             val mobPlot = Plot("Mobility", "SD Voltage [V]", "Mobility [cm^2/Vs]")
             val fwdTable = Table("Forward Sweep", data.fwdMob)
-            val bwdTable = Table("Backward Sweep", data.fwdMob)
+            val bwdTable = Table("Backward Sweep", data.bwdMob)
 
             mobPlot.createSeries()
                 .showMarkers(false)

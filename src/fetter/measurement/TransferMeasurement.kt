@@ -1,5 +1,6 @@
 package fetter.measurement
 
+import fetter.gui.Configuration
 import jisa.Util
 import jisa.devices.SMU
 import jisa.devices.TMeter
@@ -9,14 +10,14 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 
-class TransferMeasurement(
-    val sdSMU: SMU,
-    val sgSMU: SMU,
-    val gdSMU: SMU?,
-    val fpp1: VMeter?,
-    val fpp2: VMeter?,
-    val tm: TMeter?
-) : Measurement() {
+class TransferMeasurement: Measurement() {
+
+    private var sdSMU : SMU? = null
+    private var sgSMU : SMU? = null
+    private var gdSMU : SMU? = null
+    private var fpp1  : VMeter? = null
+    private var fpp2  : VMeter? = null
+    private var tm    : TMeter? = null
 
     private var minVSD = 0.0
     private var maxVSD = 60.0
@@ -56,7 +57,29 @@ class TransferMeasurement(
         return this
     }
 
+    fun loadInstruments() {
+
+        val instruments = Configuration.getInstruments()
+
+        if (!instruments.hasSD || !instruments.hasSG) {
+            throw Exception("Source-Drain and Source-Gate SMUs must be configured first")
+        }
+
+        sdSMU = instruments.sdSMU!!
+        sgSMU = instruments.sgSMU!!
+        gdSMU = instruments.gdSMU
+        fpp1  = instruments.fpp1
+        fpp2  = instruments.fpp2
+        tm    = instruments.tm
+
+    }
+
     override fun run(results: ResultTable) {
+
+        loadInstruments()
+
+        val sdSMU = this.sdSMU!!
+        val sgSMU = this.sgSMU!!
 
         var sdVoltages = Range.linear(minVSD, maxVSD, numVSD)
         var sgVoltages = Range.linear(minVSG, maxVSG, numVSG)
@@ -113,13 +136,15 @@ class TransferMeasurement(
 
     override fun onFinish() {
 
-        sdSMU.turnOff()
-        sgSMU.turnOff()
+        sdSMU?.turnOff()
+        sgSMU?.turnOff()
         gdSMU?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
 
     }
+
+    override fun getName(): String = "Transfer Measurement"
 
     override fun getColumns(): Array<Col> {
 

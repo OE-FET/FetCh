@@ -1,60 +1,144 @@
 package fetter.gui
 
+import fetter.measurement.OutputMeasurement
+import fetter.measurement.TransferMeasurement
+import jisa.Util
+import jisa.devices.TC
 import jisa.enums.Icon
+import jisa.experiment.ActionQueue
+import jisa.gui.ActionQueueDisplay
 import jisa.gui.Fields
 import jisa.gui.Grid
 import jisa.maths.Range
 
-object Temperature : Grid("Temperature", 1) {
+object Temperature : Grid("Temperature", 2) {
 
-    val basic    = Fields("Temperature Set-Points")
-    val enabled  = basic.addCheckBox("Enabled", false)
+    val basic = Fields("Temperature Set-Points")
 
-    init { basic.addSeparator() }
+    val name = basic.addTextField("Sweep Name")
 
-    val minT     = basic.addDoubleField("Start [K]", 300.0)
-    val maxT     = basic.addDoubleField("Stop [K]", 50.0)
-    val numT     = basic.addIntegerField("No. Steps", 6)
+    init {
+        basic.addSeparator()
+    }
 
-    init { basic.addSeparator() }
+    val minT = basic.addDoubleField("Start [K]", 300.0)
+    val maxT = basic.addDoubleField("Stop [K]", 50.0)
+    val numT = basic.addIntegerField("No. Steps", 6)
+
+    init {
+        basic.addSeparator()
+    }
 
     val stabPerc = basic.addDoubleField("Stability Range [%]", 1.0)
     val stabTime = basic.addDoubleField("Stability Time [s]", 600.0)
 
+    val subQueue  = ActionQueue()
+    val names     = ArrayList<String>()
+    val queueList = ActionQueueDisplay("Sweep Measurements", subQueue)
+
     init {
 
         setGrowth(true, false)
-        add(basic)
+        addAll(basic, queueList)
         setIcon(Icon.SNOWFLAKE)
         basic.loadFromConfig("temp-basic", Settings)
-        enabled.setOnChange(this::updateEnabled)
-        updateEnabled()
 
-    }
+        queueList.addToolbarButton("Output") {
+            if (Output.askForMeasurement(subQueue)) names.add(Output.name.get())
+        }
 
-    fun updateEnabled() {
+        queueList.addToolbarButton("Transfer") {
+            if (Transfer.askForMeasurement(subQueue)) names.add(Transfer.name.get())
+        }
 
-        basic.setFieldsDisabled(!enabled.get())
-        enabled.isDisabled = false
+        queueList.addToolbarButton("Wait") {
+            if (Time.askWait(subQueue)) names.add("Wait")
+        }
 
     }
 
     fun disable(flag: Boolean) {
         basic.setFieldsDisabled(flag)
-        if (!flag) updateEnabled()
     }
 
-    val isEnabled: Boolean
-        get() = enabled.get()
+    fun askForSweep(queue: ActionQueue) {
 
+        name.set("Sweep${queue.size}")
+
+        if (showAndWait()) {
+
+            for (T in Range.linear(minT.get(), maxT.get(), numT.get())) {
+
+                queue.addAction("Change Temperature to $T K") {
+
+                    val tc = Configuration.tControl.get() ?: throw Exception("No temperature controller configured")
+
+                    tc.targetTemperature = T
+                    tc.useAutoHeater()
+                    tc.waitForStableTemperature(T, stabPerc.get(), (stabTime.get() * 1000.0).toLong())
+
+                }
+
+
+                var i = 0
+                for (action in subQueue) {
+
+                    val copy = action.copy()
+
+                    if (copy is ActionQueue.MeasureAction) {
+
+                        val mName = names[i++];
+
+                        copy.setBefore { copy.measurement.newResults("${Measure.baseFile}-${name.get()}-${T}K-$mName.csv") }
+                        copy.setAfter  { copy.measurement.results.finalise() }
+
+                    }
+
+                    queue.addAction(copy)
+                }
+
+            }
+
+        }
+
+    }
+
+    fun askForSingle(queue: ActionQueue) {
+
+        if (showAndWait()) {
+
+            for (T in Range.linear(minT.get(), maxT.get(), numT.get())) {
+
+                queue.addAction("Change Temperature to $T K") {
+
+                    val tc = Configuration.tControl.get() ?: throw Exception("No temperature controller configured")
+
+                    tc.targetTemperature = T
+                    tc.useAutoHeater()
+                    tc.waitForStableTemperature(T, stabPerc.get(), (stabTime.get() * 1000.0).toLong())
+
+                }
+
+
+            }
+
+        }
+
+    }
+
+    override fun showAndWait(): Boolean {
+        subQueue.clear()
+        names.clear()
+        return super.showAndWait()
+    }
 
     val values: Range<Double>
         get() = Range.linear(minT.get(), maxT.get(), numT.get())
 
-    val stabilityPercentage : Double
+    val stabilityPercentage: Double
         get() = stabPerc.get()
 
-    val stabilityTime : Long
+    val stabilityTime: Long
         get() = (stabTime.get() * 1000.0).toLong()
 
 }

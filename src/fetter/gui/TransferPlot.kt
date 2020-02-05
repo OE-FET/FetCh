@@ -38,7 +38,7 @@ class TransferPlot(data: TCurve) : Plot("Transfer Curve", "SG Voltage [V]", "Cur
 
             val mobPlot = Plot("Mobility", "SG Voltage [V]", "Mobility [cm^2/Vs]")
             val fwdTable = Table("Forward Sweep", data.fwdMob)
-            val bwdTable = Table("Backward Sweep", data.fwdMob)
+            val bwdTable = Table("Backward Sweep", data.bwdMob)
 
             mobPlot.createSeries()
                 .showMarkers(false)
