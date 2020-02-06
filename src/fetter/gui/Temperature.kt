@@ -79,19 +79,14 @@ object Temperature : Grid("Temperature", 2) {
 
                 }
 
-
-                var i = 0
                 for (action in subQueue) {
 
                     val copy = action.copy()
 
-                    if (copy is ActionQueue.MeasureAction) {
-
-                        val mName = names[i++];
-
-                        copy.setBefore { copy.measurement.newResults("${Measure.baseFile}-${name.get()}-${T}K-$mName.csv") }
-                        copy.setAfter  { copy.measurement.results.finalise() }
-
+                    if (action is ActionQueue.MeasureAction && copy is ActionQueue.MeasureAction) {
+                        copy.setResultsPath(action.resultPath.replace(Measure.baseFile, "${Measure.baseFile}-${name.get()}-${T}K"))
+                        copy.setBefore { Measure.showMeasurement(copy); Results.addMeasurement(copy); }
+                        copy.name = "${copy.name} (${name.get()} = $T K)"
                     }
 
                     queue.addAction(copy)

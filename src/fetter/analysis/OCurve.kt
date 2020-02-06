@@ -33,6 +33,8 @@ class OCurve(val length: Double, val width: Double, val capacitance: Double, val
 
         calculated = true
 
+        val dataCopy = data.filteredCopy { true }
+
         fwdMob.clear()
         bwdMob.clear()
 
@@ -41,7 +43,7 @@ class OCurve(val length: Double, val width: Double, val capacitance: Double, val
             val fwd = ResultList("V", "G", "I")
             val bwd = ResultList("V", "G", "I")
 
-            for ((gate, data) in data.split(SET_SG)) {
+            for ((gate, data) in dataCopy.split(SET_SG)) {
 
                 val fb = data.splitTwoWaySweep { it[SET_SD] }
 

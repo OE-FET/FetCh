@@ -1,19 +1,17 @@
 package fetter.gui
 
-import fetter.measurement.Instruments
 import fetter.measurement.OutputMeasurement
-import jisa.Util
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.experiment.Measurement
 import jisa.gui.Fields
 import jisa.gui.Grid
-import javax.swing.Action
+import jisa.gui.Table
 
 object Output : Grid("Output Curve", 1) {
 
     val basic = Fields("Basic Parameters")
-    val name =  basic.addTextField("Measurement Name", "")
+    val name = basic.addTextField("Measurement Name", "")
 
     init {
         basic.addSeparator()
@@ -58,21 +56,17 @@ object Output : Grid("Output Curve", 1) {
         sourceGate.setFieldsDisabled(flag)
     }
 
-    fun askForMeasurement(queue: ActionQueue) : Boolean {
+    fun askForMeasurement(queue: ActionQueue): Boolean {
 
         name.set("Output${queue.getMeasurementCount(OutputMeasurement::class.java) + 1}")
 
-        if (showAndWait()) {
-            val measurement = getMeasurement()
-            queue.addMeasurement(
-                name.get(),
-                measurement,
-                { measurement.newResults("${Measure.baseFile}-${name.get()}.csv") },
-                { measurement.results.finalise() }
-            )
-            return true
+        return if (showAndWait()) {
+            val action = queue.addMeasurement(name.get(), getMeasurement())
+            action.setResultsPath("${Measure.baseFile}-${name.get()}.csv")
+            action.setBefore { Measure.showMeasurement(action); Results.addMeasurement(action); }
+            true
         } else {
-            return false
+            false
         }
 
     }

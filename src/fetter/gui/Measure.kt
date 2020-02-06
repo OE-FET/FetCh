@@ -3,21 +3,16 @@ package fetter.gui
 import fetter.analysis.FETMeasurement
 import fetter.analysis.OCurve
 import fetter.analysis.TCurve
-import fetter.measurement.Instruments
+import fetter.gui.Measure.addToolbarButton
 import fetter.measurement.OutputMeasurement
 import fetter.measurement.TransferMeasurement
 import jisa.Util
-import jisa.devices.TC
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.experiment.Measurement
-import jisa.experiment.ResultTable
 import jisa.gui.*
 import java.io.File
 import java.lang.Exception
-import kotlin.collections.HashMap
-import kotlin.math.abs
-import kotlin.reflect.KClass
 
 object Measure : Grid("Measurement", 1) {
 
@@ -28,9 +23,6 @@ object Measure : Grid("Measurement", 1) {
     val cSection = Section("Current Measurement")
     val name = basic.addTextField("Name")
     val dir = basic.addDirectorySelect("Output Directory")
-
-    val baseFile: String
-        get() = Util.joinPath(dir.get(), name.get())
 
     init {
         basic.addSeparator()
@@ -48,10 +40,11 @@ object Measure : Grid("Measurement", 1) {
 
     val makeTables = basic.addCheckBox("Display Tables", true)
     val makePlots  = basic.addCheckBox("Display Plots", true)
-    val start      = basic.addButton("Start Measurement", this::runMeasurement)
 
     val toolbarStart = addToolbarButton("Start", this::runMeasurement)
     val toolbarStop = addToolbarButton("Stop", this::stopMeasurement)
+    val baseFile: String
+        get() = Util.joinPath(dir.get(), name.get())
 
     init {
         addToolbarSeparator()
@@ -64,15 +57,30 @@ object Measure : Grid("Measurement", 1) {
 
     init {
 
-        queueList.addToolbarButton("Output") { Output.askForMeasurement(queue) }
+        queueList.addToolbarButton("Add...") {
 
-        queueList.addToolbarButton("Transfer") { Transfer.askForMeasurement(queue) }
+            val result = GUI.choiceWindow(
+                "Add Action",
+                "Add Measurement/Action",
+                "",
+                "Output Measurement",
+                "Transfer Measurement",
+                "Change Temperature",
+                "Temperature Sweep",
+                "Wait"
+            )
 
-        queueList.addToolbarButton("Temperature") { Temperature.askForSingle(queue) }
+            when (result) {
 
-        queueList.addToolbarButton("Temperature Sweep") { Temperature.askForSweep(queue) }
+                0 -> Output.askForMeasurement(queue)
+                1 -> Transfer.askForMeasurement(queue)
+                2 -> Temperature.askForSingle(queue)
+                3 -> Temperature.askForSweep(queue)
+                4 -> Time.askWait(queue)
 
-        queueList.addToolbarButton("Wait") { Time.askWait(queue) }
+            }
+
+        }
 
         queueList.addToolbarButton("Clear") { queue.clear() }
 
@@ -81,13 +89,44 @@ object Measure : Grid("Measurement", 1) {
         setGrowth(true, false)
         setIcon(Icon.FLASK)
 
-        cSection.isVisible = false
-        addAll(cSection, Grid(2, basic, queueList), grid)
+        addAll(Grid(2, basic, queueList), grid)
 
         basic.loadFromConfig("measure-basic", Settings)
 
         dielectric.setOnChange(this::setDielectric)
         setDielectric()
+
+    }
+
+    fun showMeasurement(action: ActionQueue.MeasureAction) {
+
+        System.gc()
+
+        val table = Table("Data", action.data)
+        val plot  = when (action.measurement) {
+
+            is OutputMeasurement -> OutputPlot(
+                OCurve(
+                    length.get(),
+                    width.get(),
+                    FETMeasurement.EPSILON * dielConst.get() / thick.get(),
+                    action.data
+                )
+            )
+            is TransferMeasurement -> TransferPlot(
+                TCurve(
+                    length.get(),
+                    width.get(),
+                    FETMeasurement.EPSILON * dielConst.get() / thick.get(),
+                    action.data
+                )
+            )
+            else -> Plot("Unknown")
+
+        }
+
+        grid.clear()
+        grid.add(Grid(action.name, 2, table, plot))
 
     }
 
@@ -119,12 +158,15 @@ object Measure : Grid("Measurement", 1) {
 
         when (queue.start()) {
 
-            ActionQueue.Result.COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
+            ActionQueue.Result.COMPLETED -> GUI.infoAlert("Measurement sequence completed successfully")
             ActionQueue.Result.INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
-            ActionQueue.Result.ERROR       -> GUI.errorAlert("Error(s) were encountered during the measurement sequence")
-            else                           -> {}
+            ActionQueue.Result.ERROR -> GUI.errorAlert("Error(s) were encountered during the measurement sequence")
+            else -> {
+            }
 
         }
+
+        System.gc()
 
         disable(false)
 
@@ -182,7 +224,6 @@ object Measure : Grid("Measurement", 1) {
 
     private fun disable(flag: Boolean) {
 
-        start.isDisabled = flag
         toolbarStart.isDisabled = flag
         toolbarStop.isDisabled = !flag
 

@@ -8,7 +8,6 @@ import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.maths.functions.Function
 import jisa.maths.interpolation.Interpolation
-import java.lang.Exception
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -36,15 +35,17 @@ class TCurve(val length: Double, val width: Double, val capacitance: Double, val
         fwdMob.clear()
         bwdMob.clear()
 
+        val dataCopy = data.filteredCopy { true }
+
         try {
 
-            for ((drain, data) in data.split(SET_SD)) {
+            for ((drain, data) in dataCopy.split(SET_SD)) {
 
                 val fb = data.splitTwoWaySweep { it[SET_SG] }
 
                 val function: Function
-                val gradFwd:  Function?
-                val gradBwd:  Function?
+                val gradFwd: Function?
+                val gradBwd: Function?
 
                 if (abs(drain) < data.getMax { abs(it[SET_SG]) }) {
 

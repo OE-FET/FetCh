@@ -68,17 +68,13 @@ object Transfer : Grid("Transfer Curve", 1) {
 
         name.set("Transfer${queue.getMeasurementCount(TransferMeasurement::class.java) + 1}")
 
-        if (showAndWait()) {
-            val measurement = getMeasurement()
-            queue.addMeasurement(
-                name.get(),
-                measurement,
-                { measurement.newResults("${Measure.baseFile}-${name.get()}.csv") },
-                { measurement.results.finalise() }
-            )
-            return true
+        return if (showAndWait()) {
+            val action = queue.addMeasurement(name.get(), getMeasurement())
+            action.setResultsPath("${Measure.baseFile}-${name.get()}.csv")
+            action.setBefore { Measure.showMeasurement(action); Results.addMeasurement(action); }
+            true
         } else {
-            return false
+            false
         }
 
     }
