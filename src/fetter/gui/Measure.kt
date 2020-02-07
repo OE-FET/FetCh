@@ -12,7 +12,6 @@ import jisa.experiment.ActionQueue
 import jisa.experiment.Measurement
 import jisa.gui.*
 import java.io.File
-import java.lang.Exception
 
 object Measure : Grid("Measurement", 1) {
 
@@ -28,18 +27,18 @@ object Measure : Grid("Measurement", 1) {
         basic.addSeparator()
     }
 
-    val length     = basic.addDoubleField("Channel Length [m]")
-    val width      = basic.addDoubleField("Channel Width [m]")
-    val thick      = basic.addDoubleField("Dielectric Thickness [m]")
+    val length = basic.addDoubleField("Channel Length [m]")
+    val width = basic.addDoubleField("Channel Width [m]")
+    val thick = basic.addDoubleField("Dielectric Thickness [m]")
     val dielectric = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
-    val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
+    val dielConst = basic.addDoubleField("Dielectric Constant", 1.0)
 
     init {
         basic.addSeparator()
     }
 
     val makeTables = basic.addCheckBox("Display Tables", true)
-    val makePlots  = basic.addCheckBox("Display Plots", true)
+    val makePlots = basic.addCheckBox("Display Plots", true)
 
     val toolbarStart = addToolbarButton("Start", this::runMeasurement)
     val toolbarStop = addToolbarButton("Stop", this::stopMeasurement)
@@ -67,7 +66,8 @@ object Measure : Grid("Measurement", 1) {
                 "Transfer Measurement",
                 "Change Temperature",
                 "Temperature Sweep",
-                "Wait"
+                "Wait",
+                "Cancel"
             )
 
             when (result) {
@@ -89,7 +89,7 @@ object Measure : Grid("Measurement", 1) {
         setGrowth(true, false)
         setIcon(Icon.FLASK)
 
-        addAll(Grid(2, basic, queueList), grid)
+        addAll(Grid(2, basic, queueList), cSection, grid)
 
         basic.loadFromConfig("measure-basic", Settings)
 
@@ -102,31 +102,43 @@ object Measure : Grid("Measurement", 1) {
 
         System.gc()
 
-        val table = Table("Data", action.data)
-        val plot  = when (action.measurement) {
+        val grid = Grid(2)
 
-            is OutputMeasurement -> OutputPlot(
-                OCurve(
-                    length.get(),
-                    width.get(),
-                    FETMeasurement.EPSILON * dielConst.get() / thick.get(),
-                    action.data
+        if (makeTables.get()) {
+            val table = Table("Data", action.data)
+            grid.add(table)
+        }
+
+        if (makePlots.get()) {
+
+            val plot = when (action.measurement) {
+
+                is OutputMeasurement -> OutputPlot(
+                    OCurve(
+                        length.get(),
+                        width.get(),
+                        FETMeasurement.EPSILON * dielConst.get() / thick.get(),
+                        action.data
+                    )
                 )
-            )
-            is TransferMeasurement -> TransferPlot(
-                TCurve(
-                    length.get(),
-                    width.get(),
-                    FETMeasurement.EPSILON * dielConst.get() / thick.get(),
-                    action.data
+                is TransferMeasurement -> TransferPlot(
+                    TCurve(
+                        length.get(),
+                        width.get(),
+                        FETMeasurement.EPSILON * dielConst.get() / thick.get(),
+                        action.data
+                    )
                 )
-            )
-            else -> Plot("Unknown")
+                else -> Plot("Unknown")
+
+            }
+
+            grid.add(plot)
 
         }
 
-        grid.clear()
-        grid.add(Grid(action.name, 2, table, plot))
+        cSection.title = action.name
+        cSection.setElement(grid)
 
     }
 
@@ -155,6 +167,7 @@ object Measure : Grid("Measurement", 1) {
     private fun runMeasurement() {
 
         disable(true)
+        Results.clear()
 
         when (queue.start()) {
 

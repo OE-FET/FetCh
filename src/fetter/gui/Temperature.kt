@@ -63,7 +63,7 @@ object Temperature : Grid("Temperature", 2) {
 
     fun askForSweep(queue: ActionQueue) {
 
-        name.set("Sweep${queue.size}")
+        name.set("TSweep${queue.size}")
 
         if (showAndWait()) {
 

@@ -21,30 +21,43 @@ object Results : Grid("Results", 1) {
 
     fun addMeasurement(action: ActionQueue.MeasureAction) {
 
-        val table = Table("Data", action.data)
-        val plot  = when (action.measurement) {
 
-            is OutputMeasurement -> OutputPlot(
-                OCurve(
-                    Measure.length.get(),
-                    Measure.width.get(),
-                    FETMeasurement.EPSILON * Measure.dielConst.get() / Measure.thick.get(),
-                    action.data
+        val grid = Grid(2)
+
+        if (Measure.makeTables.get()) {
+            val table = Table("Data", action.data)
+            grid.add(table)
+        }
+
+        if (Measure.makePlots.get()) {
+
+            val plot = when (action.measurement) {
+
+                is OutputMeasurement -> OutputPlot(
+                    OCurve(
+                        Measure.length.get(),
+                        Measure.width.get(),
+                        FETMeasurement.EPSILON * Measure.dielConst.get() / Measure.thick.get(),
+                        action.data
+                    )
                 )
-            )
-            is TransferMeasurement -> TransferPlot(
-                TCurve(
-                    Measure.length.get(),
-                    Measure.width.get(),
-                    FETMeasurement.EPSILON * Measure.dielConst.get() / Measure.thick.get(),
-                    action.data
+                is TransferMeasurement -> TransferPlot(
+                    TCurve(
+                        Measure.length.get(),
+                        Measure.width.get(),
+                        FETMeasurement.EPSILON * Measure.dielConst.get() / Measure.thick.get(),
+                        action.data
+                    )
                 )
-            )
-            else -> Plot("Unknown")
+                else -> Plot("Unknown")
+
+            }
+
+            grid.add(plot)
 
         }
 
-        add(Section(action.name, Grid(action.name, 2, table, plot)))
+        add(Section(action.name, grid))
 
     }
 

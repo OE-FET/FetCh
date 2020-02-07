@@ -56,15 +56,13 @@ class OCurve(val length: Double, val width: Double, val capacitance: Double, val
 
                 if (data.numRows < 2) continue
 
-                val linFunction = Function { 1e4 * abs((length / (capacitance * width)) * (it / drain)) }
                 val linGrad     = Interpolation.interpolate1D(data.getColumns(1), data.getColumns(2).map { x -> abs(x) }).derivative()
                 val satGrad     = Interpolation.interpolate1D(data.getColumns(1), data.getColumns(2).map { x -> sqrt(abs(x)) }).derivative()
-                val satFunction = Function { 1e4 * 2.0 * it.pow(2) * length / (width * capacitance) }
 
                 for (gate in data.getUniqueValues(SET_SG).sorted()) {
 
-                    val linMobility = linFunction.value(linGrad.value(gate))
-                    val satMobility = satFunction.value(satGrad.value(gate))
+                    val linMobility = 1e4 * abs((length / (capacitance * width)) * (linGrad.value(gate) / drain))
+                    val satMobility = 1e4 * 2.0 * satGrad.value(gate).pow(2) * length / (width * capacitance)
 
                     val mobility = if (linMobility > satMobility) linMobility else satMobility
 
