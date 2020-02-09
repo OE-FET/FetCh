@@ -2,14 +2,14 @@
   <artifact type="jar" name="FETTER-8:jar">
     <output-path>$PROJECT_DIR$</output-path>
     <root id="archive" name="FETTER-8.jar">
-      <element id="module-output" name="FETTER" />
+      <element id="module-output" name="FetCh" />
       <element id="extracted-dir" path="$PROJECT_DIR$/JISA.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-reflect.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-test.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk7.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk8.jar" path-in-jar="/" />
-      <element id="file-copy" path="$PROJECT_DIR$/src/fetter/gui/fEt.png" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/org/oefet/fetch/gui/fEt.png" />
     </root>
   </artifact>
 </component>
