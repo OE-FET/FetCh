@@ -2,12 +2,10 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.devices.SMU
-import jisa.devices.TMeter
-import jisa.devices.VMeter
 import jisa.experiment.Col
 import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
-import org.oefet.fetch.gui.Configuration
+import org.oefet.fetch.gui.tabs.Configuration
 
 class VoltageHold : Measurement() {
 

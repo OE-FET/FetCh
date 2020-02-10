@@ -1,6 +1,6 @@
 package org.oefet.fetch
 
-import org.oefet.fetch.gui.MainWindow
+import org.oefet.fetch.gui.tabs.MainWindow
 import jisa.gui.Doc
 
 class Main;

@@ -1,6 +1,5 @@
 package org.oefet.fetch.measurement
 
-import org.oefet.fetch.gui.Configuration
 import jisa.Util
 import jisa.devices.SMU
 import jisa.devices.TMeter
@@ -63,9 +62,7 @@ class OutputMeasurement : Measurement() {
 
     }
 
-    fun loadInstruments() {
-
-        val instruments = Configuration.getInstruments()
+    fun loadInstruments(instruments: Instruments) {
 
         if (!instruments.hasSD || !instruments.hasSG) {
             throw Exception("Source-Drain and Source-Gate SMUs must be configured first")
@@ -81,8 +78,6 @@ class OutputMeasurement : Measurement() {
     }
 
     override fun run(results: ResultTable) {
-
-        loadInstruments()
 
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!

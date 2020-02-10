@@ -1,41 +1,105 @@
 package org.oefet.fetch.analysis
 
-import org.oefet.fetch.gui.SD_CURRENT
-import org.oefet.fetch.gui.SET_SD
-import org.oefet.fetch.gui.SET_SG
 import jisa.experiment.Col
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.maths.functions.Function
 import jisa.maths.interpolation.Interpolation
+import org.oefet.fetch.*
+import org.oefet.fetch.analysis.Curve.Companion.NON_USER_VARIABLES
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TCurve(val length: Double, val width: Double, val capacitance: Double, val data: ResultTable) {
+class TCurve(private val results: ResultTable) : Curve {
 
-    val fwdMob = ResultList(
+    val fwdMobTable = ResultList(
         Col("SG Voltage", "V"),
         Col("SD Voltage", "V"),
         Col("Mobility", "cm^2/Vs")
     )
 
-    val bwdMob = ResultList(
+    val bwdMobTable = ResultList(
         Col("SG Voltage", "V"),
         Col("SD Voltage", "V"),
         Col("Mobility", "cm^2/Vs")
     )
 
-    var calculated = false
+    override val fwdMob: ResultTable
+        get() {
+            if (!calculated) calculate()
+            return fwdMobTable
+        }
+
+    override val bwdMob: ResultTable
+        get() {
+            if (!calculated) calculate()
+            return bwdMobTable
+        }
+
+    override val data: ResultTable get() = results
+
+    private var calculated = false
+
+    override val temperature: Double
+    override val variables = HashMap<String, Double>()
+
+    override val name: String
+    override val length: Double
+    override val width: Double
+    override val thick: Double
+    override val permittivity: Double
+
+    init {
+
+        if (results.getAttribute("type") != "transfer") throw Exception("That file does not contain a transfer measurement")
+
+        var temp: Double? = null
+
+        for ((name, value) in results.attributes) {
+
+            val endsWithK         = value.endsWith(" K")
+            val isNonUser         = name in NON_USER_VARIABLES
+            val isDouble          = value.toDoubleOrNull() != null
+            val isDoubleWithUnit  = value.split(" ")[0].toDoubleOrNull() != null
+
+            when {
+
+                endsWithK        -> temp = value.removeSuffix(" K").toDouble()
+                isNonUser        -> {}
+                isDouble         -> variables[name] = value.toDouble()
+                isDoubleWithUnit -> variables[name] = value.split(" ")[0].toDouble()
+
+            }
+
+        }
+
+        if (temp == null) {
+            temp = results.getMean(TEMPERATURE)
+        }
+
+        temperature = temp
+
+        name   = results.getAttribute("name")
+        length = results.getAttribute("length").removeSuffix(" m").toDouble()
+        width  = results.getAttribute("width").removeSuffix(" m").toDouble()
+        thick  = results.getAttribute("dielectricThickness").removeSuffix(" m").toDouble()
+        permittivity = results.getAttributeDouble("dielectricPermittivity")
+
+    }
 
     fun calculate() {
 
+        val capacitance = permittivity * EPSILON / thick
+
         calculated = true
 
-        fwdMob.clear()
-        bwdMob.clear()
+        fwdMobTable.clear()
+        bwdMobTable.clear()
 
-        val dataCopy = data.filteredCopy { true }
+        val dataCopy = results.filteredCopy { true }
 
         try {
 
@@ -85,8 +149,8 @@ class TCurve(val length: Double, val width: Double, val capacitance: Double, val
 
                 for (gate in data.getUniqueValues(SET_SG).sorted()) {
 
-                    if (gradFwd != null) fwdMob.addData(gate, drain, function.value(gradFwd.value(gate)))
-                    if (gradBwd != null) bwdMob.addData(gate, drain, function.value(gradBwd.value(gate)))
+                    if (gradFwd != null) fwdMobTable.addData(gate, drain, function.value(gradFwd.value(gate)))
+                    if (gradBwd != null) bwdMobTable.addData(gate, drain, function.value(gradBwd.value(gate)))
 
                 }
 
