@@ -8,7 +8,7 @@ object Repeat : Grid("Repeat", 2) {
 
     val basic = Fields("Repeat Parameters")
     val name  = basic.addTextField("Repeat Name")
-    val times = basic.addIntegerField("Repeat Count")
+    val times = basic.addIntegerField("Repeat Count", 5)
 
     val subQueue  = ActionQueue()
     val queueList = FetChQueue("Repeat Actions", subQueue)
@@ -16,11 +16,13 @@ object Repeat : Grid("Repeat", 2) {
     init {
         addAll(basic, queueList)
         queueList.addRepeat.isDisabled = true
+        basic.linkConfig(Settings.repeatBasic)
     }
 
     fun askForRepeat(queue: ActionQueue) {
 
-        name.set("Repeat${queue.size}")
+        name.set("N${if (queue.size > 0) queue.size.toString() else ""}")
+        subQueue.clear()
 
         if (showAndWait()) {
 
@@ -39,8 +41,10 @@ object Repeat : Grid("Repeat", 2) {
                             )
                         )
 
-                        copy.setBefore { Measure.showMeasurement(copy); Results.addMeasurement(copy); }
-                        copy.name = "${copy.name} (${name.get()} = $it)"
+                        copy.setBefore { Measure.processMeasurement(copy); Results.addMeasurement(copy); }
+                        copy.name = "${action.name} (${name.get()} = $it)"
+
+                        copy.setAttribute(name.get(), it)
                     }
 
                     queue.addAction(copy)

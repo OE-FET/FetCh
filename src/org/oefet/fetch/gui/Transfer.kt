@@ -6,6 +6,7 @@ import jisa.experiment.ActionQueue
 import jisa.experiment.Measurement
 import jisa.gui.Fields
 import jisa.gui.Grid
+import org.oefet.fetch.measurement.OutputMeasurement
 
 object Transfer : Grid("Transfer Curve", 1) {
 
@@ -41,12 +42,9 @@ object Transfer : Grid("Transfer Curve", 1) {
         setGrowth(true, false)
         setIcon(Icon.TRANSISTOR)
 
-        basic.loadFromConfig("tf-basic", Settings)
-        sourceDrain.loadFromConfig("tf-sd", Settings)
-        sourceGate.loadFromConfig("tf-sg", Settings)
-
-//        enabled.setOnChange(this::updateEnabled)
-//        updateEnabled()
+        basic.linkConfig(Settings.transferBasic)
+        sourceDrain.linkConfig(Settings.transferSD)
+        sourceGate.linkConfig(Settings.transferSG)
 
     }
 
@@ -64,12 +62,14 @@ object Transfer : Grid("Transfer Curve", 1) {
 
     fun askForMeasurement(queue: ActionQueue) : Boolean {
 
-        name.set("Transfer${queue.getMeasurementCount(TransferMeasurement::class.java) + 1}")
+        val count = queue.getMeasurementCount(TransferMeasurement::class.java)
+        name.set("Transfer${if (count > 0) count.toString() else ""}")
 
         return if (showAndWait()) {
             val action = queue.addMeasurement(name.get(), getMeasurement())
             action.setResultsPath("${Measure.baseFile}-${name.get()}.csv")
-            action.setBefore { Measure.showMeasurement(action); Results.addMeasurement(action); }
+            action.setAttribute("type", "transfer")
+            action.setBefore { Measure.processMeasurement(action); Results.addMeasurement(action); }
             true
         } else {
             false

@@ -11,13 +11,13 @@ import jisa.gui.Section
  */
 object Configuration : Grid("Configuration", 1) {
 
-    val ground      = Configurator.SMU("Ground Channel (for SPA)", "gndu", Settings, Connections)
-    val sourceDrain = Configurator.SMU("Source-Drain Channel", "sdSMU", Settings, Connections)
-    val sourceGate  = Configurator.SMU("Source-Gate Channel", "sgSMU", Settings, Connections)
-    val fourPP1     = Configurator.VMeter("Four Point Probe Channel 1", "fpp1", Settings, Connections)
-    val fourPP2     = Configurator.VMeter("Four Point Probe Channel 2", "fpp2", Settings, Connections)
-    val tControl    = Configurator.TC("Temperature Control", "tc", Settings, Connections)
-    val tMeter      = Configurator.TMeter("Temperature Sensor", "tm", Settings, Connections)
+    val ground      = Configurator.SMU("Ground Channel (for SPA)", Settings.groundConfig, Connections)
+    val sourceDrain = Configurator.SMU("Source-Drain Channel", Settings.sourceDrainConfig, Connections)
+    val sourceGate  = Configurator.SMU("Source-Gate Channel", Settings.sourceGateConfig, Connections)
+    val fourPP1     = Configurator.VMeter("Four Point Probe Channel 1", Settings.fourPP1Config, Connections)
+    val fourPP2     = Configurator.VMeter("Four Point Probe Channel 2", Settings.fourPP2Config, Connections)
+    val tControl    = Configurator.TC("Temperature Control", Settings.tControlConfig, Connections)
+    val tMeter      = Configurator.TMeter("Temperature Sensor", Settings.tMeterConfig, Connections)
 
     init {
 

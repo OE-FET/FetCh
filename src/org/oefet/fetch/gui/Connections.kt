@@ -5,7 +5,7 @@ import jisa.devices.VMeter
 import jisa.enums.Icon
 import jisa.gui.ConnectorGrid
 
-object Connections : ConnectorGrid("Connections", Settings) {
+object Connections : ConnectorGrid("Connections", Settings.instruments) {
 
     val smu1    = addSMU("SMU 1")
     val smu2    = addSMU("SMU 2")

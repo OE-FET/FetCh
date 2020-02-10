@@ -42,9 +42,9 @@ object Output : Grid("Output Curve", 1) {
         setGrowth(true, false)
         setIcon(Icon.RHEOSTAT)
 
-        basic.loadFromConfig("op-basic", Settings)
-        sourceDrain.loadFromConfig("op-sd", Settings)
-        sourceGate.loadFromConfig("op-sg", Settings)
+        basic.linkConfig(Settings.outputBasic)
+        sourceDrain.linkConfig(Settings.outputSD)
+        sourceGate.linkConfig(Settings.outputSG)
 
 
     }
@@ -57,12 +57,14 @@ object Output : Grid("Output Curve", 1) {
 
     fun askForMeasurement(queue: ActionQueue): Boolean {
 
-        name.set("Output${queue.getMeasurementCount(OutputMeasurement::class.java) + 1}")
+        val count = queue.getMeasurementCount(OutputMeasurement::class.java)
+        name.set("Output${if (count > 0) count.toString() else ""}")
 
         return if (showAndWait()) {
             val action = queue.addMeasurement(name.get(), getMeasurement())
             action.setResultsPath("${Measure.baseFile}-${name.get()}.csv")
-            action.setBefore { Measure.showMeasurement(action); Results.addMeasurement(action); }
+            action.setAttribute("type", "transfer")
+            action.setBefore { Measure.processMeasurement(action); Results.addMeasurement(action); }
             true
         } else {
             false

@@ -21,6 +21,9 @@ object Hold : Grid("Voltage Hold", 1) {
 
     init {
         addAll(basic, Grid(2, sdConf, sgConf))
+        basic.linkConfig(Settings.holdBasic)
+        sdConf.linkConfig(Settings.holdSD)
+        sgConf.linkConfig(Settings.holdSG)
     }
 
     fun askForHold(queue: ActionQueue) {

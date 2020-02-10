@@ -36,7 +36,7 @@ object Temperature : Grid("Temperature", 2) {
         setGrowth(true, false)
         addAll(basic, queueList)
         setIcon(Icon.SNOWFLAKE)
-        basic.loadFromConfig("temp-basic", Settings)
+        basic.linkConfig(Settings.tempBasic)
 
         queueList.addTSweep.isDisabled = true
         queueList.addTChange.isDisabled = true
@@ -49,13 +49,13 @@ object Temperature : Grid("Temperature", 2) {
 
     fun askForSweep(queue: ActionQueue) {
 
-        name.set("TSweep${queue.size}")
+        name.set("T${if (queue.size > 0) queue.size.toString() else ""}")
 
         if (showAndWait()) {
 
             for (T in Range.linear(minT.get(), maxT.get(), numT.get())) {
 
-                queue.addAction("Change temperature to $T K") {
+                queue.addAction("Change Temperature to $T K") {
 
                     val tc = Configuration.tControl.get() ?: throw Exception("No temperature controller configured")
 
@@ -78,8 +78,11 @@ object Temperature : Grid("Temperature", 2) {
                             )
                         )
 
-                        copy.setBefore { Measure.showMeasurement(copy); Results.addMeasurement(copy); }
-                        copy.name = "${copy.name} (${name.get()} = $T K)"
+                        copy.setBefore { Measure.processMeasurement(copy); Results.addMeasurement(copy); }
+                        copy.name = "${action.name} (${name.get()} = $T K)"
+
+                        copy.setAttribute(name.get(), "$T K")
+
                     }
 
                     queue.addAction(copy)

@@ -42,21 +42,18 @@ object Measure : Grid("Measurement", 1) {
 
         addAll(Grid(2, basic, queueList), cSection)
 
-        basic.loadFromConfig("measure-basic", Settings)
+        basic.linkConfig(Settings.measureBasic)
 
         dielectric.setOnChange(this::setDielectric)
         setDielectric()
 
     }
 
-    fun showMeasurement(action: ActionQueue.MeasureAction) {
+    fun processMeasurement(action: ActionQueue.MeasureAction) {
 
         System.gc()
 
-        val grid = Grid(2)
-
         val table = Table("Data", action.data)
-        grid.add(table)
 
 
         val plot = when (action.measurement) {
@@ -83,12 +80,14 @@ object Measure : Grid("Measurement", 1) {
 
         }
 
-        grid.add(plot)
-
-
+        action.data.setAttribute("name", name.get())
+        action.data.setAttribute("length", "${length.get()} m")
+        action.data.setAttribute("width", "${width.get()} m")
+        action.data.setAttribute("dielectricThickness", "${thick.get()} m")
+        action.data.setAttribute("dielectricPermittivity", dielConst.get())
 
         cSection.title = action.name
-        cSection.setElement(grid)
+        cSection.setElement(Grid(2, table, plot))
 
     }
 
