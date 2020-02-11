@@ -11,8 +11,10 @@ import jisa.gui.Grid
 import jisa.gui.Plot
 import jisa.gui.Section
 import jisa.gui.Table
+import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.gui.elements.TransferPlot
+import org.oefet.fetch.measurement.FPPMeasurement
 
 object Results : Grid("Results", 1) {
 
@@ -33,6 +35,8 @@ object Results : Grid("Results", 1) {
             is OutputMeasurement -> OutputPlot(OCurve(action.data))
 
             is TransferMeasurement -> TransferPlot(TCurve(action.data))
+
+            is FPPMeasurement -> FPPPlot(action.data)
 
             else -> Plot("Unknown")
 

@@ -7,6 +7,8 @@ object Settings : ConfigFile("FetCh") {
     val instruments       = subBlock("instruments")
     val measureBasic      = subBlock("measureBasic")
     val repeatBasic       = subBlock("repeatBasic")
+    val condBasic         = subBlock("condBasic")
+    val condSD            = subBlock("condSD")
     val outputBasic       = subBlock("outputBasic")
     val outputSD          = subBlock("outputSD")
     val outputSG          = subBlock("outputSG")

@@ -1,6 +1,5 @@
 package org.oefet.fetch.gui.tabs
 
-import org.oefet.fetch.analysis.MeasurementFile
 import org.oefet.fetch.analysis.OCurve
 import org.oefet.fetch.analysis.TCurve
 import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
@@ -11,15 +10,17 @@ import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.*
 import org.oefet.fetch.Settings
+import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.gui.elements.TransferPlot
+import org.oefet.fetch.measurement.FPPMeasurement
 
-object Measure : Grid("Measurement", 1) {
+object Measure : Grid("Measurement", 2) {
 
     val queue     = ActionQueue()
     val queueList = FetChQueue("Measurements", queue)
-    val basic     = Fields("Data Output Settings")
+    val basic     = Fields("Measurement Parameters")
     val cSection  = Section("Current Measurement")
     val name      = basic.addTextField("Name")
     val dir       = basic.addDirectorySelect("Output Directory")
@@ -27,8 +28,10 @@ object Measure : Grid("Measurement", 1) {
     init { basic.addSeparator() }
 
     val length     = basic.addDoubleField("Channel Length [m]")
+    val fppLength  = basic.addDoubleField("FPP Separation [m]")
     val width      = basic.addDoubleField("Channel Width [m]")
-    val thick      = basic.addDoubleField("Dielectric Thickness [m]")
+    val cThick     = basic.addDoubleField("Channel Thickness [m]")
+    val dThick     = basic.addDoubleField("Dielectric Thickness [m]")
     val dielectric = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
     val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
 
@@ -37,6 +40,9 @@ object Measure : Grid("Measurement", 1) {
 
     val baseFile: String get() = Util.joinPath(dir.get(), name.get())
 
+    var table: Table? = null
+    var plot: Plot? = null
+
     init {
 
         toolbarStop.isDisabled = true
@@ -44,11 +50,7 @@ object Measure : Grid("Measurement", 1) {
         setGrowth(true, false)
         setIcon(Icon.FLASK)
 
-        addAll(Grid(2,
-            basic,
-            queueList
-        ), cSection
-        )
+        addAll(basic, queueList)
 
         basic.linkConfig(Settings.measureBasic)
 
@@ -61,8 +63,9 @@ object Measure : Grid("Measurement", 1) {
 
         action.setAttribute("name", name.get())
         action.setAttribute("length", "${length.get()} m")
+        action.setAttribute("fppSeparation", "${fppLength.get()} m")
         action.setAttribute("width", "${width.get()} m")
-        action.setAttribute("dielectricThickness", "${thick.get()} m")
+        action.setAttribute("dielectricThickness", "${dThick.get()} m")
         action.setAttribute("dielectricPermittivity", dielConst.get())
 
         val table = Table("Data", action.data)
@@ -74,12 +77,16 @@ object Measure : Grid("Measurement", 1) {
 
             is TransferMeasurement -> TransferPlot(TCurve(action.data))
 
+            is FPPMeasurement -> FPPPlot(action.data)
+
             else -> Plot("Unknown")
 
         }
 
-        cSection.title = action.name
-        cSection.setElement(Grid(2, table, plot))
+        removeAll(this.table, this.plot)
+        this.table = table
+        this.plot  = plot
+        addAll(table, plot)
 
     }
 

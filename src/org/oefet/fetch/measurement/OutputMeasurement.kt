@@ -1,6 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
+import jisa.Util.runRegardless
 import jisa.devices.SMU
 import jisa.devices.TMeter
 import jisa.devices.VMeter
@@ -126,7 +127,8 @@ class OutputMeasurement : Measurement() {
                     sdSMU.voltage, sdSMU.current,
                     sgSMU.voltage, sgSMU.current,
                     fpp1?.voltage ?: 0.0, fpp2?.voltage ?: 0.0,
-                    tm?.temperature ?: 0.0
+                    tm?.temperature ?: 0.0,
+                    gdSMU?.current ?: 0.0
                 )
 
             }
@@ -137,11 +139,11 @@ class OutputMeasurement : Measurement() {
 
     override fun onFinish() {
 
-        sdSMU?.turnOff()
-        sgSMU?.turnOff()
-        gdSMU?.turnOff()
-        fpp1?.turnOff()
-        fpp2?.turnOff()
+        runRegardless { sdSMU?.turnOff() }
+        runRegardless { sgSMU?.turnOff() }
+        runRegardless { gdSMU?.turnOff() }
+        runRegardless { fpp1?.turnOff() }
+        runRegardless { fpp2?.turnOff() }
 
     }
 
@@ -158,7 +160,8 @@ class OutputMeasurement : Measurement() {
             Col("SG Current", "A"),
             Col("Four Point Probe 1", "V"),
             Col("Four Point Probe 2", "V"),
-            Col("Temperature", "K")
+            Col("Temperature", "K"),
+            Col("Ground Current", "A")
         )
 
     }
