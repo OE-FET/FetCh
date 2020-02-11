@@ -8,7 +8,6 @@ import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.gui.tabs.Results
 import org.oefet.fetch.measurement.FPPMeasurement
-import org.oefet.fetch.measurement.OutputMeasurement
 
 object FPP : Grid("FPP Conductivity") {
 
@@ -31,7 +30,7 @@ object FPP : Grid("FPP Conductivity") {
         sourceDrain.addSeparator()
     }
 
-    val symSDV = sourceDrain.addCheckBox("Sweep Both Ways", true)
+    val symSDI = sourceDrain.addCheckBox("Sweep Both Ways", true)
 
     init {
         setIcon(Icon.VOLTMETER)
@@ -46,7 +45,7 @@ object FPP : Grid("FPP Conductivity") {
         if (showAndWait()) {
 
             val measurement = FPPMeasurement()
-                .configureCurrent(minSDI.get(), maxSDI.get(), numSDI.get())
+                .configureCurrent(minSDI.get(), maxSDI.get(), numSDI.get(), symSDI.get())
                 .configureTiming(intTime.get(), delTime.get())
 
             val name        = name.get()

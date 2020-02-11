@@ -22,6 +22,7 @@ class FPPMeasurement : Measurement() {
     private var minI    = 0.0
     private var maxI    = 10e-6
     private var numI    = 11
+    private var symI     = false
     private var intTime = 20e-3
     private var delTime   = Duration.ofSeconds(1).toMillis()
 
@@ -35,10 +36,11 @@ class FPPMeasurement : Measurement() {
 
     }
 
-    fun configureCurrent(minI: Double, maxI: Double, numI: Int) : FPPMeasurement {
+    fun configureCurrent(minI: Double, maxI: Double, numI: Int, symI: Boolean) : FPPMeasurement {
         this.minI = minI
         this.maxI = maxI
         this.numI = numI
+        this.symI = symI
         return this
     }
 
@@ -77,7 +79,7 @@ class FPPMeasurement : Measurement() {
         fpp2?.turnOn()
 
         // Sweep current
-        for (current in Range.linear(minI, maxI, numI)) {
+        for (current in if (symI) Range.linear(minI, maxI, numI).mirror() else Range.linear(minI, maxI, numI)) {
 
             sdSMU.current = current
             sleep(delTime)

@@ -19,7 +19,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
     init { addButton.addSeparator() }
 
     val addVHold    = addButton.addItem("Hold Voltage")         { Hold.ask(queue) }
-    val addTChange  = addButton.addItem("Temperature Change")   { TemperatureSweep.askForSingle(queue) }
+    val addTChange  = addButton.addItem("Temperature Change")   { TemperatureChange.ask(queue) }
 
     init { addButton.addSeparator() }
 

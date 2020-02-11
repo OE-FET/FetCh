@@ -10,7 +10,7 @@ import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
 
-object TemperatureSweep : Grid("Temperature", 2) {
+object TemperatureSweep : Grid("Temperature Sweep", 2) {
 
     val basic = Fields("Temperature Set-Points")
     val name  = basic.addTextField("Sweep Name")

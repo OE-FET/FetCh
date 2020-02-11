@@ -19,6 +19,7 @@ object Settings : ConfigFile("FetCh") {
     val holdSD            = subBlock("holdSD")
     val holdSG            = subBlock("holdSG")
     val tempBasic         = subBlock("tempBasic")
+    val tempSingleBasic   = subBlock("tempSingleBasic")
     val groundConfig      = subBlock("groundConfig")
     val sourceDrainConfig = subBlock("sourceDrainConfig")
     val sourceGateConfig  = subBlock("sourceGateConfig")
