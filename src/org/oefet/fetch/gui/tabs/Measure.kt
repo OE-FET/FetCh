@@ -63,6 +63,7 @@ object Measure : Grid("Measurement", 2) {
         action.setAttribute("length", "${length.get()} m")
         action.setAttribute("fppSeparation", "${fppLength.get()} m")
         action.setAttribute("width", "${width.get()} m")
+        action.setAttribute("channelThickness", "${cThick.get()} m")
         action.setAttribute("dielectricThickness", "${dThick.get()} m")
         action.setAttribute("dielectricPermittivity", dielConst.get())
 

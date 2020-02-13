@@ -7,7 +7,6 @@ import jisa.maths.functions.Function
 import jisa.maths.interpolation.Interpolation
 import org.oefet.fetch.*
 import org.oefet.fetch.analysis.Curve.Companion.NON_USER_VARIABLES
-import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.pow
@@ -49,7 +48,9 @@ class TCurve(private val results: ResultTable) : Curve {
     override val name: String
     override val length: Double
     override val width: Double
-    override val thick: Double
+    override val fppSeparation: Double
+    override val channelThickness: Double
+    override val dielectricThickness: Double
     override val permittivity: Double
 
     init {
@@ -82,17 +83,19 @@ class TCurve(private val results: ResultTable) : Curve {
 
         temperature = temp
 
-        name   = results.getAttribute("name")
-        length = results.getAttribute("length").removeSuffix(" m").toDouble()
-        width  = results.getAttribute("width").removeSuffix(" m").toDouble()
-        thick  = results.getAttribute("dielectricThickness").removeSuffix(" m").toDouble()
-        permittivity = results.getAttributeDouble("dielectricPermittivity")
+        name                = results.getAttribute("name")
+        length              = results.getAttribute("length").removeSuffix(" m").toDouble()
+        width               = results.getAttribute("width").removeSuffix(" m").toDouble()
+        fppSeparation       = results.getAttribute("fppSeparation").removeSuffix(" m").toDouble()
+        channelThickness    = results.getAttribute("channelThickness").removeSuffix(" m").toDouble()
+        dielectricThickness = results.getAttribute("dielectricThickness").removeSuffix(" m").toDouble()
+        permittivity        = results.getAttributeDouble("dielectricPermittivity")
 
     }
 
     fun calculate() {
 
-        val capacitance = permittivity * EPSILON / thick
+        val capacitance = permittivity * EPSILON / dielectricThickness
 
         calculated = true
 

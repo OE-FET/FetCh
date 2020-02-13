@@ -5,6 +5,7 @@ import java.util.*
 
 interface Curve {
 
+
     val fwdMob: ResultTable
 
     val bwdMob: ResultTable
@@ -17,7 +18,11 @@ interface Curve {
 
     val width: Double
 
-    val thick: Double
+    val channelThickness: Double
+
+    val dielectricThickness: Double
+
+    val fppSeparation: Double
 
     val permittivity: Double
 
@@ -40,7 +45,7 @@ interface Curve {
     }
 
     companion object {
-        val NON_USER_VARIABLES = arrayOf("type", "length", "width", "dielectricThickness", "dielectricPermittivity", "name")
+        val NON_USER_VARIABLES = arrayOf("type", "length", "width", "channelThickness", "fppSeparation", "dielectricThickness", "dielectricPermittivity", "name")
     }
 
 }

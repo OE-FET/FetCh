@@ -213,11 +213,13 @@ object Analysis : Grid("Analysis", 1) {
         curves += curve
 
         val info   = Display("Information")
-        val temp   = info.addParameter("Temperature", "${curve.temperature} K")
-        val length = info.addParameter("Channel Length", "${curve.length} m")
-        val width  = info.addParameter("Channel Width", "${curve.width} m")
-        val thick  = info.addParameter("Dielectric Thickness", "${curve.thick} m")
-        val perm   = info.addParameter("Dielectric Permittivity", curve.permittivity)
+        info.addParameter("Temperature", "${curve.temperature} K")
+        info.addParameter("Channel Length", "${curve.length} m")
+        info.addParameter("Channel Width", "${curve.width} m")
+        info.addParameter("Channel Thickness", "${curve.channelThickness} m")
+        info.addParameter("FPP Separation", "${curve.fppSeparation} m")
+        info.addParameter("Dielectric Thickness", "${curve.dielectricThickness} m")
+        info.addParameter("Dielectric Permittivity", curve.permittivity)
 
         for ((name, value) in curve.variables) info.addParameter(name, value)
 
@@ -234,11 +236,13 @@ object Analysis : Grid("Analysis", 1) {
         curves += curve
 
         val info = Display("Information")
-        val temp = info.addParameter("Temperature", "${curve.temperature} K")
-        val length = info.addParameter("Channel Length", "${curve.length} m")
-        val width = info.addParameter("Channel Width", "${curve.width} m")
-        val thick = info.addParameter("Dielectric Thickness", "${curve.thick} m")
-        val perm = info.addParameter("Dielectric Permittivity", curve.permittivity)
+        info.addParameter("Temperature", "${curve.temperature} K")
+        info.addParameter("Channel Length", "${curve.length} m")
+        info.addParameter("Channel Width", "${curve.width} m")
+        info.addParameter("Channel Thickness", "${curve.channelThickness} m")
+        info.addParameter("FPP Separation", "${curve.fppSeparation} m")
+        info.addParameter("Dielectric Thickness", "${curve.dielectricThickness} m")
+        info.addParameter("Dielectric Permittivity", curve.permittivity)
 
         for ((name, value) in curve.variables) info.addParameter(name, value)
 
