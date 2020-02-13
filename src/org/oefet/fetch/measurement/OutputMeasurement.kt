@@ -126,9 +126,9 @@ class OutputMeasurement : Measurement() {
                     vSD, vSG,
                     sdSMU.voltage, sdSMU.current,
                     sgSMU.voltage, sgSMU.current,
-                    fpp1?.voltage ?: 0.0, fpp2?.voltage ?: 0.0,
-                    tm?.temperature ?: 0.0,
-                    gdSMU?.current ?: 0.0
+                    fpp1?.voltage ?: Double.NaN, fpp2?.voltage ?: Double.NaN,
+                    tm?.temperature ?: Double.NaN,
+                    gdSMU?.current ?: Double.NaN
                 )
 
             }
