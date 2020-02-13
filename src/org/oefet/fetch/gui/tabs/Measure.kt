@@ -10,11 +10,9 @@ import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.*
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.elements.FPPPlot
-import org.oefet.fetch.gui.elements.FetChQueue
-import org.oefet.fetch.gui.elements.OutputPlot
-import org.oefet.fetch.gui.elements.TransferPlot
+import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.measurement.FPPMeasurement
+import org.oefet.fetch.measurement.SyncMeasurement
 
 object Measure : Grid("Measurement", 2) {
 
@@ -78,6 +76,8 @@ object Measure : Grid("Measurement", 2) {
             is TransferMeasurement -> TransferPlot(TCurve(action.data))
 
             is FPPMeasurement -> FPPPlot(action.data)
+
+            is SyncMeasurement -> SyncPlot(action.data)
 
             else -> Plot("Unknown")
 

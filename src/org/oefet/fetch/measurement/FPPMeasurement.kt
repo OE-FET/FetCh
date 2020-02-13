@@ -15,6 +15,7 @@ class FPPMeasurement : Measurement() {
 
     private var gdSMU : SMU?    = null
     private var sdSMU : SMU?    = null
+    private var sgSMU : SMU?    = null
     private var fpp1  : VMeter? = null
     private var fpp2  : VMeter? = null
     private var tm    : TMeter? = null
@@ -22,13 +23,16 @@ class FPPMeasurement : Measurement() {
     private var minI    = 0.0
     private var maxI    = 10e-6
     private var numI    = 11
-    private var symI     = false
+    private var symI    = false
+    private var holdG   = false
+    private var gateV   = 50.0
     private var intTime = 20e-3
-    private var delTime   = Duration.ofSeconds(1).toMillis()
+    private var delTime = Duration.ofSeconds(1).toMillis()
 
     fun loadInstruments(instruments: Instruments) {
 
         sdSMU = instruments.sdSMU
+        sgSMU = instruments.sgSMU
         gdSMU = instruments.gdSMU
         fpp1  = instruments.fpp1
         fpp2  = instruments.fpp2
@@ -50,33 +54,60 @@ class FPPMeasurement : Measurement() {
         return this
     }
 
+    fun configureGate(hold: Boolean, voltage: Double) : FPPMeasurement {
+        holdG = hold
+        gateV = voltage
+        return this
+    }
+
     override fun run(results: ResultTable) {
 
-        val sdSMU = sdSMU
-        val fpp1  = fpp1
+        val errors = ArrayList<String>()
 
-        if (sdSMU == null || fpp1 == null) throw Exception("SD and FPP1 channels are not configured")
+        if (sdSMU == null) {
+            errors += "SD channel not configured"
+        }
+
+        if (fpp1 == null) {
+            errors += "FPP channel not configured"
+        }
+
+        if (holdG && sgSMU == null) {
+            errors += "SG channel not configured"
+        }
+
+        if (errors.isNotEmpty()) throw Exception(errors.joinToString(", "))
+
+        val sdSMU = sdSMU!!
+        val fpp1  = fpp1!!
+        val gdSMU = gdSMU
+        val sgSMU = if (holdG) sgSMU else null
+        val fpp2  = fpp2
 
         // Turn everything off before starting
         gdSMU?.turnOff()
         sdSMU.turnOff()
+        sgSMU?.turnOff()
         fpp1.turnOff()
         fpp2?.turnOff()
 
         gdSMU?.integrationTime = intTime
         sdSMU.integrationTime  = intTime
+        sgSMU?.integrationTime = intTime
         fpp1.integrationTime   = intTime
         fpp2?.integrationTime  = intTime
 
         // Configure all channel voltages/currents
         gdSMU?.voltage = 0.0
-        sdSMU.current = minI
+        sgSMU?.voltage = gateV
+        sdSMU.current  = minI
 
         // Enable all channels
         gdSMU?.turnOn()
         sdSMU.turnOn()
         fpp1.turnOn()
         fpp2?.turnOn()
+        sgSMU?.turnOn()
 
         // Sweep current
         for (current in if (symI) Range.linear(minI, maxI, numI).mirror() else Range.linear(minI, maxI, numI)) {
@@ -85,12 +116,12 @@ class FPPMeasurement : Measurement() {
             sleep(delTime)
 
             results.addData(
-                sdSMU.current,
-                sdSMU.voltage,
+                sdSMU.voltage, sdSMU.current,
+                sgSMU?.voltage ?: Double.NaN, sgSMU?.current ?: Double.NaN,
                 fpp1.voltage,
                 fpp2?.voltage ?: 0.0,
-                tm?.temperature ?: 0.0,
-                gdSMU?.current ?: 0.0
+                tm?.temperature ?: Double.NaN,
+                gdSMU?.current ?: Double.NaN
             )
 
         }
@@ -113,8 +144,10 @@ class FPPMeasurement : Measurement() {
     }
 
     override fun getColumns(): Array<Col> = arrayOf(
-        Col("SD Current", "A"),
         Col("SD Voltage", "V"),
+        Col("SD Current", "A"),
+        Col("SG Voltage", "V"),
+        Col("SG Current", "A"),
         Col("FPP 1 Voltage", "V"),
         Col("FPP 2 Voltage", "V"),
         Col("FPP Voltage", "V") { abs( it[FPP2_VOLTAGE] - it[FPP1_VOLTAGE]) },
@@ -125,13 +158,15 @@ class FPPMeasurement : Measurement() {
     override fun onInterrupt() {}
 
     companion object {
-        const val SD_CURRENT     = 0
-        const val SD_VOLTAGE     = 1
-        const val FPP1_VOLTAGE   = 2
-        const val FPP2_VOLTAGE   = 3
-        const val FPP_VOLTAGE    = 4
-        const val TEMPERATURE    = 5
-        const val GROUND_CURRENT = 6;
+        const val SD_VOLTAGE     = 0
+        const val SD_CURRENT     = 1
+        const val SG_VOLTAGE     = 2
+        const val SG_CURRENT     = 3
+        const val FPP1_VOLTAGE   = 4
+        const val FPP2_VOLTAGE   = 5
+        const val FPP_VOLTAGE    = 6
+        const val TEMPERATURE    = 7
+        const val GROUND_CURRENT = 8
     }
 
 }

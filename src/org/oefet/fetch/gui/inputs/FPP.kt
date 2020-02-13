@@ -4,12 +4,13 @@ import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.Fields
 import jisa.gui.Grid
+import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.gui.tabs.Results
 import org.oefet.fetch.measurement.FPPMeasurement
 
-object FPP : Grid("FPP Conductivity") {
+object FPP : Grid("FPP Conductivity", 1) {
 
     val basic = Fields("Basic Parameters")
     val name = basic.addTextField("Measurement Name", "")
@@ -26,15 +27,24 @@ object FPP : Grid("FPP Conductivity") {
     val maxSDI = sourceDrain.addDoubleField("Stop [A]", 10e-6)
     val numSDI = sourceDrain.addIntegerField("No. Steps", 11)
 
-    init {
-        sourceDrain.addSeparator()
-    }
+    init { sourceDrain.addSeparator() }
 
     val symSDI = sourceDrain.addCheckBox("Sweep Both Ways", true)
 
+    val sourceGate = Fields("Source-Gate Parameters")
+    val hold       = sourceGate.addCheckBox("Use Gate", false)
+    val gate       = sourceGate.addDoubleField("Gate Voltage [V]", 0.0)
+
     init {
         setIcon(Icon.VOLTMETER)
-        addAll(basic, sourceDrain)
+        addAll(basic, Grid(2, sourceDrain, sourceGate))
+        basic.linkConfig(Settings.fppBasic)
+        sourceDrain.linkConfig(Settings.fppSD)
+        sourceGate.linkConfig(Settings.fppSG)
+
+        gate.isDisabled = !hold.get()
+        hold.setOnChange { gate.isDisabled = !hold.get() }
+
     }
 
     fun ask(queue: ActionQueue) {
@@ -46,6 +56,7 @@ object FPP : Grid("FPP Conductivity") {
 
             val measurement = FPPMeasurement()
                 .configureCurrent(minSDI.get(), maxSDI.get(), numSDI.get(), symSDI.get())
+                .configureGate(hold.get(), gate.get())
                 .configureTiming(intTime.get(), delTime.get())
 
             val name        = name.get()

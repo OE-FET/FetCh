@@ -162,7 +162,7 @@ class TransferMeasurement : Measurement() {
 
     override fun onInterrupt() {
 
-        Util.errLog.println("Output measurement interrupted.")
+        Util.errLog.println("Transfer measurement interrupted.")
 
     }
 

@@ -50,8 +50,8 @@ class FPPPlot(data: ResultTable) : Plot("FPP Conductivity", "Drain Current [A]",
             val width     = Measure.width.get()
             val thickness = Measure.cThick.get()
 
-            val fit = data.linearFit(FPP_VOLTAGE, SD_CURRENT)
-            val cond = fit.gradient * (length / (width * thickness)) * 1e4
+            val fit  = data.linearFit(FPP_VOLTAGE, SD_CURRENT)
+            val cond = fit.gradient * (length / (width * thickness)) / 100
 
             GUI.infoAlert("Conductivity = %e S/cm".format(cond))
 

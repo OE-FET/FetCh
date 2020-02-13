@@ -14,6 +14,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     val addOutput   = addButton.addItem("Output Measurement")   { Output.ask(queue) }
     val addTransfer = addButton.addItem("Transfer Measurement") { Transfer.ask(queue) }
+    val addSync     = addButton.addItem("Synced Voltage Measurement") { Sync.ask(queue) }
     val addFPP      = addButton.addItem("FPP Conductivity Measurement") { FPP.ask(queue) }
 
     init { addButton.addSeparator() }
