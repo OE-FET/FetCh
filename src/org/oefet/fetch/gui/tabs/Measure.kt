@@ -146,8 +146,7 @@ object Measure : Grid("Measurement", 2) {
         toolbarStop.isDisabled = !flag
 
         basic.setFieldsDisabled(flag)
-
-        setDielectric()
+        if (!flag) setDielectric()
 
     }
 

@@ -19,7 +19,7 @@ import kotlin.collections.HashSet
 
 object Analysis : Grid("Analysis", 1) {
 
-    private val addFileButton = addToolbarButton("Add File...") { addFile() }
+    private val addFileButton   = addToolbarButton("Add File...") { addFile() }
     private val addFolderButton = addToolbarButton("Add Folder...") { addFolder() }
 
     init {
@@ -28,10 +28,11 @@ object Analysis : Grid("Analysis", 1) {
 
     private val clearButton = addToolbarButton("Clear") { clearMeasurements() }
 
-    private val curves = LinkedList<Curve>();
-    private val dispGrid = Grid(1)
+    private val curves    = LinkedList<Curve>();
+    private val dispGrid  = Grid(1)
     private val sgPlotter = Fields("Mobility vs Gate Voltage")
-    private val sgTitle = sgPlotter.addTextField("Title", "Mobility vs Gate Voltage")
+    private val sgTitle   = sgPlotter.addTextField("Title", "Mobility vs Gate Voltage")
+
     init { sgPlotter.addButton("Plot") { makeSGPlot() } }
 
     private val tPlotter = Fields("Mobility vs Temperature")
@@ -99,9 +100,9 @@ object Analysis : Grid("Analysis", 1) {
         plot.createSeries()
             .watch(plotData, 0, 1)
             .split(2 , "SD = %s V")
-            .showMarkers(false)
+            .showLine(false)
 
-        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
+        plot.setPointOrdering(Plot.Sort.X_AXIS)
 
         plot.addSaveButton("Save Plot")
         plot.addToolbarButton("Save Data") {
@@ -136,10 +137,15 @@ object Analysis : Grid("Analysis", 1) {
     fun addFolder() {
 
 
-        val prog = Progress("Loading")
-        prog.title = "Loading Files"
-        prog.setStatus("Please Wait...")
-        prog.setProgress(-1.0)
+        val prog = Doc("Loading")
+
+
+        prog.addText(" ".repeat(100))
+        prog.addHeading("Loading Files")
+            .setAlignment(Doc.Align.CENTRE)
+        prog.addText("Please Wait...")
+            .setAlignment(Doc.Align.CENTRE)
+        prog.addText(" ".repeat(100))
 
         try {
 
@@ -147,7 +153,7 @@ object Analysis : Grid("Analysis", 1) {
 
             prog.show()
 
-            for (file in folder.listFiles().sorted()) {
+            for (file in folder.listFiles()!!.sorted()) {
 
                 try {
 
@@ -206,19 +212,18 @@ object Analysis : Grid("Analysis", 1) {
 
         curves += curve
 
-        val info = Display("Information")
-        val temp = info.addParameter("Temperature", "${curve.temperature} K")
+        val info   = Display("Information")
+        val temp   = info.addParameter("Temperature", "${curve.temperature} K")
         val length = info.addParameter("Channel Length", "${curve.length} m")
-        val width = info.addParameter("Channel Width", "${curve.length} m")
-        val thick = info.addParameter("Dielectric Thickness", "${curve.thick} m")
-        val perm = info.addParameter("Dielectric Permittivity", curve.permittivity)
+        val width  = info.addParameter("Channel Width", "${curve.width} m")
+        val thick  = info.addParameter("Dielectric Thickness", "${curve.thick} m")
+        val perm   = info.addParameter("Dielectric Permittivity", curve.permittivity)
 
         for ((name, value) in curve.variables) info.addParameter(name, value)
 
         val plot = OutputPlot(curve)
         val grid = Grid(1, Grid(2, info, plot), Table("Data", curve.data))
-        val sect =
-            Section("Output Measurement (${curve.name}) (${curve.variableString})", grid).apply { isExpanded = false }
+        val sect = Section("Output Measurement (${curve.name}) (${curve.variableString})", grid).apply { isExpanded = false }
 
         dispGrid.add(sect)
 
@@ -231,7 +236,7 @@ object Analysis : Grid("Analysis", 1) {
         val info = Display("Information")
         val temp = info.addParameter("Temperature", "${curve.temperature} K")
         val length = info.addParameter("Channel Length", "${curve.length} m")
-        val width = info.addParameter("Channel Width", "${curve.length} m")
+        val width = info.addParameter("Channel Width", "${curve.width} m")
         val thick = info.addParameter("Dielectric Thickness", "${curve.thick} m")
         val perm = info.addParameter("Dielectric Permittivity", curve.permittivity)
 

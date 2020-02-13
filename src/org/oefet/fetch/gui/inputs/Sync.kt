@@ -1,6 +1,5 @@
 package org.oefet.fetch.gui.inputs
 
-import org.oefet.fetch.measurement.TransferMeasurement
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.Fields
@@ -61,7 +60,7 @@ object Sync : Grid("Synced Curve", 1) {
 
     fun ask(queue: ActionQueue) : Boolean {
 
-        val count = queue.getMeasurementCount(TransferMeasurement::class.java)
+        val count = queue.getMeasurementCount(SyncMeasurement::class.java)
         name.set("Sync${if (count > 0) count.toString() else ""}")
 
         if (showAndWait()) {
