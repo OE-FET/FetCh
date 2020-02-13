@@ -134,6 +134,7 @@ class FPPMeasurement : Measurement() {
 
         runRegardless { gdSMU?.turnOff() }
         runRegardless { sdSMU?.turnOff() }
+        runRegardless { sgSMU?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
 

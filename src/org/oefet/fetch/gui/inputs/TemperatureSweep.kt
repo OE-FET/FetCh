@@ -55,7 +55,6 @@ object TemperatureSweep : Grid("Temperature Sweep", 2) {
         if (showAndWait()) {
 
             val name = name.get()
-            val base = Measure.baseFile
 
             for (T in Range.linear(minT.get(), maxT.get(), numT.get())) {
 
