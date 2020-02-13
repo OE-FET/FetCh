@@ -13,10 +13,7 @@ object Repeat : Grid("Repeat", 2) {
     val times = basic.addIntegerField("Repeat Count", 5)
 
     val subQueue  = ActionQueue()
-    val queueList = FetChQueue(
-        "Repeat Actions",
-        subQueue
-    )
+    val queueList = FetChQueue("Repeat Actions", subQueue)
 
     init {
         addAll(
@@ -24,6 +21,7 @@ object Repeat : Grid("Repeat", 2) {
             queueList
         )
         queueList.addRepeat.isDisabled = true
+        queueList.addTSweep.isDisabled = true
         basic.linkConfig(Settings.repeatBasic)
     }
 

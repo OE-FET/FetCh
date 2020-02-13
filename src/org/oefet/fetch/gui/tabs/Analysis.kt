@@ -57,7 +57,7 @@ object Analysis : Grid("Analysis", 1) {
         for (curve in curves) set.add(curve.temperature)
 
         if (set.size > 1) {
-            series.split({ Combination(it[2], it[3]) }, { "SD = ${it[2]}, T = ${it[3]}" })
+            series.split({ Combination(it[2], it[3]) }, { "SD = ${it[2]} V\tT = ${it[3]} K" })
         } else {
             series.split(2, "SD = %s V")
         }
