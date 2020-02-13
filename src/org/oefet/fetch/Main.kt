@@ -11,4 +11,5 @@ fun main() {
     Splash.show()
     MainWindow.show()
     Splash.close()
+
 }

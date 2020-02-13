@@ -14,15 +14,9 @@ object TemperatureChange : Grid("Temperature Change", 1) {
 
     val basic = Fields("Temperature Set-Points")
 
-    init {
-        basic.addSeparator()
-    }
-
     val temp = basic.addDoubleField("Temperature [K]", 300.0)
 
-    init {
-        basic.addSeparator()
-    }
+    init { basic.addSeparator() }
 
     val stabPerc = basic.addDoubleField("Stability Range [%]", 1.0)
     val stabTime = basic.addDoubleField("Stability Time [s]", 600.0)
