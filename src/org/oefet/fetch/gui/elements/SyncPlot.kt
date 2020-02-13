@@ -15,14 +15,18 @@ class SyncPlot(data: ResultTable) : Plot("Synced Voltage Curve", "Voltage [V]", 
     init {
 
         useMouseCommands(true)
-        setYAxisType(AxisType.LINEAR)
+        setYAxisType(AxisType.LOGARITHMIC)
         setPointOrdering(Sort.ORDER_ADDED)
 
         createSeries()
+            .setName("Drain")
+            .setColour(Colour.CORNFLOWERBLUE)
             .showMarkers(false)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SD_CURRENT]) })
 
         createSeries()
+            .setName("Gate")
+            .setColour(Colour.ORANGERED)
             .showMarkers(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
