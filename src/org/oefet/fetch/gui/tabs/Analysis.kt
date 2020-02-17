@@ -77,18 +77,17 @@ object Analysis : Grid("Analysis", 1) {
 
         plot.useMouseCommands(true)
 
-        plot.show()
-
         for (curve in curves) {
 
             for (mob in arrayOf(curve.fwdMob.flippedCopy(), curve.bwdMob)) {
 
-                for (row in mob) plotData.addData(row[SG_VOLTAGE], row[MOBILITY], row[SD_VOLTAGE], curve.temperature)
+                for (row in mob) plotData.addData(row[SG_VOLTAGE], row[MOBILITY], row[SD_VOLTAGE], if (curve.temperature.isFinite()) curve.temperature else -1.0)
 
             }
 
         }
 
+        plot.show()
 
     }
 
@@ -120,6 +119,8 @@ object Analysis : Grid("Analysis", 1) {
 
         val tempData = ResultList("SG", "SD", "M")
         for (curve in curves) {
+
+            if (!curve.temperature.isFinite()) continue
 
             for (mob in arrayOf(curve.fwdMob.flippedCopy(), curve.bwdMob)) {
 

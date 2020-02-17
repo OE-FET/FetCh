@@ -24,6 +24,8 @@ object Settings : ConfigFile("FetCh") {
     val holdBasic         = subBlock("holdBasic")
     val holdSD            = subBlock("holdSD")
     val holdSG            = subBlock("holdSG")
+    val stressBasic       = subBlock("stressBasic")
+    val stressInterval    = subBlock("stressInterval")
     val tempBasic         = subBlock("tempBasic")
     val tempSingleBasic   = subBlock("tempSingleBasic")
     val groundConfig      = subBlock("groundConfig")

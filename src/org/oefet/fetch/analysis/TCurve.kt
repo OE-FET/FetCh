@@ -57,9 +57,17 @@ class TCurve(private val results: ResultTable) : Curve {
 
         if (results.getAttribute("type") != "transfer") throw Exception("That file does not contain a transfer measurement")
 
+        val vars = results.attributes
+
+        for (name in NON_USER_VARIABLES) {
+            if (!vars.containsKey(name)) {
+                throw Exception("That file is missing information.")
+            }
+        }
+
         var temp: Double? = null
 
-        for ((name, value) in results.attributes) {
+        for ((name, value) in vars) {
 
             val endsWithK         = value.endsWith(" K")
             val isNonUser         = name in NON_USER_VARIABLES
@@ -77,12 +85,7 @@ class TCurve(private val results: ResultTable) : Curve {
 
         }
 
-        if (temp == null) {
-            temp = results.getMean(TEMPERATURE)
-        }
-
-        temperature = temp
-
+        temperature         = temp ?: results.getMean(TEMPERATURE)
         name                = results.getAttribute("name")
         length              = results.getAttribute("length").removeSuffix(" m").toDouble()
         width               = results.getAttribute("width").removeSuffix(" m").toDouble()
@@ -114,21 +117,22 @@ class TCurve(private val results: ResultTable) : Curve {
                 val gradFwd: Function?
                 val gradBwd: Function?
 
+                val vGFwd = fb.forward.getColumns(SET_SG)
+                val iDFwd = fb.forward.getColumns(SD_CURRENT)
+                val vGBwd = fb.backward.getColumns(SET_SG)
+                val iDBwd = fb.backward.getColumns(SD_CURRENT)
+
                 if (abs(drain) < data.getMax { abs(it[SET_SG]) }) {
 
                     gradFwd = if (fb.forward.numRows > 1) {
-                        Interpolation.interpolate1D(
-                            fb.forward.getColumns(SET_SG),
-                            fb.forward.getColumns(SD_CURRENT).map { x -> abs(x) }
-                        ).derivative()
+
+                        Interpolation.interpolate1D(vGFwd, iDFwd.map { x -> abs(x) }).derivative()
+
                     } else null
 
                     gradBwd = if (fb.backward.numRows > 1) {
 
-                        Interpolation.interpolate1D(
-                            fb.backward.getColumns(SET_SG),
-                            fb.backward.getColumns(SD_CURRENT).map { x -> abs(x) }
-                        ).derivative()
+                        Interpolation.interpolate1D(vGBwd, iDFwd.map { x -> abs(x) }).derivative()
 
                     } else null
 
@@ -136,15 +140,13 @@ class TCurve(private val results: ResultTable) : Curve {
 
                 } else {
 
-                    gradFwd = if (fb.forward.numRows > 1) Interpolation.interpolate1D(
-                        fb.forward.getColumns(SET_SG),
-                        fb.forward.getColumns(SD_CURRENT).map { x -> sqrt(abs(x)) }
-                    ).derivative() else null
+                    gradFwd = if (fb.forward.numRows > 1) {
+                        Interpolation.interpolate1D(vGFwd, iDFwd.map { x -> sqrt(abs(x)) }).derivative()
+                    } else null
 
-                    gradBwd = if (fb.backward.numRows > 1) Interpolation.interpolate1D(
-                        fb.backward.getColumns(SET_SG),
-                        fb.backward.getColumns(SD_CURRENT).map { x -> sqrt(abs(x)) }
-                    ).derivative() else null
+                    gradBwd = if (fb.backward.numRows > 1) {
+                        Interpolation.interpolate1D(vGBwd, iDBwd.map { x -> sqrt(abs(x)) }).derivative()
+                    } else null
 
                     function = Function { 1e4 * 2.0 * it.pow(2) * length / (width * capacitance) }
 

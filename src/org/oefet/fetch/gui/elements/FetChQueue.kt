@@ -25,6 +25,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
     init { addButton.addSeparator() }
 
     val addTSweep   = addButton.addItem("Temperature Sweep")    { TemperatureSweep.ask(queue) }
+    val addStress   = addButton.addItem("Stress")               { Stress.ask(queue) }
     val addRepeat   = addButton.addItem("Repeat")               { Repeat.ask(queue) }
 
     val clearQueue  = addToolbarButton("Clear") {

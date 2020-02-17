@@ -45,7 +45,18 @@ interface Curve {
     }
 
     companion object {
-        val NON_USER_VARIABLES = arrayOf("type", "length", "width", "channelThickness", "fppSeparation", "dielectricThickness", "dielectricPermittivity", "name")
+
+        val NON_USER_VARIABLES = arrayOf(
+            "type",
+            "length",
+            "width",
+            "channelThickness",
+            "fppSeparation",
+            "dielectricThickness",
+            "dielectricPermittivity",
+            "name"
+        )
+
     }
 
 }

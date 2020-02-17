@@ -3,12 +3,13 @@ package org.oefet.fetch.analysis
 import jisa.experiment.Col
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
-import jisa.maths.functions.Function
 import jisa.maths.interpolation.Interpolation
 import org.oefet.fetch.*
+import org.oefet.fetch.analysis.Curve.Companion.NON_USER_VARIABLES
 import kotlin.Exception
 import kotlin.collections.HashMap
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -57,14 +58,22 @@ class OCurve(private val results: ResultTable) : Curve {
 
         if (results.getAttribute("type") != "output") throw Exception("That file does not contain an output measurement")
 
+        val vars = results.attributes
+
+        for (name in NON_USER_VARIABLES) {
+            if (!vars.containsKey(name)) {
+                throw Exception("That file is missing information.")
+            }
+        }
+
         var temp: Double? = null
 
-        for ((name, value) in results.attributes) {
+        for ((name, value) in vars) {
 
-            val endsWithK         = value.endsWith(" K")
-            val isNonUser         = name in Curve.NON_USER_VARIABLES
-            val isDouble          = value.toDoubleOrNull() != null
-            val isDoubleWithUnit  = value.split(" ")[0].toDoubleOrNull() != null
+            val endsWithK        = value.endsWith(" K")
+            val isNonUser        = name in NON_USER_VARIABLES
+            val isDouble         = value.toDoubleOrNull() != null
+            val isDoubleWithUnit = value.split(" ")[0].toDoubleOrNull() != null
 
             when {
 
@@ -77,12 +86,7 @@ class OCurve(private val results: ResultTable) : Curve {
 
         }
 
-        if (temp == null) {
-            temp = results.getMean(TEMPERATURE)
-        }
-
-        temperature = temp
-
+        temperature         = temp ?: results.getMean(TEMPERATURE)
         name                = results.getAttribute("name")
         length              = results.getAttribute("length").removeSuffix(" m").toDouble()
         width               = results.getAttribute("width").removeSuffix(" m").toDouble()
@@ -107,6 +111,9 @@ class OCurve(private val results: ResultTable) : Curve {
 
             val fwd = ResultList("V", "G", "I")
             val bwd = ResultList("V", "G", "I")
+            val SDV = 0
+            val SGV = 1
+            val SDI = 2
 
             for ((gate, data) in dataCopy.split(SET_SG)) {
 
@@ -117,59 +124,43 @@ class OCurve(private val results: ResultTable) : Curve {
 
             }
 
-            for ((drain, data) in fwd.split(0)) {
+            for ((drain, data) in fwd.split(SDV)) {
 
                 if (data.numRows < 2) continue
 
-                val linGrad = Interpolation
-                    .interpolate1D(data.getColumns(1), data.getColumns(2).map { x -> abs(x) })
-                    .derivative()
+                val vG      = data.getColumns(SGV)
+                val iD      = data.getColumns(SDI)
+                val linGrad = Interpolation.interpolate1D(vG, iD.map { x -> abs(x) }).derivative()
+                val satGrad = Interpolation.interpolate1D(vG, iD.map { x -> sqrt(abs(x)) }).derivative()
 
-                val satGrad = Interpolation
-                    .interpolate1D(data.getColumns(1), data.getColumns(2).map { x -> sqrt(abs(x)) })
-                    .derivative()
-
-                for (gate in data.getUniqueValues(SET_SG).sorted()) {
+                for (gate in data.getUniqueValues(SGV).sorted()) {
 
                     val linMobility = 1e4 * abs((length / (capacitance * width)) * (linGrad.value(gate) / drain))
                     val satMobility = 1e4 * 2.0 * satGrad.value(gate).pow(2) * length / (width * capacitance)
+                    val mobility    = max(linMobility, satMobility)
 
-                    val mobility = if (linMobility > satMobility) linMobility else satMobility
-
-                    if (mobility.isFinite()) fwdMobTable.addData(
-                        gate,
-                        drain,
-                        mobility
-                    )
+                    if (mobility.isFinite()) fwdMobTable.addData(gate, drain, mobility)
 
                 }
 
             }
 
-            for ((drain, data) in bwd.split(0)) {
+            for ((drain, data) in bwd.split(SDV)) {
 
                 if (data.numRows < 2) continue
 
-                val linFunction = Function { 1e4 * abs((length / (capacitance * width)) * (it / drain)) }
-                val linGrad =
-                    Interpolation.interpolate1D(data.getColumns(1), data.getColumns(2).map { x -> abs(x) }).derivative()
-                val satGrad =
-                    Interpolation.interpolate1D(data.getColumns(1), data.getColumns(2).map { x -> sqrt(abs(x)) })
-                        .derivative()
-                val satFunction = Function { 1e4 * 2.0 * it.pow(2) * length / (width * capacitance) }
+                val vG      = data.getColumns(SGV)
+                val iD      = data.getColumns(SDI)
+                val linGrad = Interpolation.interpolate1D(vG, iD.map { x -> abs(x) }).derivative()
+                val satGrad = Interpolation.interpolate1D(vG, iD.map { x -> sqrt(abs(x)) }).derivative()
 
-                for (gate in data.getUniqueValues(SET_SG).sorted()) {
+                for (gate in data.getUniqueValues(SGV).sorted()) {
 
-                    val linMobility = linFunction.value(linGrad.value(gate))
-                    val satMobility = satFunction.value(satGrad.value(gate))
+                    val linMobility = 1e4 * abs((length / (capacitance * width)) * (linGrad.value(gate) / drain))
+                    val satMobility = 1e4 * 2.0 * satGrad.value(gate).pow(2) * length / (width * capacitance)
+                    val mobility    = max(linMobility, satMobility)
 
-                    val mobility = if (linMobility > satMobility) linMobility else satMobility
-
-                    if (mobility.isFinite()) bwdMobTable.addData(
-                        gate,
-                        drain,
-                        mobility
-                    )
+                    if (mobility.isFinite()) bwdMobTable.addData(gate, drain, mobility)
 
                 }
 
@@ -185,7 +176,7 @@ class OCurve(private val results: ResultTable) : Curve {
     companion object {
         const val SG_VOLTAGE = 0
         const val SD_VOLTAGE = 1
-        const val MOBILITY = 2
+        const val MOBILITY   = 2
     }
 
 }
