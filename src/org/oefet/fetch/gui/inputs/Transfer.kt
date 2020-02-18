@@ -8,7 +8,6 @@ import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.gui.tabs.Results
 
 object Transfer : Grid("Transfer Curve", 1) {
 
@@ -84,7 +83,6 @@ object Transfer : Grid("Transfer Curve", 1) {
             action.setBefore {
                 (it.measurement as TransferMeasurement).loadInstruments(Configuration.getInstruments())
                 Measure.display(it)
-                Results.add(it)
             }
 
             return true

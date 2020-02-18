@@ -8,7 +8,6 @@ import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.gui.tabs.Results
 
 object Output : Grid("Output Curve", 1) {
 
@@ -79,7 +78,6 @@ object Output : Grid("Output Curve", 1) {
             action.setBefore {
                 (it.measurement as OutputMeasurement).loadInstruments(Configuration.getInstruments())
                 Measure.display(it)
-                Results.add(it)
             }
 
             return true

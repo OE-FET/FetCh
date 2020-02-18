@@ -8,7 +8,6 @@ object MainWindow : Tabs("FetCh - FET Characterisation Suite") {
     init {
         addAll(
             Measure,
-            Results,
             Analysis,
             Connections,
             Configuration

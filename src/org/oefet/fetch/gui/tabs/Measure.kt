@@ -72,15 +72,11 @@ object Measure : Grid("Measurement", 2) {
 
         val plot = when (action.measurement) {
 
-            is OutputMeasurement -> OutputPlot(OCurve(action.data))
-
+            is OutputMeasurement   -> OutputPlot(OCurve(action.data))
             is TransferMeasurement -> TransferPlot(TCurve(action.data))
-
-            is FPPMeasurement -> FPPPlot(action.data)
-
-            is SyncMeasurement -> SyncPlot(action.data)
-
-            else -> Plot("Unknown")
+            is FPPMeasurement      -> FPPPlot(action.data)
+            is SyncMeasurement     -> SyncPlot(action.data)
+            else                   -> Plot("Unknown")
 
         }
 
@@ -121,7 +117,6 @@ object Measure : Grid("Measurement", 2) {
         }
 
         disable(true)
-        Results.clear()
 
         when (queue.start()) {
 

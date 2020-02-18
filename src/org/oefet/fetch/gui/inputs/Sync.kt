@@ -7,7 +7,6 @@ import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.gui.tabs.Results
 import org.oefet.fetch.measurement.SyncMeasurement
 
 object Sync : Grid("Synced Curve", 1) {
@@ -15,9 +14,7 @@ object Sync : Grid("Synced Curve", 1) {
     val basic = Fields("Basic Parameters")
     val name = basic.addTextField("Measurement Name", "")
 
-    init {
-        basic.addSeparator()
-    }
+    init { basic.addSeparator() }
 
     val intTime = basic.addDoubleField("Integration Time [s]", 1.0 / 50.0)
     val delTime = basic.addDoubleField("Delay Time [s]", 0.5)
@@ -76,7 +73,6 @@ object Sync : Grid("Synced Curve", 1) {
             action.setBefore {
                 (it.measurement as SyncMeasurement).loadInstruments(Configuration.getInstruments())
                 Measure.display(it)
-                Results.add(it)
             }
 
             return true

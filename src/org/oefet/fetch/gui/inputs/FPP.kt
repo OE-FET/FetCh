@@ -7,7 +7,6 @@ import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.gui.tabs.Results
 import org.oefet.fetch.measurement.FPPMeasurement
 
 object FPP : Grid("FPP Conductivity", 1) {
@@ -69,7 +68,6 @@ object FPP : Grid("FPP Conductivity", 1) {
             action.setBefore {
                 (it.measurement as FPPMeasurement).loadInstruments(Configuration.getInstruments())
                 Measure.display(it)
-                Results.add(it)
             }
 
         }
