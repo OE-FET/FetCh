@@ -19,6 +19,7 @@ object Repeat : Grid("Repeat", 2) {
         addAll(basic, queueList)
         queueList.addRepeat.isDisabled = true
         queueList.addTSweep.isDisabled = true
+        queueList.addStress.isDisabled = true
         basic.linkConfig(Settings.repeatBasic)
     }
 
