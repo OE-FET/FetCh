@@ -68,7 +68,7 @@ object Sync : Grid("Synced Curve", 1) {
             val base        = Measure.baseFile
 
             action.resultsPath = "$base-%s-$name.csv"
-            action.setAttribute("type", "synced")
+            action.setAttribute("Type", "Synced")
 
             action.setBefore {
                 (it.measurement as SyncMeasurement).loadInstruments(Configuration.getInstruments())

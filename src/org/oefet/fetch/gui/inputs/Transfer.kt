@@ -7,7 +7,9 @@ import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
+import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
+import java.lang.Exception
 
 object Transfer : Grid("Transfer Curve", 1) {
 
@@ -78,12 +80,14 @@ object Transfer : Grid("Transfer Curve", 1) {
             val base        = Measure.baseFile
 
             action.resultsPath = "$base-%s-$name.csv"
-            action.setAttribute("type", "transfer")
+            action.setAttribute("Type", "Transfer")
 
             action.setBefore {
                 (it.measurement as TransferMeasurement).loadInstruments(Configuration.getInstruments())
                 Measure.display(it)
             }
+
+            action.setAfter { try { FileLoad.addData(it.data) } catch (e: Exception) {e.printStackTrace()} }
 
             return true
 

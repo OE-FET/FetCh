@@ -1,258 +1,86 @@
 package org.oefet.fetch.gui.tabs
 
+import javafx.scene.image.Image
+import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.Combination
-import jisa.experiment.ResultList
 import jisa.gui.*
-import org.oefet.fetch.analysis.Curve
-import org.oefet.fetch.analysis.MeasurementFile
-import org.oefet.fetch.analysis.OCurve
-import org.oefet.fetch.analysis.OCurve.Companion.MOBILITY
-import org.oefet.fetch.analysis.OCurve.Companion.SD_VOLTAGE
-import org.oefet.fetch.analysis.OCurve.Companion.SG_VOLTAGE
-import org.oefet.fetch.analysis.TCurve
-import org.oefet.fetch.gui.elements.OutputPlot
-import org.oefet.fetch.gui.elements.TransferPlot
-import java.io.File
-import java.util.*
-import kotlin.collections.HashSet
+import org.oefet.fetch.analysis.*
+import org.oefet.fetch.analysis.Analysis
+import kotlin.reflect.KClass
+import kotlin.streams.toList
 
-object Analysis : Grid("Analysis", 1) {
+object Analysis : BorderDisplay("Analysis") {
 
-    private val addFileButton   = addToolbarButton("Add File...") { addFile() }
-    private val addFolderButton = addToolbarButton("Add Folder...") { addFolder() }
+    val sidebar       = ListDisplay<Analysis>("Available Analyses")
+    val analyseButton = sidebar.addToolbarButton("Analyse") { analyse() }
+    val saveButton    = sidebar.addToolbarButton("Save Data") { save() }
+
+    var output: Analysis.Output? = null;
 
     init {
-        addToolbarSeparator()
-    }
 
-    private val clearButton = addToolbarButton("Clear") { clearMeasurements() }
-
-    private val curves    = LinkedList<Curve>();
-    private val dispGrid  = Grid(1)
-    private val sgPlotter = Fields("Mobility vs Gate Voltage")
-    private val sgTitle   = sgPlotter.addTextField("Title", "Mobility vs Gate Voltage")
-
-    init { sgPlotter.addButton("Plot") { makeSGPlot() } }
-
-    private val tPlotter = Fields("Mobility vs Temperature")
-    private val tTitle = tPlotter.addTextField("Title", "Mobility vs Temperature")
-    init { tPlotter.addButton("Plot") { makeTPlot() } }
-
-    init {
-        setGrowth(true, false)
         setIcon(Icon.PLOT)
-        addAll(Grid(3, sgPlotter, tPlotter), dispGrid)
-    }
 
-    fun makeSGPlot() {
+        sidebar.add(AutoAnalysis, "Automatic Analysis", "Automatically determines what to plot", Util.invertImage(Image(Icon.LIGHTBULB.image.openStream())))
+        sidebar.add(TemperatureAnalysis, "Temperature Only", "Plot everything against temperature with no splitting", Util.invertImage(Image(Icon.THERMOMETER.image.openStream())))
+        sidebar.select(0)
 
-        val plot     = Plot(sgTitle.get(), "SG Voltage [V]", "Mobility [cm^2/Vs]")
-        val plotData = ResultList("SG Voltage [V]", "Mobility [cm^2/Vs]", "SD Voltage [V]", "Temperature [K]")
-
-        val series = plot.createSeries()
-            .watch(plotData, 0, 1)
-            .showMarkers(false)
-
-        val set = HashSet<Double>()
-        for (curve in curves) set.add(curve.temperature)
-
-        if (set.size > 1) {
-            series.split({ Combination(it[2], it[3]) }, { "SD = ${it[2]} V\tT = ${it[3]} K" })
-        } else {
-            series.split(2, "SD = %s V")
-        }
-
-        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-
-        plot.addSaveButton("Save Plot")
-        plot.addToolbarButton("Save Data") {
-            val file = GUI.saveFileSelect()
-            if (file != null) plotData.output(file)
-        }
-
-        plot.addToolbarSeparator()
-        plot.addToolbarButton("Linear") { plot.setYAxisType(Plot.AxisType.LINEAR) }
-        plot.addToolbarButton("Logarithmic") { plot.setYAxisType(Plot.AxisType.LOGARITHMIC) }
-
-        plot.useMouseCommands(true)
-
-        for (curve in curves) {
-
-            for (mob in arrayOf(curve.fwdMob.flippedCopy(), curve.bwdMob)) {
-
-                for (row in mob) plotData.addData(row[SG_VOLTAGE], row[MOBILITY], row[SD_VOLTAGE], if (curve.temperature.isFinite()) curve.temperature else -1.0)
-
-            }
-
-        }
-
-        plot.show()
+        setLeft(sidebar)
 
     }
 
-    fun makeTPlot() {
-
-        val plot     = Plot(tTitle.get(), "Temperature [K]", "Max Mobility [cm^2/Vs]")
-        val plotData = ResultList("Temperature [K]", "Max Mobility [cm^2/Vs]", "SD Voltage [V]")
-
-        plot.createSeries()
-            .watch(plotData, 0, 1)
-            .split(2 , "SD = %s V")
-            .showLine(false)
-
-        plot.setPointOrdering(Plot.Sort.X_AXIS)
-
-        plot.addSaveButton("Save Plot")
-        plot.addToolbarButton("Save Data") {
-            val file = GUI.saveFileSelect()
-            if (file != null) plotData.output(file)
-        }
-
-        plot.addToolbarSeparator()
-        plot.addToolbarButton("Linear") { plot.setYAxisType(Plot.AxisType.LINEAR) }
-        plot.addToolbarButton("Logarithmic") { plot.setYAxisType(Plot.AxisType.LOGARITHMIC) }
-
-        plot.useMouseCommands(true)
-
-        plot.show()
-
-        val tempData = ResultList("SG", "SD", "M")
-        for (curve in curves) {
-
-            if (!curve.temperature.isFinite()) continue
-
-            for (mob in arrayOf(curve.fwdMob.flippedCopy(), curve.bwdMob)) {
-
-                for (row in mob) tempData.addData(row[SG_VOLTAGE], row[SD_VOLTAGE], row[MOBILITY])
-
-            }
-
-            for ((drain, data) in tempData.split(1)) plotData.addData(curve.temperature, data.getMax(2), drain)
-
-        }
-
-
-    }
-
-    fun addFolder() {
-
-
-        val prog = Doc("Loading")
-
-
-        prog.addText(" ".repeat(100))
-        prog.addHeading("Loading Files")
-            .setAlignment(Doc.Align.CENTRE)
-        prog.addText("Please Wait...")
-            .setAlignment(Doc.Align.CENTRE)
-        prog.addText(" ".repeat(100))
+    private fun analyse() {
 
         try {
+            val quantities = FileLoad.getQuantities()
+            val names      = FileLoad.getNames()
+            val labels     = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
+            val analysis   = sidebar.selected.getObject()
 
-            val folder = File(GUI.directorySelect() ?: return)
+            val plots  = Grid("Plots", 2)
+            val tables = Grid("Tables", 2)
 
-            prog.show()
+            plots.setGrowth(true, false)
+            tables.setGrowth(true, true)
 
-            for (file in folder.listFiles()!!.sorted()) {
+            val window = Tabs("Analysis", plots, tables)
 
-                try {
+            val output  = analysis.analyse(quantities, labels)
+            this.output = output
 
-                    val fileAttempt = MeasurementFile(file.absolutePath)
+            plots.addAll(output.plots)
+            tables.addAll(output.tables.stream().map{ Table(it.quantity.name, it.table) }.toList())
 
-                    when (fileAttempt.getType()) {
-
-                        MeasurementFile.CurveType.OUTPUT -> addOutput(fileAttempt.getOCurve())
-                        MeasurementFile.CurveType.TRANSFER -> addTransfer(fileAttempt.getTCurve())
-                        else -> throw Exception("Unable to determine measurement type")
-
-                    }
-
-                } catch (ignored: Exception) {
-                }
-
-            }
+            setCentre(window)
 
         } catch (e: Exception) {
             e.printStackTrace()
-            prog.close()
-            GUI.errorAlert(e.message)
-        } finally {
-            prog.close()
         }
 
     }
 
-    fun clearMeasurements() {
-        curves.clear()
-        dispGrid.clear()
-    }
+    private fun save() {
 
-    fun addFile() {
+        if (output == null) return
 
-        try {
+        val output = this.output!!
 
-            val file = MeasurementFile(GUI.openFileSelect() ?: return)
+        val saveInput  = Fields("Save Data")
+        val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
+        val plotHeight = saveInput.addIntegerField("Plot Height", 500)
+        val directory  = saveInput.addDirectorySelect("Directory")
 
-            when (file.getType()) {
+        if (!saveInput.showAndWait()) return
 
-                MeasurementFile.CurveType.OUTPUT -> addOutput(file.getOCurve())
-                MeasurementFile.CurveType.TRANSFER -> addTransfer(file.getTCurve())
-                else -> throw Exception("Unable to determine measurement type")
+        val dir   = directory.get()
+        val width = plotWidth.get()
+        val height = plotHeight.get()
 
-            }
+        output.tables.forEach { it.table.output(Util.joinPath(dir, "${it.quantity.name.toLowerCase().replace(" ", "-")}.csv")) }
+        output.plots.forEach { it.saveSVG(Util.joinPath(dir, "${it.title.toLowerCase().replace(" ", "-")}.svg"), width.toDouble(), height.toDouble()) }
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-            GUI.errorAlert(e.message)
-        }
+        GUI.infoAlert("Data Saved.")
 
-    }
-
-    private fun addOutput(curve: OCurve) {
-
-        curves += curve
-
-        val info   = Display("Information")
-        info.addParameter("Temperature", "${curve.temperature} K")
-        info.addParameter("Channel Length", "${curve.length} m")
-        info.addParameter("Channel Width", "${curve.width} m")
-        info.addParameter("Channel Thickness", "${curve.channelThickness} m")
-        info.addParameter("FPP Separation", "${curve.fppSeparation} m")
-        info.addParameter("Dielectric Thickness", "${curve.dielectricThickness} m")
-        info.addParameter("Dielectric Permittivity", curve.permittivity)
-
-        for ((name, value) in curve.variables) info.addParameter(name, value)
-
-        val plot = OutputPlot(curve)
-        val grid = Grid(1, Grid(2, info, plot), Table("Data", curve.data))
-        val sect = Section("Output Measurement (${curve.name}) (${curve.variableString})", grid).apply { isExpanded = false }
-
-        dispGrid.add(sect)
-
-    }
-
-    private fun addTransfer(curve: TCurve) {
-
-        curves += curve
-
-        val info = Display("Information")
-        info.addParameter("Temperature", "${curve.temperature} K")
-        info.addParameter("Channel Length", "${curve.length} m")
-        info.addParameter("Channel Width", "${curve.width} m")
-        info.addParameter("Channel Thickness", "${curve.channelThickness} m")
-        info.addParameter("FPP Separation", "${curve.fppSeparation} m")
-        info.addParameter("Dielectric Thickness", "${curve.dielectricThickness} m")
-        info.addParameter("Dielectric Permittivity", curve.permittivity)
-
-        for ((name, value) in curve.variables) info.addParameter(name, value)
-
-        val plot = TransferPlot(curve)
-        val grid = Grid(1, Grid(2, info, plot), Table("Data", curve.data))
-        val sect =
-            Section("Transfer Measurement (${curve.name}) (${curve.variableString})", grid).apply { isExpanded = false }
-
-        dispGrid.add(sect)
 
     }
 

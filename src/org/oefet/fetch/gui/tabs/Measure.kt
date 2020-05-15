@@ -1,7 +1,7 @@
 package org.oefet.fetch.gui.tabs
 
-import org.oefet.fetch.analysis.OCurve
-import org.oefet.fetch.analysis.TCurve
+import org.oefet.fetch.analysisold.OCurve
+import org.oefet.fetch.analysisold.TCurve
 import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import org.oefet.fetch.measurement.OutputMeasurement
 import org.oefet.fetch.measurement.TransferMeasurement
@@ -59,13 +59,13 @@ object Measure : Grid("Measurement", 2) {
 
     fun display(action: ActionQueue.MeasureAction) {
 
-        action.setAttribute("name", name.get())
-        action.setAttribute("length", "${length.get()} m")
-        action.setAttribute("fppSeparation", "${fppLength.get()} m")
-        action.setAttribute("width", "${width.get()} m")
-        action.setAttribute("channelThickness", "${cThick.get()} m")
-        action.setAttribute("dielectricThickness", "${dThick.get()} m")
-        action.setAttribute("dielectricPermittivity", dielConst.get())
+        action.setAttribute("Name", name.get())
+        action.setAttribute("Length", "${length.get()} m")
+        action.setAttribute("FPP Separation", "${fppLength.get()} m")
+        action.setAttribute("Width", "${width.get()} m")
+        action.setAttribute("Thickness", "${cThick.get()} m")
+        action.setAttribute("Dielectric Thickness", "${dThick.get()} m")
+        action.setAttribute("Dielectric Permittivity", dielConst.get())
 
         val table = Table("Data", action.data)
 

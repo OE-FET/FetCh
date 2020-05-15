@@ -73,7 +73,7 @@ object Output : Grid("Output Curve", 1) {
             val base        = Measure.baseFile
 
             action.resultsPath = "$base-%s-$name.csv"
-            action.setAttribute("type", "output")
+            action.setAttribute("Type", "Output")
 
             action.setBefore {
                 (it.measurement as OutputMeasurement).loadInstruments(Configuration.getInstruments())

@@ -2,8 +2,8 @@ package org.oefet.fetch.gui.elements
 
 import jisa.experiment.ActionQueue
 import jisa.gui.*
-import org.oefet.fetch.analysis.OCurve
-import org.oefet.fetch.analysis.TCurve
+import org.oefet.fetch.analysisold.OCurve
+import org.oefet.fetch.analysisold.TCurve
 import org.oefet.fetch.gui.inputs.*
 import org.oefet.fetch.measurement.FPPMeasurement
 import org.oefet.fetch.measurement.OutputMeasurement
@@ -39,7 +39,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     init {
 
-        setDataDisplay { action ->
+        setOnDoubleClick { action ->
 
             if (action is ActionQueue.MeasureAction) {
 

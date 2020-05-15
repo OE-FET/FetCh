@@ -6,6 +6,7 @@ import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Configuration
+import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.measurement.FPPMeasurement
 
@@ -63,7 +64,7 @@ object FPP : Grid("FPP Conductivity", 1) {
             val base        = Measure.baseFile
 
             action.resultsPath = "$base-%s-$name.csv"
-            action.setAttribute("type", "fppconductivity")
+            action.setAttribute("Type", "FPP Conductivity")
 
             action.setBefore {
                 (it.measurement as FPPMeasurement).loadInstruments(Configuration.getInstruments())

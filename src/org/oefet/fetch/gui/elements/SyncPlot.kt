@@ -1,12 +1,9 @@
 package org.oefet.fetch.gui.elements
 
 import jisa.experiment.ResultTable
-import org.oefet.fetch.analysis.OCurve
-import org.oefet.fetch.analysis.TCurve
 import jisa.gui.*
 import org.oefet.fetch.SD_CURRENT
 import org.oefet.fetch.SD_VOLTAGE
-import org.oefet.fetch.SET_SG
 import org.oefet.fetch.SG_CURRENT
 import kotlin.math.abs
 

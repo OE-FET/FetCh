@@ -1,7 +1,7 @@
 package org.oefet.fetch.gui.elements
 
-import org.oefet.fetch.analysis.OCurve
-import org.oefet.fetch.analysis.TCurve
+import org.oefet.fetch.analysisold.OCurve
+import org.oefet.fetch.analysisold.TCurve
 import jisa.gui.*
 import org.oefet.fetch.SD_CURRENT
 import org.oefet.fetch.SD_VOLTAGE
