@@ -52,7 +52,7 @@ object FPP : Grid("FPP Conductivity", 1) {
         val count = queue.getMeasurementCount(FPPMeasurement::class.java)
         name.set("FPPCond${if (count > 0) count.toString() else ""}")
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val measurement = FPPMeasurement()
                 .configureCurrent(minSDI.get(), maxSDI.get(), numSDI.get(), symSDI.get())

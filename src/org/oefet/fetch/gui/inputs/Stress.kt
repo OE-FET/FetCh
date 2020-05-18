@@ -64,7 +64,7 @@ object Stress : Grid("Stress", 2)  {
 
         subQueue.clear()
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
 
             val name   = name.get()
@@ -116,7 +116,7 @@ object Stress : Grid("Stress", 2)  {
 
                     val copy = action.copy()
                     copy.setVariable(name, Util.msToString((it + 1) * time))
-                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, "${(it + 1) * time} ms")
+                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, "${((it + 1) * time).toDouble() / 1000.0} s")
 
                     queue.addAction(copy)
 

@@ -72,7 +72,7 @@ object Transfer : Grid("Transfer Curve", 1) {
         val count = queue.getMeasurementCount(TransferMeasurement::class.java)
         name.set("Transfer${if (count > 0) count.toString() else ""}")
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val measurement = getMeasurement()
             val name        = name.get()

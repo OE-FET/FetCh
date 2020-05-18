@@ -60,7 +60,7 @@ object Sync : Grid("Synced Curve", 1) {
         val count = queue.getMeasurementCount(SyncMeasurement::class.java)
         name.set("Sync${if (count > 0) count.toString() else ""}")
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val measurement = getMeasurement()
             val name        = name.get()

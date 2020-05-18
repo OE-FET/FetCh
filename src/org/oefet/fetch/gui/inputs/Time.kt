@@ -20,7 +20,7 @@ object Time : Grid("Time", 1) {
 
     fun askWait(queue: ActionQueue): Boolean {
 
-        return if (showAndWait()) {
+        return if (showAsConfirmation()) {
             queue.addWait(
                 (millis.get() + (1000 * seconds.get()) + (1000 * 60 * minutes.get()) + (1000 * 60 * 60 * hours.get())).toLong()
             )

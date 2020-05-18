@@ -21,11 +21,23 @@ object Analysis : BorderDisplay("Analysis") {
 
         setIcon(Icon.PLOT)
 
-        sidebar.add(AutoAnalysis, "Automatic Analysis", "Automatically determines what to plot", Util.invertImage(Image(Icon.LIGHTBULB.image.openStream())))
-        sidebar.add(TemperatureAnalysis, "Temperature Only", "Plot everything against temperature with no splitting", Util.invertImage(Image(Icon.THERMOMETER.image.openStream())))
+        sidebar.add(
+            AutoAnalysis,
+            "Automatic Analysis",
+            "Automatically determines what to plot",
+            Icon.LIGHTBULB.blackImage
+        )
+
+        sidebar.add(
+            TemperatureAnalysis,
+            "Temperature Only",
+            "Plot everything against temperature with no splitting",
+            Icon.THERMOMETER.blackImage
+        )
+
         sidebar.select(0)
 
-        setLeft(sidebar)
+        setLeftElement(sidebar)
 
     }
 
@@ -51,7 +63,7 @@ object Analysis : BorderDisplay("Analysis") {
             plots.addAll(output.plots)
             tables.addAll(output.tables.stream().map{ Table(it.quantity.name, it.table) }.toList())
 
-            setCentre(window)
+            setCentreElement(window)
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -70,10 +82,10 @@ object Analysis : BorderDisplay("Analysis") {
         val plotHeight = saveInput.addIntegerField("Plot Height", 500)
         val directory  = saveInput.addDirectorySelect("Directory")
 
-        if (!saveInput.showAndWait()) return
+        if (!saveInput.showAsConfirmation()) return
 
-        val dir   = directory.get()
-        val width = plotWidth.get()
+        val dir    = directory.get()
+        val width  = plotWidth.get()
         val height = plotHeight.get()
 
         output.tables.forEach { it.table.output(Util.joinPath(dir, "${it.quantity.name.toLowerCase().replace(" ", "-")}.csv")) }

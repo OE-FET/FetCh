@@ -34,7 +34,7 @@ object TemperatureChange : Grid("Temperature Change", 1) {
 
     fun ask(queue: ActionQueue) {
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val T = temp.get()
 

@@ -65,7 +65,7 @@ object Output : Grid("Output Curve", 1) {
         val count = queue.getMeasurementCount(OutputMeasurement::class.java)
         name.set("Output${if (count > 0) count.toString() else ""}")
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val measurement = getMeasurement()
             val name        = name.get()

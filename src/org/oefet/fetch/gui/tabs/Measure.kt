@@ -14,14 +14,14 @@ import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.measurement.FPPMeasurement
 import org.oefet.fetch.measurement.SyncMeasurement
 
-object Measure : Grid("Measurement", 2) {
+object Measure : Grid("Measurement", 1) {
 
     val queue     = ActionQueue()
     val queueList = FetChQueue("Measurements", queue)
     val basic     = Fields("Measurement Parameters")
-    val cSection  = Section("Current Measurement")
     val name      = basic.addTextField("Name")
     val dir       = basic.addDirectorySelect("Output Directory")
+    val topRow    = Grid(2)
 
     init { basic.addSeparator() }
 
@@ -37,9 +37,8 @@ object Measure : Grid("Measurement", 2) {
     val toolbarStop  = addToolbarButton("Stop", this::stopMeasurement)
 
     val baseFile: String get() = Util.joinPath(dir.get(), name.get())
-
-    var table: Table? = null
-    var plot: Plot? = null
+    var table:    Table?       = null
+    var plot:     Plot?        = null
 
     init {
 
@@ -48,7 +47,9 @@ object Measure : Grid("Measurement", 2) {
         setGrowth(true, false)
         setIcon(Icon.FLASK)
 
-        addAll(basic, queueList)
+        topRow.addAll(basic, queueList)
+
+        add(topRow)
 
         basic.linkConfig(Settings.measureBasic)
 
@@ -80,10 +81,12 @@ object Measure : Grid("Measurement", 2) {
 
         }
 
-        removeAll(this.table, this.plot)
+        topRow.remove(this.plot)
+        remove(this.table)
         this.table = table
         this.plot  = plot
-        addAll(table, plot)
+        topRow.add(plot)
+        add(table)
 
     }
 
@@ -118,28 +121,47 @@ object Measure : Grid("Measurement", 2) {
 
         disable(true)
 
-        when (queue.start()) {
+        try {
 
-            ActionQueue.Result.COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
-            ActionQueue.Result.INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
-            ActionQueue.Result.ERROR       -> GUI.errorAlert("Measurement sequence completed with error(s)")
-            else                           -> GUI.errorAlert("Unknown queue result")
+            when (queue.start()) {
+
+                ActionQueue.Result.COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
+                ActionQueue.Result.INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
+                ActionQueue.Result.ERROR       -> GUI.errorAlert("Measurement sequence completed with error(s)")
+                else                           -> GUI.errorAlert("Unknown queue result")
+
+            }
+
+        } finally {
+
+            System.gc()
+            disable(false)
 
         }
-
-
-
-        System.gc()
-
-        disable(false)
 
     }
 
 
     private fun disable(flag: Boolean) {
 
-        toolbarStart.isDisabled = flag
-        toolbarStop.isDisabled = !flag
+        toolbarStart.isDisabled =  flag
+        toolbarStop.isDisabled  = !flag
+
+        if (flag) {
+
+            topRow.clear()
+            plot  = Plot("Results")
+            table = Table("Results")
+            topRow.addAll(queueList, plot)
+            add(table)
+
+        } else {
+
+            topRow.clear()
+            topRow.addAll(basic, queueList)
+            remove(table)
+
+        }
 
         basic.setFieldsDisabled(flag)
         if (!flag) setDielectric()

@@ -31,7 +31,7 @@ object Repeat : Grid("Repeat", 2) {
 
         subQueue.clear()
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val name  = name.get()
             val times = times.get()
@@ -42,7 +42,7 @@ object Repeat : Grid("Repeat", 2) {
 
                     val copy = action.copy()
                     copy.setVariable(name, n.toString())
-                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, n)
+                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, "$n rep")
 
                     queue.addAction(copy)
 

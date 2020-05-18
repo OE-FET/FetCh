@@ -34,7 +34,7 @@ object Hold : Grid("Voltage Hold", 1) {
 
     fun ask(queue: ActionQueue) {
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val time   = time.get()
             val sdHold = sdHold.get()

@@ -8,43 +8,48 @@ import jisa.gui.*
 import org.oefet.fetch.analysis.*
 import java.io.File
 import java.util.*
-import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.streams.toList
 
 object FileLoad : BorderDisplay("Results") {
 
-    private val fileList = ListDisplay<ResultFile>("Loaded Results")
-    private val results = LinkedList<ResultFile>()
-    private val notDisplayed =
-        listOf(FwdSatMobility::class, BwdSatMobility::class, FwdLinMobility::class, BwdLinMobility::class)
+    private val fileList     = ListDisplay<ResultFile>("Loaded Results")
+    private val results      = LinkedList<ResultFile>()
+    private val notDisplayed = listOf(
+        FwdSatMobility::class,
+        BwdSatMobility::class,
+        FwdLinMobility::class,
+        BwdLinMobility::class
+    )
 
     init {
 
         setIcon(Icon.DATA)
-        setLeft(fileList)
+        setLeftElement(fileList)
 
         fileList.setOnChange {
 
             val selected = fileList.selected.getObject()
-            val params = Display("Parameters")
+            val params   = Display("Parameters")
 
             for (quantity in selected.quantities) {
+
                 if (!notDisplayed.contains(quantity::class)) params.addParameter(
                     quantity.name,
                     "%s %s".format(quantity.value, quantity.unit)
                 )
+
             }
 
             for (parameter in selected.parameters) {
                 params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
             }
 
-            val row = Grid(2, params, selected.plot)
+            val row  = Grid(2, params, selected.plot)
             val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
 
-            setCentre(grid)
+            setCentreElement(grid)
 
         }
 
@@ -55,11 +60,13 @@ object FileLoad : BorderDisplay("Results") {
 
         }
 
-        fileList.addToolbarButton("Add Files...") { addFiles() }
+        fileList.addToolbarButton("Add Results...") { addFiles() }
 
-        fileList.addToolbarButton("Clear Files") {
+        fileList.addToolbarButton("Clear Results") {
+
             fileList.clear()
             results.clear()
+
         }
 
     }
@@ -74,7 +81,7 @@ object FileLoad : BorderDisplay("Results") {
     private fun addFolder() {
 
         val folder = GUI.directorySelect() ?: return
-        val files = (File(folder).list() ?: return).asList()
+        val files  = (File(folder).list() ?: return).asList()
         loadFiles(files)
 
     }
@@ -136,21 +143,19 @@ object FileLoad : BorderDisplay("Results") {
     private fun loadData(data: ResultTable): ResultFile {
 
 
-        val names = results.stream().map{ it.data.getAttribute("Name") }.distinct().toList()
+        val names = results.stream().map { it.data.getAttribute("Name") }.distinct().toList()
         val index = names.indexOf(data.getAttribute("Name"))
         val n     = (if (index >= 0) index else names.size) + 1
+        val extra = listOf(Device(n))
 
+        return when (data.getAttribute("Type")) {
 
-        val result = when (data.getAttribute("Type")) {
-
-            "Transfer" -> TransferResult(data, listOf(Device(n)))
-            "Output" -> OutputResult(data, listOf(Device(n)))
-            "FPP Conductivity" -> CondResult(data, listOf(Device(n)))
-            else -> null
+            "Transfer"         -> TransferResult(data, extra)
+            "Output"           -> OutputResult(data, extra)
+            "FPP Conductivity" -> CondResult(data, extra)
+            else               -> null
 
         } ?: throw Exception("Unknown measurement type")
-
-        return result
 
     }
 

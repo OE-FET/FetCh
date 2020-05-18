@@ -52,7 +52,7 @@ object TemperatureSweep : Grid("Temperature Sweep", 2) {
         while (queue.getVariableCount("T${if (i > 0) i.toString() else ""}") > 0) i++
         name.set("T${if (i > 0) i.toString() else ""}")
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             val name = name.get()
 
@@ -86,7 +86,7 @@ object TemperatureSweep : Grid("Temperature Sweep", 2) {
 
     fun askForSingle(queue: ActionQueue) {
 
-        if (showAndWait()) {
+        if (showAsConfirmation()) {
 
             for (T in Range.linear(minT.get(), maxT.get(), numT.get())) {
 
@@ -107,10 +107,10 @@ object TemperatureSweep : Grid("Temperature Sweep", 2) {
 
     }
 
-    override fun showAndWait(): Boolean {
+    override fun showAsConfirmation(): Boolean {
         subQueue.clear()
         names.clear()
-        return super.showAndWait()
+        return super.showAsConfirmation()
     }
 
     val values: Range<Double>
