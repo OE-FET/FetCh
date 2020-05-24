@@ -12,7 +12,7 @@ import org.oefet.fetch.measurement.FPPMeasurement.Companion.FPP_VOLTAGE
 import org.oefet.fetch.measurement.FPPMeasurement.Companion.SD_CURRENT
 import org.oefet.fetch.measurement.FPPMeasurement.Companion.SD_VOLTAGE
 
-class FPPPlot(data: ResultTable) : Plot("FPP Conductivity", "Drain Current [A]", "Voltage [V]") {
+class FPPPlot(data: ResultTable) : FetChPlot("FPP Conductivity", "Drain Current [A]", "Voltage [V]") {
 
     init {
 
@@ -41,21 +41,6 @@ class FPPPlot(data: ResultTable) : Plot("FPP Conductivity", "Drain Current [A]",
             .showMarkers(false)
             .setLineDash(DOTTED)
             .watch(data, SD_CURRENT, FPP2_VOLTAGE)
-
-        addSaveButton("Save")
-
-        addToolbarButton("Conductivity") {
-
-            val length    = Measure.fppLength.get()
-            val width     = Measure.width.get()
-            val thickness = Measure.cThick.get()
-
-            val fit  = data.linearFit(FPP_VOLTAGE, SD_CURRENT)
-            val cond = fit.gradient * (length / (width * thickness)) / 100
-
-            GUI.infoAlert("Conductivity = %e S/cm".format(cond))
-
-        }
 
 
     }

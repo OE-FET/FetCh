@@ -10,7 +10,7 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 
-class OutputMeasurement : Measurement() {
+class OutputMeasurement : FetChMeasurement() {
 
     private var sdSMU : SMU? = null
     private var sgSMU : SMU? = null
@@ -19,51 +19,20 @@ class OutputMeasurement : Measurement() {
     private var fpp2  : VMeter? = null
     private var tm    : TMeter? = null
 
-    private var minVSD = 0.0
-    private var maxVSD = 60.0
-    private var numVSD = 7
-    private var symVSD = true
+    override val type = "Output"
 
-    private var minVSG = 0.0
-    private var maxVSG = 60.0
-    private var numVSG = 61
-    private var symVSG = true
+    val label   = StringParameter("Basic", "Label", null, "Output")
+    val intTime = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
+    val delTime = DoubleParameter("Basic", "Delay Time", "s", 0.5)
+    val minVSD  = DoubleParameter("Source-Drain", "Start", "V", 0.0)
+    val maxVSD  = DoubleParameter("Source-Drain", "Stop", "V", 60.0)
+    val numVSD  = IntegerParameter("Source-Drain", "No. Steps", null, 61)
+    val symVSD  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
+    val minVSG  = DoubleParameter("Source-Gate", "Start", "V", 0.0)
+    val maxVSG  = DoubleParameter("Source-Gate", "Stop", "V", 60.0)
+    val numVSG  = IntegerParameter("Source-Gate", "No. Steps", null, 7)
 
-    private var intTime = 1.0 / 50.0
-    private var delTime = 500
-
-    fun configureSD(start: Double, stop: Double, steps: Int, sym: Boolean): OutputMeasurement {
-
-        minVSD = start
-        maxVSD = stop
-        numVSD = steps
-        symVSD = sym
-
-        return this
-
-    }
-
-    fun configureSG(start: Double, stop: Double, steps: Int, sym: Boolean): OutputMeasurement {
-
-        minVSG = start
-        maxVSG = stop
-        numVSG = steps
-        symVSG = sym
-
-        return this
-
-    }
-
-    fun configureTimes(integration: Double, delay: Double): OutputMeasurement {
-
-        intTime = integration
-        delTime = (delay * 1000).toInt()
-
-        return this
-
-    }
-
-    fun loadInstruments(instruments: Instruments) {
+    override fun loadInstruments(instruments: Instruments) {
 
         if (!instruments.hasSD || !instruments.hasSG) {
             throw Exception("Source-Drain and Source-Gate SMUs must be configured first")
@@ -78,16 +47,32 @@ class OutputMeasurement : Measurement() {
 
     }
 
+    override fun setLabel(value: String?) {
+        label.value = value
+    }
+
     override fun run(results: ResultTable) {
+
+        val intTime = intTime.value
+        val delTime = (delTime.value * 1000).toInt()
+        val minVSD  = minVSD.value
+        val maxVSD  = maxVSD.value
+        val numVSD  = numVSD.value
+        val minVSG  = minVSG.value
+        val maxVSG  = maxVSG.value
+        val numVSG  = numVSG.value
+        val symVSD  = symVSD.value
 
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!
 
-        var sdVoltages = Range.linear(minVSD, maxVSD, numVSD)
-        var sgVoltages = Range.linear(minVSG, maxVSG, numVSG)
+        val sdVoltages = if (symVSD) {
+            Range.linear(minVSD, maxVSD, numVSD).mirror()
+        } else {
+            Range.linear(minVSD, maxVSD, numVSD)
+        }
+        val sgVoltages = Range.linear(minVSG, maxVSG, numVSG)
 
-        if (symVSD) sdVoltages = sdVoltages.mirror()
-        if (symVSG) sgVoltages = sgVoltages.mirror()
 
         sdSMU.turnOff()
         sgSMU.turnOff()
@@ -146,6 +131,8 @@ class OutputMeasurement : Measurement() {
         runRegardless { fpp2?.turnOff() }
 
     }
+
+    override fun getLabel(): String = label.value
 
     override fun getName(): String = "Output Measurement"
 

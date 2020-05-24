@@ -1,71 +1,82 @@
 package org.oefet.fetch.gui.elements
 
 import jisa.experiment.ActionQueue
-import jisa.gui.*
-import org.oefet.fetch.analysisold.OCurve
-import org.oefet.fetch.analysisold.TCurve
-import org.oefet.fetch.gui.inputs.*
-import org.oefet.fetch.measurement.FPPMeasurement
-import org.oefet.fetch.measurement.OutputMeasurement
-import org.oefet.fetch.measurement.SyncMeasurement
-import org.oefet.fetch.measurement.TransferMeasurement
+import jisa.gui.ActionQueueDisplay
+import jisa.gui.GUI
+import jisa.gui.MeasurementFields
+import org.oefet.fetch.Settings
+import org.oefet.fetch.gui.inputs.ActionInput
+import org.oefet.fetch.gui.inputs.SweepInput
+import org.oefet.fetch.gui.tabs.Configuration
+import org.oefet.fetch.gui.tabs.FileLoad
+import org.oefet.fetch.gui.tabs.Measure
+import org.oefet.fetch.measurement.FetChMeasurement
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
 
-    val addButton   = addToolbarMenuButton("Add Action")
-    val addWait     = addButton.addItem("Wait") { Time.askWait(queue) }
+    /**
+     * Button for adding actions to the queue
+     */
+    private val addButton = addToolbarMenuButton("Add Action").apply {
 
-    init { addButton.addSeparator() }
+        addItem("Measurements:") {}.apply { isDisabled = true }
+        addSeparator()
 
-    val addOutput   = addButton.addItem("Output Measurement")   { Output.ask(queue) }
-    val addTransfer = addButton.addItem("Transfer Measurement") { Transfer.ask(queue) }
-    val addSync     = addButton.addItem("Synced Voltage Measurement") { Sync.ask(queue) }
-    val addFPP      = addButton.addItem("FPP Conductivity Measurement") { FPP.ask(queue) }
+        for (type in FetChMeasurement.types) addItem(type.name) { askMeasurement(type.create()) }
 
-    init { addButton.addSeparator() }
+        addSeparator()
+        addItem("Actions:") {}.apply { isDisabled = true }
+        addSeparator()
 
-    val addVHold    = addButton.addItem("Hold Voltage")         { Hold.ask(queue) }
-    val addTChange  = addButton.addItem("Temperature Change")   { TemperatureChange.ask(queue) }
+        for (type in ActionInput.types) addItem(type.name) { type.create().ask(queue) }
 
-    init { addButton.addSeparator() }
+        addSeparator()
+        addItem("Sweeps:") {}.apply { isDisabled = true }
+        addSeparator()
 
-    val addTSweep   = addButton.addItem("Temperature Sweep")    { TemperatureSweep.ask(queue) }
-    val addStress   = addButton.addItem("Stress")               { Stress.ask(queue) }
-    val addRepeat   = addButton.addItem("Repeat")               { Repeat.ask(queue) }
+        for (type in SweepInput.types) addItem(type.name) { type.create().ask(queue) }
 
-    val clearQueue  = addToolbarButton("Clear") {
+    }
+
+    /**
+     * Button for removing all actions from the queue
+     */
+    private val clearQueue = addToolbarButton("Clear") {
         if (GUI.confirmWindow("Clear Queue", "Clear Queue", "Are you sure?")) queue.clear()
     }
 
-    init {
+    /**
+     * Whether the buttons for adding/clearing actions are enabled or not
+     */
+    var isDisabled: Boolean
+        get() = addButton.isDisabled
+        set(value) {
+            addButton.isDisabled = value
+            clearQueue.isDisabled = value
+        }
 
-        setOnDoubleClick { action ->
+    private fun askMeasurement(measurement: FetChMeasurement) {
 
-            if (action is ActionQueue.MeasureAction) {
+        // Generate label for measurement (ie Transfer, Transfer2, Transfer3, etc)
+        val count = queue.getMeasurementCount(measurement.javaClass)
+        measurement.label = "${measurement.label}${if (count > 0) count + 1 else ""}"
 
-                val params = Display("Parameters")
+        // Generate measurement parameter input GUI and make it remember values from last time
+        val input = MeasurementFields(measurement.name, measurement).apply { linkConfig(Settings.inputs) }
 
-                for ((param, value) in action.data.attributes) params.addParameter(param, value)
+        if (input.showInput()) {
 
-                val table  = Table("Data", action.data)
+            val action = queue.addMeasurement(measurement.label, measurement)
 
-                val plot = when (action.measurement) {
+            action.setAttribute("Type", measurement.type)
+            action.resultsPath = "${Measure.baseFile}-%s-${measurement.label}.csv"
 
-                    is OutputMeasurement   -> OutputPlot(OCurve(action.data))
-                    is TransferMeasurement -> TransferPlot(TCurve(action.data))
-                    is FPPMeasurement      -> FPPPlot(action.data)
-                    is SyncMeasurement     -> SyncPlot(action.data)
-                    else                   -> Plot("Unknown")
-
-                }
-
-                Grid(1, Grid(2, params, plot), table)
-
-            } else {
-
-                null
-
+            action.setBefore {
+                (it.measurement as FetChMeasurement).loadInstruments(Configuration.getInstruments())
+                Measure.display(it)
             }
+
+            action.setAfter { FileLoad.addData(it.data) }
 
         }
 

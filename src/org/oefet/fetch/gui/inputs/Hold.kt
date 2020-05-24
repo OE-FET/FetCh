@@ -6,9 +6,10 @@ import jisa.experiment.ActionQueue
 import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
+import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.tabs.Configuration
 
-object Hold : Grid("Voltage Hold", 1) {
+class Hold : Grid("Voltage Hold", 1), ActionInput {
 
     private val basic = Fields("Basic Parameters")
     private val time  = basic.addDoubleField("Hold Time [s]", 60.0)
@@ -22,19 +23,23 @@ object Hold : Grid("Voltage Hold", 1) {
     private val sgV    = sgConf.addDoubleField("Voltage [V]", 50.0)
 
     init {
-        addAll(
-            basic, Grid(2,
-                sdConf,
-                sgConf
-            ))
+
+        addAll(basic, Grid(2, sdConf, sgConf))
         basic.linkConfig(Settings.holdBasic)
         sdConf.linkConfig(Settings.holdSD)
         sgConf.linkConfig(Settings.holdSG)
+
+        setIcon(MainWindow::class.java.getResource("fEt.png"))
+
     }
 
-    fun ask(queue: ActionQueue) {
+    override fun ask(queue: ActionQueue) {
 
         if (showAsConfirmation()) {
+
+            basic.writeToConfig()
+            sdConf.writeToConfig()
+            sgConf.writeToConfig()
 
             val time   = time.get()
             val sdHold = sdHold.get()

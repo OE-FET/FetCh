@@ -1,5 +1,7 @@
 package org.oefet.fetch.analysis
 
+import javafx.scene.image.Image
+import jisa.enums.Icon
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
@@ -7,6 +9,9 @@ import jisa.gui.Series
 import jisa.maths.interpolation.Interpolation
 import jisa.maths.functions.Function
 import org.oefet.fetch.*
+import org.oefet.fetch.gui.MainWindow
+import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.gui.elements.OutputPlot
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -16,8 +21,9 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
-    override val plot       = Plot("Output Curve", "SD Voltage [V]", "Drain Current [A]")
+    override val plot       = OutputPlot(data).apply { legendRows = data.getUniqueValues(SET_SG).size }
     override val name       = "Output Measurement (${data.getAttribute("Name")})"
+    override val image      = Image(MainWindow.javaClass.getResourceAsStream("output.png"))
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -35,8 +41,8 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     init {
 
-        if (data.getAttribute("Type") != "Transfer") {
-            throw Exception("That is not a transfer curve file")
+        if (data.getAttribute("Type") != "Output") {
+            throw Exception("That is not a output curve file")
         }
 
         val length        = data.getAttribute("Length").removeSuffix("m").toDouble()
@@ -80,6 +86,9 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
 
             }
 
+            val maxLinMobility = LinkedHashMap<Double, Double>()
+            val maxSatMobility = LinkedHashMap<Double, Double>()
+
             for ((drain, data) in fwd.split(SDV)) {
 
                 if (data.numRows < 2) continue
@@ -93,12 +102,18 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
 
                     val linMobility = 1e4 * abs((length / (capacitance * width)) * (linGrad.value(gate) / drain))
                     val satMobility = 1e4 * 2.0 * satGrad.value(gate).pow(2) * length / (width * capacitance)
-                    val mobility    = max(linMobility, satMobility)
                     val params      = ArrayList(parameters)
                     params         += Gate(gate, 0.0)
                     params         += Drain(drain, 0.0)
 
-                    if (mobility.isFinite()) quantities += FwdLinMobility(mobility, 0.0, params, possibleParameters)
+                    if (linMobility.isFinite()) {
+                        quantities += FwdLinMobility(linMobility, 0.0, params, possibleParameters)
+                        maxLinMobility[gate] = max(maxLinMobility[gate] ?: 0.0, linMobility)
+                    }
+                    if (satMobility.isFinite()) {
+                        quantities += FwdSatMobility(satMobility, 0.0, params, possibleParameters)
+                        maxSatMobility[gate] = max(maxSatMobility[gate] ?: 0.0, satMobility)
+                    }
 
                 }
 
@@ -117,47 +132,30 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
 
                     val linMobility = 1e4 * abs((length / (capacitance * width)) * (linGrad.value(gate) / drain))
                     val satMobility = 1e4 * 2.0 * satGrad.value(gate).pow(2) * length / (width * capacitance)
-                    val mobility    = max(linMobility, satMobility)
                     val params      = ArrayList(parameters)
                     params         += Gate(gate, 0.0)
                     params         += Drain(drain, 0.0)
 
-                    if (mobility.isFinite()) quantities += BwdLinMobility(mobility, 0.0, params, possibleParameters)
+                    if (linMobility.isFinite()) {
+                        quantities += BwdLinMobility(linMobility, 0.0, params, possibleParameters)
+                        maxLinMobility[gate] = max(maxLinMobility[gate] ?: 0.0, linMobility)
+                    }
+                    if (satMobility.isFinite()) {
+                        quantities += BwdSatMobility(satMobility, 0.0, params, possibleParameters)
+                        maxSatMobility[gate] = max(maxSatMobility[gate] ?: 0.0, satMobility)
+                    }
 
                 }
 
             }
 
+            for ((gate, max) in maxLinMobility) quantities += MaxLinMobility(max, 0.0, ArrayList(parameters).apply { add(Gate(gate, 0.0)) })
+            for ((gate, max) in maxSatMobility) quantities += MaxSatMobility(max, 0.0, ArrayList(parameters).apply { add(Gate(gate, 0.0)) })
+
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
-    }
-
-    private fun plotData() {
-
-        plot.useMouseCommands(true)
-        plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
-        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-
-        plot.createSeries()
-            .showMarkers(false)
-            .watch(data, { it[SD_VOLTAGE] }, { abs(it[SD_CURRENT]) })
-            .split(SET_SG, "D (SG: %s V)")
-
-        plot.createSeries()
-            .showMarkers(false)
-            .setLineDash(Series.Dash.DOTTED)
-            .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
-            .split(SET_SG, "G (SG: %sV)")
-
-
-        plot.addSaveButton("Save")
-        plot.addToolbarSeparator()
-        plot.addToolbarButton("Linear") { plot.setYAxisType(Plot.AxisType.LINEAR) }
-        plot.addToolbarButton("Logarithmic") { plot.setYAxisType(Plot.AxisType.LOGARITHMIC) }
-
 
     }
 

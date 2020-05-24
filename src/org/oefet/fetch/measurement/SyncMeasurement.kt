@@ -10,7 +10,7 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 
-class SyncMeasurement : Measurement() {
+class SyncMeasurement : FetChMeasurement() {
 
     private var sdSMU: SMU?    = null
     private var sgSMU: SMU?    = null
@@ -19,39 +19,18 @@ class SyncMeasurement : Measurement() {
     private var fpp2:  VMeter? = null
     private var tm:    TMeter? = null
 
-    private var minVSD = 0.0
-    private var maxVSD = 60.0
-    private var numVSD = 7
-    private var symVSD = true
+    override val type = "Sync"
 
-    private var offset = 0.0
+    val label   = StringParameter("Basic", "Label", null, "Sync")
+    val intTime = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
+    val delTime = DoubleParameter("Basic", "Delay Time", "s", 0.5)
+    val minVSD  = DoubleParameter("Source-Drain", "Start", "V", 0.0)
+    val maxVSD  = DoubleParameter("Source-Drain", "Stop", "V", 60.0)
+    val numVSD  = IntegerParameter("Source-Drain", "No. Steps", null, 7)
+    val symVSD  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
+    val offset  = DoubleParameter("Source-Gate", "Offset", "V", 0.0)
 
-    private var intTime = 1.0 / 50.0
-    private var delTime = 500
-
-    /**
-     * Configure the source-drain parameters
-     */
-    fun configureVoltages(start: Double, stop: Double, steps: Int, sym: Boolean): SyncMeasurement {
-        minVSD = start
-        maxVSD = stop
-        numVSD = steps
-        symVSD = sym
-        return this
-    }
-
-    fun configureOffset(offset: Double) : SyncMeasurement {
-        this.offset = offset
-        return this
-    }
-
-    fun configureTimes(integration: Double, delay: Double): SyncMeasurement {
-        intTime = integration
-        delTime = (delay * 1000).toInt()
-        return this
-    }
-
-    fun loadInstruments(instruments: Instruments) {
+    override fun loadInstruments(instruments: Instruments) {
 
         if (!instruments.hasSD || !instruments.hasSG) {
             throw Exception("Source-Drain and Source-Gate SMUs must be configured first")
@@ -60,13 +39,21 @@ class SyncMeasurement : Measurement() {
         sdSMU = instruments.sdSMU!!
         sgSMU = instruments.sgSMU!!
         gdSMU = instruments.gdSMU
-        fpp1 = instruments.fpp1
-        fpp2 = instruments.fpp2
-        tm = instruments.tm
+        fpp1  = instruments.fpp1
+        fpp2  = instruments.fpp2
+        tm    = instruments.tm
 
     }
 
     override fun run(results: ResultTable) {
+
+        val intTime = intTime.value
+        val delTime = (delTime.value * 1000).toInt()
+        val minVSD  = minVSD.value
+        val maxVSD  = maxVSD.value
+        val numVSD  = numVSD.value
+        val symVSD  = symVSD.value
+        val offset  = offset.value
 
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!
@@ -132,6 +119,8 @@ class SyncMeasurement : Measurement() {
 
     }
 
+    override fun getLabel(): String = label.value
+
     override fun getName(): String = "Synced Voltage Measurement"
 
     override fun getColumns(): Array<Col> {
@@ -149,6 +138,10 @@ class SyncMeasurement : Measurement() {
             Col("Ground Current", "A")
         )
 
+    }
+
+    override fun setLabel(value: String?) {
+        label.value = value
     }
 
     override fun onInterrupt() {

@@ -1,11 +1,16 @@
 package org.oefet.fetch.analysis
 
+import javafx.scene.image.Image
+import jisa.enums.Icon
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
 import jisa.gui.Series
 import jisa.maths.interpolation.Interpolation
 import jisa.maths.functions.Function
 import org.oefet.fetch.*
+import org.oefet.fetch.gui.MainWindow
+import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.gui.elements.TransferPlot
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -15,8 +20,9 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
-    override val plot       = Plot("Transfer Curve", "SG Voltage [V]", "Drain Current [A]")
+    override val plot       = TransferPlot(data).apply { legendRows = data.getUniqueValues(SET_SD).size }
     override val name       = "Transfer Measurement (${data.getAttribute("Name")})"
+    override val image      = Image(MainWindow.javaClass.getResourceAsStream("transfer.png"))
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -137,41 +143,12 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
             }
 
-            quantities += MaxLinMobility(maxLinMobility, 0.0, parameters, possibleParameters)
-            quantities += MaxSatMobility(maxSatMobility, 0.0, parameters, possibleParameters)
+            if (maxLinMobility > 0) quantities += MaxLinMobility(maxLinMobility, 0.0, parameters, possibleParameters)
+            if (maxSatMobility > 0) quantities += MaxSatMobility(maxSatMobility, 0.0, parameters, possibleParameters)
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
-        plotData()
-
-    }
-
-    private fun plotData() {
-
-        plot.useMouseCommands(true)
-        plot.setYAxisType(Plot.AxisType.LOGARITHMIC)
-        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-
-        plot.createSeries()
-            .showMarkers(false)
-            .watch(data, { it[SG_VOLTAGE] }, { abs(it[SD_CURRENT]) })
-            .split(SET_SD, "D (SD: %s V)")
-
-        plot.createSeries()
-            .showMarkers(false)
-            .setLineDash(Series.Dash.DASHED)
-            .setLineWidth(1.0)
-            .watch(data, { it[SG_VOLTAGE] }, { abs(it[SG_CURRENT]) })
-            .split(SET_SD, "G (SD: %sV)")
-
-
-        plot.addSaveButton("Save")
-        plot.addToolbarSeparator()
-        plot.addToolbarButton("Linear") { plot.setYAxisType(Plot.AxisType.LINEAR) }
-        plot.addToolbarButton("Logarithmic") { plot.setYAxisType(Plot.AxisType.LOGARITHMIC) }
-
 
     }
 

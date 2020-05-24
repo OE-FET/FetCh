@@ -11,7 +11,7 @@ import jisa.maths.Range
 import java.time.Duration
 import kotlin.math.abs
 
-class FPPMeasurement : Measurement() {
+class FPPMeasurement : FetChMeasurement() {
 
     private var gdSMU : SMU?    = null
     private var sdSMU : SMU?    = null
@@ -20,16 +20,19 @@ class FPPMeasurement : Measurement() {
     private var fpp2  : VMeter? = null
     private var tm    : TMeter? = null
 
-    private var minI    = 0.0
-    private var maxI    = 10e-6
-    private var numI    = 11
-    private var symI    = false
-    private var holdG   = false
-    private var gateV   = 50.0
-    private var intTime = 20e-3
-    private var delTime = Duration.ofSeconds(1).toMillis()
+    override val type = "FPP Conductivity"
 
-    fun loadInstruments(instruments: Instruments) {
+    val label   = StringParameter("Basic","Name",null, "FPPCond")
+    val intTime = DoubleParameter("Basic","Integration Time","s", 20e-3)
+    val delTime = DoubleParameter("Basic","Delay Time","s", 1.0)
+    val minI    = DoubleParameter("Source-Drain", "Start", "A",0.0)
+    val maxI    = DoubleParameter("Source-Drain", "Stop", "A",10e-6)
+    val numI    = IntegerParameter("Source-Drain", "No. Steps", null, 11)
+    val symI    = BooleanParameter("Source-Drain", "Sweep Both Ways", null, false)
+    val holdG   = BooleanParameter("Source-Gate", "Active", null, false)
+    val gateV   = DoubleParameter("Source-Gate","Voltage","V", 50.0)
+
+    override fun loadInstruments(instruments: Instruments) {
 
         sdSMU = instruments.sdSMU
         sgSMU = instruments.sgSMU
@@ -40,27 +43,20 @@ class FPPMeasurement : Measurement() {
 
     }
 
-    fun configureCurrent(minI: Double, maxI: Double, numI: Int, symI: Boolean) : FPPMeasurement {
-        this.minI = minI
-        this.maxI = maxI
-        this.numI = numI
-        this.symI = symI
-        return this
-    }
-
-    fun configureTiming(intTime: Double, delTime: Double) : FPPMeasurement {
-        this.intTime = intTime
-        this.delTime = (delTime * 1000.0).toLong()
-        return this
-    }
-
-    fun configureGate(hold: Boolean, voltage: Double) : FPPMeasurement {
-        holdG = hold
-        gateV = voltage
-        return this
+    override fun setLabel(value: String?) {
+        label.value = value
     }
 
     override fun run(results: ResultTable) {
+
+        val minI    = minI.value
+        val maxI    = maxI.value
+        val numI    = numI.value
+        val symI    = symI.value
+        val holdG   = holdG.value
+        val gateV   = gateV.value
+        val intTime = intTime.value
+        val delTime = (delTime.value * 1000.0).toLong()
 
         val errors = ArrayList<String>()
 
@@ -140,9 +136,11 @@ class FPPMeasurement : Measurement() {
 
     }
 
-    override fun getName(): String {
-        return "4PP Conductivity Measurement"
+    override fun getLabel(): String {
+        return label.value
     }
+
+    override fun getName(): String = "FPP Conductivity Measurement"
 
     override fun getColumns(): Array<Col> = arrayOf(
         Col("SD Voltage", "V"),

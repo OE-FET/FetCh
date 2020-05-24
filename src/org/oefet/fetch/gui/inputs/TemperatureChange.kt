@@ -6,11 +6,12 @@ import jisa.gui.Fields
 import jisa.gui.Grid
 import jisa.maths.Range
 import org.oefet.fetch.Settings
+import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
 
-object TemperatureChange : Grid("Temperature Change", 1) {
+class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
     val basic = Fields("Temperature Set-Points")
 
@@ -29,12 +30,15 @@ object TemperatureChange : Grid("Temperature Change", 1) {
         addAll(basic)
         setIcon(Icon.SNOWFLAKE)
         basic.linkConfig(Settings.tempSingleBasic)
+        setIcon(MainWindow::class.java.getResource("fEt.png"))
 
     }
 
-    fun ask(queue: ActionQueue) {
+    override fun ask(queue: ActionQueue) {
 
         if (showAsConfirmation()) {
+
+            basic.writeToConfig()
 
             val T = temp.get()
 
@@ -44,7 +48,7 @@ object TemperatureChange : Grid("Temperature Change", 1) {
 
                 tc.targetTemperature = T
                 tc.useAutoHeater()
-                tc.waitForStableTemperature(T, TemperatureSweep.stabilityPercentage, TemperatureSweep.stabilityTime)
+                tc.waitForStableTemperature(T, stabilityPercentage, stabilityTime)
 
             }
 
@@ -52,5 +56,11 @@ object TemperatureChange : Grid("Temperature Change", 1) {
 
 
     }
+
+    val stabilityPercentage: Double
+        get() = stabPerc.get()
+
+    val stabilityTime: Long
+        get() = (stabTime.get() * 1000.0).toLong()
 
 }

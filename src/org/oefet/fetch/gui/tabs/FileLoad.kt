@@ -20,36 +20,44 @@ object FileLoad : BorderDisplay("Results") {
         FwdSatMobility::class,
         BwdSatMobility::class,
         FwdLinMobility::class,
-        BwdLinMobility::class
+        BwdLinMobility::class,
+        MaxLinMobility::class,
+        MaxSatMobility::class
     )
 
     init {
 
         setIcon(Icon.DATA)
-        setLeftElement(fileList)
+        leftElement = fileList
 
         fileList.setOnChange {
 
-            val selected = fileList.selected.getObject()
-            val params   = Display("Parameters")
+            if (fileList.selected == null) {
+                centreElement = Grid()
+            } else {
 
-            for (quantity in selected.quantities) {
+                val selected = fileList.selected.getObject()
+                val params = Display("Parameters")
 
-                if (!notDisplayed.contains(quantity::class)) params.addParameter(
-                    quantity.name,
-                    "%s %s".format(quantity.value, quantity.unit)
-                )
+                for (quantity in selected.quantities) {
+
+                    if (!notDisplayed.contains(quantity::class)) params.addParameter(
+                        quantity.name,
+                        "%s %s".format(quantity.value, quantity.unit)
+                    )
+
+                }
+
+                for (parameter in selected.parameters) {
+                    params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
+                }
+
+                val row = Grid(2, params, selected.plot)
+                val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
+
+                centreElement = grid
 
             }
-
-            for (parameter in selected.parameters) {
-                params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
-            }
-
-            val row  = Grid(2, params, selected.plot)
-            val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
-
-            setCentreElement(grid)
 
         }
 
@@ -60,12 +68,16 @@ object FileLoad : BorderDisplay("Results") {
 
         }
 
-        fileList.addToolbarButton("Add Results...") { addFiles() }
+        val menu = fileList.addToolbarMenuButton("Add...")
 
-        fileList.addToolbarButton("Clear Results") {
+        menu.addItem("Files...") { addFiles() }
+        menu.addItem("Folder...") { addFolder() }
+
+        fileList.addToolbarButton("Clear") {
 
             fileList.clear()
             results.clear()
+            System.gc()
 
         }
 
@@ -81,7 +93,7 @@ object FileLoad : BorderDisplay("Results") {
     private fun addFolder() {
 
         val folder = GUI.directorySelect() ?: return
-        val files  = (File(folder).list() ?: return).asList()
+        val files  = File(folder).listFiles { f -> !f.isDirectory }?.map { it.absolutePath } ?: return
         loadFiles(files)
 
     }
@@ -104,10 +116,28 @@ object FileLoad : BorderDisplay("Results") {
 
     private fun loadFiles(paths: List<String>) {
 
+        val progress = Progress("Loading Files")
+        progress.title = "Loading Files"
+        progress.setStatus("Reading and processing selected files, please wait...")
+
+        progress.setProgress(0.0, paths.size.toDouble())
+        var p = 0.0
+
+        centreElement = Grid(progress)
+
         for (path in paths) {
 
+            p++
+
             try {
+
                 addData(ResultList.loadFile(path))
+                progress.setProgress(p)
+
+            } catch (e: UnknownResultException) {
+
+                println("Ignoring $path (${e.message})")
+
             } catch (e: Exception) {
 
                 e.printStackTrace()
@@ -117,6 +147,8 @@ object FileLoad : BorderDisplay("Results") {
 
         }
 
+        progress.setProgress(1.0, 1.0)
+
         fileList.select(0)
 
     }
@@ -124,7 +156,7 @@ object FileLoad : BorderDisplay("Results") {
     fun getNames(): Map<Double, String> {
 
         val list = results.stream().map { it.data.getAttribute("Name") }.distinct().toList()
-        val map = HashMap<Double, String>()
+        val map  = HashMap<Double, String>()
 
         for ((index, value) in list.withIndex()) map[(index + 1).toDouble()] = value
 
@@ -134,28 +166,20 @@ object FileLoad : BorderDisplay("Results") {
 
     fun addData(data: ResultTable) {
 
-        val result = loadData(data)
-        fileList.add(result, result.name, result.getParameterString(), ActionQueue.Status.COMPLETED.image)
+        val result = processData(data)
+        fileList.add(result, result.name, result.getParameterString(), result.image)
         results += result
 
     }
 
-    private fun loadData(data: ResultTable): ResultFile {
-
+    private fun processData(data: ResultTable): ResultFile {
 
         val names = results.stream().map { it.data.getAttribute("Name") }.distinct().toList()
         val index = names.indexOf(data.getAttribute("Name"))
         val n     = (if (index >= 0) index else names.size) + 1
         val extra = listOf(Device(n))
 
-        return when (data.getAttribute("Type")) {
-
-            "Transfer"         -> TransferResult(data, extra)
-            "Output"           -> OutputResult(data, extra)
-            "FPP Conductivity" -> CondResult(data, extra)
-            else               -> null
-
-        } ?: throw Exception("Unknown measurement type")
+        return ResultFile.loadData(data, extra)
 
     }
 

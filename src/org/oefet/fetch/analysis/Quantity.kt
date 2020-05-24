@@ -99,7 +99,7 @@ class Gate(
 ) : Quantity {
 
     override val name = "Source-Gate Voltage"
-    override val symbol = "V_G"
+    override val symbol = "Vsg"
     override val unit = "V"
     override val extra = true
 
@@ -113,7 +113,7 @@ class Drain(
 ) : Quantity {
 
     override val name = "Source-Drain Voltage"
-    override val symbol = "V_D"
+    override val symbol = "Vsd"
     override val unit = "V"
     override val extra = true
 
@@ -183,7 +183,7 @@ class HallCoefficient(
 
     override val name = "Hall Coefficient"
     override val unit = "m^3/C"
-    override val symbol = "R_H"
+    override val symbol = "Rh"
     override val extra = false
 
 }
@@ -330,7 +330,7 @@ class Length(
 ) : Quantity {
 
     override val name = "Channel Length"
-    override val symbol = "l_c"
+    override val symbol = "lc"
     override val unit = "m"
     override val extra = false
 
@@ -344,7 +344,7 @@ class FPPSeparation(
 ) : Quantity {
 
     override val name = "FPP Separation"
-    override val symbol = "l_f"
+    override val symbol = "lf"
     override val unit = "m"
     override val extra = false
 
@@ -358,7 +358,7 @@ class Width(
 ) : Quantity {
 
     override val name = "Channel Width"
-    override val symbol = "w_c"
+    override val symbol = "wc"
     override val unit = "m"
     override val extra = false
 
@@ -372,7 +372,7 @@ class Thickness(
 ) : Quantity {
 
     override val name = "Channel Thickness"
-    override val symbol = "t_c"
+    override val symbol = "tc"
     override val unit = "m"
     override val extra = false
 
@@ -386,7 +386,7 @@ class DThickness(
 ) : Quantity {
 
     override val name = "Dielectric Thickness"
-    override val symbol = "t_d"
+    override val symbol = "td"
     override val unit = "m"
     override val extra = false
 

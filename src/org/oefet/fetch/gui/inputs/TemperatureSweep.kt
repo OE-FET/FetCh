@@ -7,10 +7,11 @@ import jisa.gui.Grid
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.Settings
+import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.Measure
 
-object TemperatureSweep : Grid("Temperature Sweep", 2) {
+class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
     val basic = Fields("Temperature Set-Points")
     val name  = basic.addTextField("Sweep Name")
@@ -28,17 +29,13 @@ object TemperatureSweep : Grid("Temperature Sweep", 2) {
 
     val subQueue  = ActionQueue()
     val names     = ArrayList<String>()
-    val queueList = FetChQueue("Sweep Measurements", subQueue)
 
     init {
 
         setGrowth(true, false)
-        addAll(basic, queueList)
         setIcon(Icon.SNOWFLAKE)
         basic.linkConfig(Settings.tempBasic)
-
-        queueList.addTSweep.isDisabled = true
-        queueList.addTChange.isDisabled = true
+        setIcon(MainWindow::class.java.getResource("fEt.png"))
 
     }
 
@@ -46,13 +43,18 @@ object TemperatureSweep : Grid("Temperature Sweep", 2) {
         basic.setFieldsDisabled(flag)
     }
 
-    fun ask(queue: ActionQueue) {
+    override fun ask(queue: ActionQueue) {
+
+        clear();
+        addAll(basic, FetChQueue("Interval Actions", subQueue))
 
         var i = 0
         while (queue.getVariableCount("T${if (i > 0) i.toString() else ""}") > 0) i++
         name.set("T${if (i > 0) i.toString() else ""}")
 
         if (showAsConfirmation()) {
+
+            basic.writeToConfig()
 
             val name = name.get()
 
@@ -77,29 +79,6 @@ object TemperatureSweep : Grid("Temperature Sweep", 2) {
                     queue.addAction(copy)
 
                 }
-
-            }
-
-        }
-
-    }
-
-    fun askForSingle(queue: ActionQueue) {
-
-        if (showAsConfirmation()) {
-
-            for (T in Range.linear(minT.get(), maxT.get(), numT.get())) {
-
-                queue.addAction("Change Temperature to $T K") {
-
-                    val tc = Configuration.tControl.get() ?: throw Exception("No temperature controller configured")
-
-                    tc.targetTemperature = T
-                    tc.useAutoHeater()
-                    tc.waitForStableTemperature(T, stabPerc.get(), (stabTime.get() * 1000.0).toLong())
-
-                }
-
 
             }
 

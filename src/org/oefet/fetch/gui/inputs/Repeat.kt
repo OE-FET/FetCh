@@ -5,25 +5,24 @@ import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.Settings
+import org.oefet.fetch.gui.MainWindow
 
-object Repeat : Grid("Repeat", 2) {
+class Repeat : Grid("Repeat", 2), SweepInput {
 
-    val basic = Fields("Repeat Parameters")
-    val name  = basic.addTextField("Repeat Name")
-    val times = basic.addIntegerField("Repeat Count", 5)
-
+    val basic     = Fields("Repeat Parameters")
+    val name      = basic.addTextField("Repeat Name")
+    val times     = basic.addIntegerField("Repeat Count", 5)
     val subQueue  = ActionQueue()
-    val queueList = FetChQueue("Repeat Actions", subQueue)
 
     init {
-        addAll(basic, queueList)
-        queueList.addRepeat.isDisabled = true
-        queueList.addTSweep.isDisabled = true
-        queueList.addStress.isDisabled = true
         basic.linkConfig(Settings.repeatBasic)
+        setIcon(MainWindow::class.java.getResource("fEt.png"))
     }
 
-    fun ask(queue: ActionQueue) {
+    override fun ask(queue: ActionQueue) {
+
+        clear();
+        addAll(basic, FetChQueue("Interval Actions", subQueue))
 
         var i = 0
         while (queue.getVariableCount("N${if (i > 0) i.toString() else ""}") > 0) i++
@@ -32,6 +31,8 @@ object Repeat : Grid("Repeat", 2) {
         subQueue.clear()
 
         if (showAsConfirmation()) {
+
+            basic.writeToConfig()
 
             val name  = name.get()
             val times = times.get()

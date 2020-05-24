@@ -78,12 +78,20 @@ class VoltageHold : Measurement() {
 
     }
 
+    override fun getLabel(): String {
+        return ""
+    }
+
     override fun getName(): String {
         return "Voltage Hold" + (if (holdSD) " SD = $sdV V" else "") + (if (holdSG) " SG = $sgV V" else "")
     }
 
     override fun getColumns(): Array<Col> {
         return emptyArray()
+    }
+
+    override fun setLabel(value: String?) {
+        TODO("Not yet implemented")
     }
 
     override fun onInterrupt() {

@@ -7,7 +7,7 @@ import org.oefet.fetch.SD_VOLTAGE
 import org.oefet.fetch.SG_CURRENT
 import kotlin.math.abs
 
-class SyncPlot(data: ResultTable) : Plot("Synced Voltage Curve", "Voltage [V]", "Current [A]") {
+class SyncPlot(data: ResultTable) : FetChPlot("Synced Voltage Curve", "Voltage [V]", "Current [A]") {
 
     init {
 
@@ -27,12 +27,6 @@ class SyncPlot(data: ResultTable) : Plot("Synced Voltage Curve", "Voltage [V]", 
             .showMarkers(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
-
-
-        addSaveButton("Save")
-        addToolbarSeparator()
-        addToolbarButton("Linear") { setYAxisType(AxisType.LINEAR) }
-        addToolbarButton("Logarithmic") { setYAxisType(AxisType.LOGARITHMIC) }
 
     }
 

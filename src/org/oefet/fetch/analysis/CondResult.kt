@@ -1,17 +1,21 @@
 package org.oefet.fetch.analysis
 
+import jisa.enums.Icon
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
 import jisa.gui.Series
 import jisa.maths.fits.Fitting
+import org.oefet.fetch.gui.elements.FPPPlot
+import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.measurement.FPPMeasurement
 
 class CondResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
-    override val plot       = Plot("Conductivity Sweep", "SD Current [A]", "Voltage [V]")
+    override val plot       = FPPPlot(data)
     override val name       = "Conductivity Measurement (${data.getAttribute("Name")})"
+    override val image      = Icon.ELECTRICITY.blackImage
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -65,42 +69,8 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
 
         quantities += Conductivity(value, error, parameters, possibleParameters)
 
-        plotData()
-
     }
 
-    private fun plotData() {
-
-        plot.useMouseCommands(true)
-        plot.setPointOrdering(Plot.Sort.ORDER_ADDED)
-
-        plot.createSeries()
-            .setName("SD Voltage")
-            .showMarkers(false)
-            .setLineDash(Series.Dash.DOTTED)
-            .watch(data, FPPMeasurement.SD_CURRENT, FPPMeasurement.SD_VOLTAGE)
-
-        plot.createSeries()
-            .setName("Probe 1")
-            .showMarkers(false)
-            .setLineDash(Series.Dash.DOTTED)
-            .watch(data, FPPMeasurement.SD_CURRENT, FPPMeasurement.FPP1_VOLTAGE)
-
-        plot.createSeries()
-            .setName("Probe 2")
-            .showMarkers(false)
-            .setLineDash(Series.Dash.DOTTED)
-            .watch(data, FPPMeasurement.SD_CURRENT, FPPMeasurement.FPP2_VOLTAGE)
-
-        plot.createSeries()
-            .setName("FPP Difference")
-            .showMarkers(true)
-            .polyFit(1)
-            .watch(data, FPPMeasurement.SD_CURRENT, FPPMeasurement.FPP_VOLTAGE)
-
-        plot.addSaveButton("Save")
-
-    }
     override fun calculateHybrids(quantities: List<Quantity>): List<Quantity> {
         return emptyList()
     }

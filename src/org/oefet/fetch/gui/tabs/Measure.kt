@@ -1,7 +1,7 @@
 package org.oefet.fetch.gui.tabs
 
-import org.oefet.fetch.analysisold.OCurve
-import org.oefet.fetch.analysisold.TCurve
+
+
 import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import org.oefet.fetch.measurement.OutputMeasurement
 import org.oefet.fetch.measurement.TransferMeasurement
@@ -73,8 +73,8 @@ object Measure : Grid("Measurement", 1) {
 
         val plot = when (action.measurement) {
 
-            is OutputMeasurement   -> OutputPlot(OCurve(action.data))
-            is TransferMeasurement -> TransferPlot(TCurve(action.data))
+            is OutputMeasurement   -> OutputPlot(action.data).apply { legendColumns = 2 }
+            is TransferMeasurement -> TransferPlot(action.data).apply { legendColumns = 2 }
             is FPPMeasurement      -> FPPPlot(action.data)
             is SyncMeasurement     -> SyncPlot(action.data)
             else                   -> Plot("Unknown")
@@ -146,6 +146,7 @@ object Measure : Grid("Measurement", 1) {
 
         toolbarStart.isDisabled =  flag
         toolbarStop.isDisabled  = !flag
+        queueList.isDisabled    =  flag
 
         if (flag) {
 
