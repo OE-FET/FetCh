@@ -1,8 +1,8 @@
 <h1 align="center"><img src="https://i.imgur.com/4Me4gtE.png"/><br/>FetCh - FET Characterisation Suite</h1>
 
 <p align="center">
-  <a href="https://i.imgur.com/ScYEr8m.png">
-    <img src="https://i.imgur.com/ScYEr8m.png"/>  
+  <a href="https://i.imgur.com/g5bXpHz.png">
+    <img src="https://i.imgur.com/RbSCpKP.png"/>  
   </a>
 </p>
 
