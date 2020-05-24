@@ -29,7 +29,7 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
         sdConf.linkConfig(Settings.holdSD)
         sgConf.linkConfig(Settings.holdSG)
 
-        setIcon(MainWindow::class.java.getResource("fEt.png"))
+        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
 
     }
 

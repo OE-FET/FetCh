@@ -23,7 +23,7 @@ object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
         setMaximised(true)
         setExitOnClose(true)
-        setIcon(MainWindow::class.java.getResource("fEt.png"))
+        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
     }
 
 }

@@ -17,7 +17,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
     /**
      * Button for adding actions to the queue
      */
-    private val addButton = addToolbarMenuButton("Add Action").apply {
+    private val addButton = addToolbarMenuButton("Add...").apply {
 
         addItem("Measurements:") {}.apply { isDisabled = true }
         addSeparator()
@@ -54,6 +54,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             addButton.isDisabled = value
             clearQueue.isDisabled = value
         }
+
 
     private fun askMeasurement(measurement: FetChMeasurement) {
 

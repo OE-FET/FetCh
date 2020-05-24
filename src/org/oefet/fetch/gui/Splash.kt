@@ -6,9 +6,9 @@ object Splash : Doc("FetCh") {
 
     init {
 
-        setIcon(Splash::class.java.getResource("fEt.png"))
+        setIcon(Splash::class.java.getResource("images/fEt.png"))
 
-        addImage(Splash::class.java.getResource("fEt.png"))
+        addImage(Splash::class.java.getResource("images/fEt.png"))
             .setAlignment(Align.CENTRE)
         addHeading("FetCh: FET Characterisation")
             .setAlignment(Align.CENTRE)

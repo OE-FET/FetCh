@@ -1,7 +1,5 @@
 package org.oefet.fetch.gui.tabs
 
-
-
 import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import org.oefet.fetch.measurement.OutputMeasurement
 import org.oefet.fetch.measurement.TransferMeasurement

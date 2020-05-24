@@ -19,7 +19,7 @@ class Time : Grid("Wait", 1), ActionInput {
         add(fields)
         setIcon(Icon.DEVICE)
         fields.linkConfig(Settings.timeBasic)
-        setIcon(MainWindow::class.java.getResource("fEt.png"))
+        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
     }
 
     override fun ask(queue: ActionQueue) {

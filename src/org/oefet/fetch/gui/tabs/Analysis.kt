@@ -1,19 +1,18 @@
 package org.oefet.fetch.gui.tabs
 
-import javafx.scene.image.Image
 import jisa.Util
 import jisa.enums.Icon
+import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.analysis.*
 import org.oefet.fetch.analysis.Analysis
 import kotlin.reflect.KClass
-import kotlin.streams.toList
 
 object Analysis : BorderDisplay("Analysis") {
 
-    val sidebar       = ListDisplay<Analysis>("Available Analyses")
+    val sidebar = ListDisplay<Analysis>("Available Analyses")
     val analyseButton = sidebar.addToolbarButton("Analyse") { analyse() }
-    val saveButton    = sidebar.addToolbarMenuButton("Save...").apply {
+    val saveButton = sidebar.addToolbarMenuButton("Save...").apply {
         addItem("Plots...") { savePlots() }
         addItem("Tables...") { saveTables() }
         addItem("Plots and Tables...") { save() }
@@ -52,11 +51,11 @@ object Analysis : BorderDisplay("Analysis") {
         try {
 
             val quantities = FileLoad.getQuantities()
-            val names      = FileLoad.getNames()
-            val labels     = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
-            val analysis   = sidebar.selected.getObject()
+            val names = FileLoad.getNames()
+            val labels = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
+            val analysis = sidebar.selected.getObject()
 
-            val plots  = Grid("Plots", 2)
+            val plots = Grid("Plots", 2)
             val tables = Grid("Tables", 2)
 
             plots.setGrowth(true, false)
@@ -71,11 +70,15 @@ object Analysis : BorderDisplay("Analysis") {
 
             centreElement = Grid(progress)
 
-            val output  = analysis.analyse(quantities, labels)
+            val output = analysis.analyse(quantities, labels)
             this.output = output
 
             plots.addAll(output.plots)
-            tables.addAll(output.tables.stream().map{ Table(it.quantity.name, it.table) }.toList())
+            tables.addAll(output.tables.map {
+                Table(it.quantity.name, it.table).apply {
+                    addToolbarButton("Save") { saveTable(it.table) }
+                }
+            })
 
             centreElement = window
 
@@ -89,19 +92,26 @@ object Analysis : BorderDisplay("Analysis") {
 
     }
 
+    private fun saveTable(table: ResultTable) {
+
+        val file = GUI.saveFileSelect() ?: return
+        table.output(file)
+
+    }
+
     private fun save() {
 
         if (output == null) return
 
-        val saveInput  = Fields("Save Parameters")
-        val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
+        val saveInput = Fields("Save Parameters")
+        val plotWidth = saveInput.addIntegerField("Plot Width", 600)
         val plotHeight = saveInput.addIntegerField("Plot Height", 500)
-        val directory  = saveInput.addDirectorySelect("Directory")
+        val directory = saveInput.addDirectorySelect("Directory")
 
         if (!Grid("Save Data", 1, saveInput).showAsConfirmation()) return
 
-        val dir    = directory.get()
-        val width  = plotWidth.get().toDouble()
+        val dir = directory.get()
+        val width = plotWidth.get().toDouble()
         val height = plotHeight.get().toDouble()
 
         saveTables(dir)
@@ -118,21 +128,21 @@ object Analysis : BorderDisplay("Analysis") {
 
         if (path == null) {
 
-            val saveInput  = Fields("Save Parameters")
-            val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
+            val saveInput = Fields("Save Parameters")
+            val plotWidth = saveInput.addIntegerField("Plot Width", 600)
             val plotHeight = saveInput.addIntegerField("Plot Height", 500)
-            val directory  = saveInput.addDirectorySelect("Directory")
+            val directory = saveInput.addDirectorySelect("Directory")
 
             if (!Grid("Save Data", 1, saveInput).showAsConfirmation()) return
 
-            dir    = directory.get()
-            w      = plotWidth.get().toDouble()
-            h      = plotHeight.get().toDouble()
+            dir = directory.get()
+            w = plotWidth.get().toDouble()
+            h = plotHeight.get().toDouble()
 
         } else {
             dir = path
-            w   = width
-            h   = height
+            w = width
+            h = height
         }
 
         output.plots.forEach { it.saveSVG(Util.joinPath(dir, "${it.title.toLowerCase().replace(" ", "-")}.svg"), w, h) }
@@ -142,9 +152,16 @@ object Analysis : BorderDisplay("Analysis") {
     private fun saveTables(path: String? = null) {
 
         val output = this.output ?: return
-        val dir    = path ?: GUI.directorySelect() ?: return
+        val dir = path ?: GUI.directorySelect() ?: return
 
-        output.tables.forEach { it.table.output(Util.joinPath(dir, "${it.quantity.name.toLowerCase().replace(" ", "-")}.csv")) }
+        output.tables.forEach {
+            it.table.output(
+                Util.joinPath(
+                    dir,
+                    "${it.quantity.name.toLowerCase().replace(" ", "-")}.csv"
+                )
+            )
+        }
 
     }
 

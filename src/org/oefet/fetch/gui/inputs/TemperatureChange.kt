@@ -30,7 +30,7 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
         addAll(basic)
         setIcon(Icon.SNOWFLAKE)
         basic.linkConfig(Settings.tempSingleBasic)
-        setIcon(MainWindow::class.java.getResource("fEt.png"))
+        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
 
     }
 

@@ -35,7 +35,7 @@ class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
         setGrowth(true, false)
         setIcon(Icon.SNOWFLAKE)
         basic.linkConfig(Settings.tempBasic)
-        setIcon(MainWindow::class.java.getResource("fEt.png"))
+        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
 
     }
 

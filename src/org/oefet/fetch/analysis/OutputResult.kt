@@ -23,7 +23,7 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
     override val quantities = ArrayList<Quantity>()
     override val plot       = OutputPlot(data).apply { legendRows = data.getUniqueValues(SET_SG).size }
     override val name       = "Output Measurement (${data.getAttribute("Name")})"
-    override val image      = Image(MainWindow.javaClass.getResourceAsStream("output.png"))
+    override val image      = Image(MainWindow.javaClass.getResourceAsStream("images/output.png"))
 
     private val possibleParameters = listOf(
         Temperature::class,

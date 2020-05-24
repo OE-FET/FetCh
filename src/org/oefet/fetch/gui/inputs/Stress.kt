@@ -52,7 +52,7 @@ class Stress : Grid("Stress", 2), SweepInput {
         sdV.isDisabled = !drain.get()
         sgV.isDisabled = !gate.get()
 
-        setIcon(MainWindow::class.java.getResource("fEt.png"))
+        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
 
     }
 
