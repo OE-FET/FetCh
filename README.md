@@ -26,6 +26,12 @@ Automatically generate queue actions by using a sweep. Just specify the sweep po
 
 ![](https://i.imgur.com/Ctl8toK.gif)
 
+### Live Plotting
+
+Measurement data is plotted live as it comes in
+
+![](https://i.imgur.com/6BkoVWa.gif)
+
 ### Automatic Analysis
 
 FetCh can take all results currently loaded and automatically determine how best to analyse them and plot the results
