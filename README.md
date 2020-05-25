@@ -6,7 +6,7 @@
   </a>
 </p>
 
-## Getting and Running FetCh
+## *Fetching* and Running FetCh
 
 1. Make sure you have Java 11 or newer ([download](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot))
 2. Download the executable jar file: [FetCh.jar](https://github.com/OE-FET/FETTER/raw/master/FetCh.jar)
