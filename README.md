@@ -24,16 +24,16 @@ Queue up measurements and actions to automatically run one after the other, allo
 
 Automatically generate queue actions by using a sweep. Just specify the sweep points and what actions to undertake at each point. For instance, with a temperature sweep:
 
-![](https://i.imgur.com/Ctl8toK.gif)
+![](https://i.imgur.com/CJNS5Tz.gif)
 
 ### Live Plotting
 
 Measurement data is plotted live as it comes in
 
-![](https://i.imgur.com/TnPPMdh.gif)
+![](https://i.imgur.com/IwhnFa4.gif)
 
 ### Automatic Analysis
 
 FetCh can take all results currently loaded and automatically determine how best to analyse them and plot the results
 
-![](https://i.imgur.com/PHTdBzO.gif)
+![](https://i.imgur.com/QPmGfds.gif)
