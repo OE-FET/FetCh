@@ -18,7 +18,7 @@
 
 Queue up measurements and actions to automatically run one after the other, allowing you to fully customise your measurement routine
 
-![](https://i.imgur.com/oJqTKuR.gif)
+![](https://i.imgur.com/SpTJksS.gif)
 
 ### Sweeps
 
@@ -30,7 +30,7 @@ Automatically generate queue actions by using a sweep. Just specify the sweep po
 
 Measurement data is plotted live as it comes in
 
-![](https://i.imgur.com/6BkoVWa.gif)
+![](https://i.imgur.com/TnPPMdh.gif)
 
 ### Automatic Analysis
 
