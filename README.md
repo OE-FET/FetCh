@@ -18,7 +18,7 @@
 
 Queue up measurements and actions to automatically run one after the other, allowing you to fully customise your measurement routine
 
-![](https://i.imgur.com/SpTJksS.gif)
+![](https://i.imgur.com/sEIlf4n.gif)
 
 ### Sweeps
 
