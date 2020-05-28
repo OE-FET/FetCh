@@ -78,6 +78,7 @@ object FileLoad : BorderDisplay("Results") {
 
             fileList.clear()
             results.clear()
+            names.clear()
             System.gc()
 
         }
@@ -158,7 +159,9 @@ object FileLoad : BorderDisplay("Results") {
 
         val map  = HashMap<Double, String>()
 
-        for ((index, value) in names.withIndex()) map[(index + 1).toDouble()] = value
+        try {
+            for ((index, value) in names.withIndex()) map[(index + 1).toDouble()] = value
+        } catch (ignored: Exception) {}
 
         return map
 
@@ -179,7 +182,7 @@ object FileLoad : BorderDisplay("Results") {
         val n: Int
 
         if (index < 0) {
-            names += data.getAttribute("Name")
+            names += data.getAttribute("Name") ?: "Unknown"
             n      = names.size
         } else {
             n      = index + 1
