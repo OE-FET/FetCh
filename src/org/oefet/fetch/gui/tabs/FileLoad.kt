@@ -16,6 +16,7 @@ object FileLoad : BorderDisplay("Results") {
 
     private val fileList     = ListDisplay<ResultFile>("Loaded Results")
     private val results      = LinkedList<ResultFile>()
+    private val names        = LinkedList<String>()
     private val notDisplayed = listOf(
         FwdSatMobility::class,
         BwdSatMobility::class,
@@ -125,7 +126,7 @@ object FileLoad : BorderDisplay("Results") {
 
         centreElement = Grid(progress)
 
-        for (path in paths) {
+        paths.parallelStream().forEach { path ->
 
             p++
 
@@ -155,10 +156,9 @@ object FileLoad : BorderDisplay("Results") {
 
     fun getNames(): Map<Double, String> {
 
-        val list = results.stream().map { it.data.getAttribute("Name") }.distinct().toList()
         val map  = HashMap<Double, String>()
 
-        for ((index, value) in list.withIndex()) map[(index + 1).toDouble()] = value
+        for ((index, value) in names.withIndex()) map[(index + 1).toDouble()] = value
 
         return map
 
@@ -174,9 +174,17 @@ object FileLoad : BorderDisplay("Results") {
 
     private fun processData(data: ResultTable): ResultFile {
 
-        val names = results.stream().map { it.data.getAttribute("Name") }.distinct().toList()
         val index = names.indexOf(data.getAttribute("Name"))
-        val n     = (if (index >= 0) index else names.size) + 1
+
+        val n: Int
+
+        if (index < 0) {
+            names += data.getAttribute("Name")
+            n      = names.size
+        } else {
+            n      = index + 1
+        }
+
         val extra = listOf(Device(n))
 
         return ResultFile.loadData(data, extra)

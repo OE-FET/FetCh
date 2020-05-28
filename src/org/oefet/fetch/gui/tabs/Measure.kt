@@ -19,7 +19,8 @@ object Measure : Grid("Measurement", 1) {
     val basic     = Fields("Measurement Parameters")
     val name      = basic.addTextField("Name")
     val dir       = basic.addDirectorySelect("Output Directory")
-    val topRow    = Grid(2)
+    val topRow    = SwapRow("Top Row")
+    val bottomRow = Grid(1)
 
     init { basic.addSeparator() }
 
@@ -40,14 +41,15 @@ object Measure : Grid("Measurement", 1) {
 
     init {
 
+        topRow.add(basic, 0)
+        topRow.add(queueList, 0, 1)
+
         toolbarStop.isDisabled = true
 
         setGrowth(true, false)
         setIcon(Icon.FLASK)
 
-        topRow.addAll(basic, queueList)
-
-        add(topRow)
+        addAll(topRow, bottomRow)
 
         basic.linkConfig(Settings.measureBasic)
 
@@ -79,12 +81,12 @@ object Measure : Grid("Measurement", 1) {
 
         }
 
-        topRow.remove(this.plot)
-        remove(this.table)
+        topRow.remove(this.plot);
+        bottomRow.remove(this.table)
         this.table = table
         this.plot  = plot
-        topRow.add(plot)
-        add(table)
+        topRow.add(plot, 1)
+        bottomRow.add(table)
 
     }
 
@@ -148,17 +150,20 @@ object Measure : Grid("Measurement", 1) {
 
         if (flag) {
 
-            topRow.clear()
+            topRow.remove(plot)
+            bottomRow.remove(table)
+
             plot  = Plot("Results")
             table = Table("Results")
-            topRow.addAll(queueList, plot)
-            add(table)
+
+            topRow.add(plot, 1)
+            bottomRow.add(table)
+            topRow.configuration = 1
 
         } else {
 
-            topRow.clear()
-            topRow.addAll(basic, queueList)
-            remove(table)
+            topRow.configuration = 0
+            bottomRow.remove(table)
 
         }
 

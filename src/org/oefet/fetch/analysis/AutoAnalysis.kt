@@ -115,7 +115,7 @@ object AutoAnalysis : Analysis {
                         { row ->
                             names.entries.stream().map {
                                     labels[it.value::class]?.get(row[it.key]) ?: "%s = %.4g %s".format(it.value.symbol, row[it.key], it.value.unit)
-                            }.toList().joinToString("\t")
+                            }.toList().joinToString(" \t ")
                         }
                     )
 
