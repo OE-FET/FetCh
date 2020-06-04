@@ -1,4 +1,4 @@
-<h1 align="center"><img src="https://i.imgur.com/4Me4gtE.png"/><br/>FetCh - FET Characterisation Suite</h1>
+![](https://i.imgur.com/euDvMUk.png)
 
 <p align="center">
   <a href="https://i.imgur.com/g5bXpHz.png">
