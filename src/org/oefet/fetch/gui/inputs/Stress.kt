@@ -7,8 +7,8 @@ import jisa.experiment.ActionQueue
 import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.elements.FetChQueue
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.Configuration
 
 class Stress : Grid("Stress", 2), SweepInput {
@@ -52,7 +52,7 @@ class Stress : Grid("Stress", 2), SweepInput {
         sdV.isDisabled = !drain.get()
         sgV.isDisabled = !gate.get()
 
-        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
+        setIcon(Images.getURL("fEt.png"))
 
     }
 

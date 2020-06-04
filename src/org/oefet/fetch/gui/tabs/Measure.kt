@@ -32,8 +32,8 @@ object Measure : Grid("Measurement", 1) {
     val dielectric = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
     val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
 
-    val toolbarStart = addToolbarButton("Start", this::runMeasurement)
-    val toolbarStop  = addToolbarButton("Stop", this::stopMeasurement)
+    val toolbarStart = addToolbarButton("Start", ::runMeasurement)
+    val toolbarStop  = addToolbarButton("Stop", ::stopMeasurement)
 
     val baseFile: String get() = Util.joinPath(dir.get(), name.get())
     var table:    Table?       = null
@@ -53,7 +53,7 @@ object Measure : Grid("Measurement", 1) {
 
         basic.linkConfig(Settings.measureBasic)
 
-        dielectric.setOnChange(this::setDielectric)
+        dielectric.setOnChange(::setDielectric)
         setDielectric()
 
     }
@@ -61,17 +61,16 @@ object Measure : Grid("Measurement", 1) {
     fun display(action: ActionQueue.MeasureAction) {
 
         action.setAttribute("Name", name.get())
-        action.setAttribute("Length", "${length.get()} m")
-        action.setAttribute("FPP Separation", "${fppLength.get()} m")
-        action.setAttribute("Width", "${width.get()} m")
-        action.setAttribute("Thickness", "${cThick.get()} m")
-        action.setAttribute("Dielectric Thickness", "${dThick.get()} m")
-        action.setAttribute("Dielectric Permittivity", dielConst.get())
+        action.setAttribute("Length", "${length.value} m")
+        action.setAttribute("FPP Separation", "${fppLength.value} m")
+        action.setAttribute("Width", "${width.value} m")
+        action.setAttribute("Thickness", "${cThick.value} m")
+        action.setAttribute("Dielectric Thickness", "${dThick.value} m")
+        action.setAttribute("Dielectric Permittivity", dielConst.value)
 
         val table = Table("Data", action.data)
 
-
-        val plot = when (action.measurement) {
+        val plot  = when (action.measurement) {
 
             is OutputMeasurement   -> OutputPlot(action.data).apply { legendColumns = 2 }
             is TransferMeasurement -> TransferPlot(action.data).apply { legendColumns = 2 }
@@ -96,12 +95,12 @@ object Measure : Grid("Measurement", 1) {
 
             0 -> {
                 dielConst.isDisabled = true
-                dielConst.set(2.05)
+                dielConst.value = 2.05
             }
 
             1 -> {
                 dielConst.isDisabled = true
-                dielConst.set(2.22)
+                dielConst.value = 2.22
             }
 
             2 -> {

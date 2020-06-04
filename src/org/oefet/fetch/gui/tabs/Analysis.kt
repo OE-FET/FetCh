@@ -10,9 +10,9 @@ import kotlin.reflect.KClass
 
 object Analysis : BorderDisplay("Analysis") {
 
-    val sidebar = ListDisplay<Analysis>("Available Analyses")
+    val sidebar       = ListDisplay<Analysis>("Available Analyses")
     val analyseButton = sidebar.addToolbarButton("Analyse") { analyse() }
-    val saveButton = sidebar.addToolbarMenuButton("Save...").apply {
+    val saveButton    = sidebar.addToolbarMenuButton("Save...").apply {
         addItem("Plots...") { savePlots() }
         addItem("Tables...") { saveTables() }
         addItem("Plots and Tables...") { save() }
@@ -46,16 +46,14 @@ object Analysis : BorderDisplay("Analysis") {
 
     private fun analyse() {
 
-        System.gc()
-
         try {
 
             val quantities = FileLoad.getQuantities()
-            val names = FileLoad.getNames()
-            val labels = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
-            val analysis = sidebar.selected.getObject()
+            val names      = FileLoad.getNames()
+            val labels     = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
+            val analysis   = sidebar.selected.getObject()
 
-            val plots = Grid("Plots", 2)
+            val plots  = Grid("Plots", 2)
             val tables = Grid("Tables", 2)
 
             plots.setGrowth(true, false)
@@ -75,17 +73,14 @@ object Analysis : BorderDisplay("Analysis") {
 
             plots.addAll(output.plots)
             tables.addAll(output.tables.map {
-                Table(it.quantity.name, it.table).apply {
-                    addToolbarButton("Save") { saveTable(it.table) }
-                }
+                Table(it.quantity.name, it.table).apply { addToolbarButton("Save") { saveTable(it.table) } }
             })
 
             centreElement = window
 
-            progress.close()
-
         } catch (e: Exception) {
             e.printStackTrace()
+            GUI.errorAlert(e.message)
         }
 
         System.gc()
@@ -103,15 +98,15 @@ object Analysis : BorderDisplay("Analysis") {
 
         if (output == null) return
 
-        val saveInput = Fields("Save Parameters")
-        val plotWidth = saveInput.addIntegerField("Plot Width", 600)
+        val saveInput  = Fields("Save Parameters")
+        val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
         val plotHeight = saveInput.addIntegerField("Plot Height", 500)
-        val directory = saveInput.addDirectorySelect("Directory")
+        val directory  = saveInput.addDirectorySelect("Directory")
 
         if (!Grid("Save Data", 1, saveInput).showAsConfirmation()) return
 
-        val dir = directory.get()
-        val width = plotWidth.get().toDouble()
+        val dir    = directory.get()
+        val width  = plotWidth.get().toDouble()
         val height = plotHeight.get().toDouble()
 
         saveTables(dir)
@@ -128,24 +123,26 @@ object Analysis : BorderDisplay("Analysis") {
 
         if (path == null) {
 
-            val saveInput = Fields("Save Parameters")
-            val plotWidth = saveInput.addIntegerField("Plot Width", 600)
+            val saveInput  = Fields("Save Parameters")
+            val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
             val plotHeight = saveInput.addIntegerField("Plot Height", 500)
-            val directory = saveInput.addDirectorySelect("Directory")
+            val directory  = saveInput.addDirectorySelect("Directory")
 
             if (!Grid("Save Data", 1, saveInput).showAsConfirmation()) return
 
             dir = directory.get()
-            w = plotWidth.get().toDouble()
-            h = plotHeight.get().toDouble()
+            w   = plotWidth.get().toDouble()
+            h   = plotHeight.get().toDouble()
 
         } else {
             dir = path
-            w = width
-            h = height
+            w   = width
+            h   = height
         }
 
-        output.plots.forEach { it.saveSVG(Util.joinPath(dir, "${it.title.toLowerCase().replace(" ", "-")}.svg"), w, h) }
+        for (plot in output.plots) {
+            plot.saveSVG(Util.joinPath(dir, "${plot.title.toLowerCase().replace(" ", "-")}.svg"), w, h)
+        }
 
     }
 
@@ -154,13 +151,8 @@ object Analysis : BorderDisplay("Analysis") {
         val output = this.output ?: return
         val dir = path ?: GUI.directorySelect() ?: return
 
-        output.tables.forEach {
-            it.table.output(
-                Util.joinPath(
-                    dir,
-                    "${it.quantity.name.toLowerCase().replace(" ", "-")}.csv"
-                )
-            )
+        for (table in output.tables) {
+            table.table.output(Util.joinPath(dir, "${table.quantity.name.toLowerCase().replace(" ", "-")}.csv"))
         }
 
     }

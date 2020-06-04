@@ -12,6 +12,7 @@ import org.oefet.fetch.*
 import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.gui.elements.OutputPlot
+import org.oefet.fetch.gui.images.Images
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -23,7 +24,7 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
     override val quantities = ArrayList<Quantity>()
     override val plot       = OutputPlot(data).apply { legendRows = data.getUniqueValues(SET_SG).size }
     override val name       = "Output Measurement (${data.getAttribute("Name")})"
-    override val image      = Image(MainWindow.javaClass.getResourceAsStream("images/output.png"))
+    override val image      = Images.getImage("output.png")
 
     private val possibleParameters = listOf(
         Temperature::class,

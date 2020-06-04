@@ -4,12 +4,9 @@ import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.Fields
 import jisa.gui.Grid
-import jisa.maths.Range
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.MainWindow
-import org.oefet.fetch.gui.elements.FetChQueue
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.Configuration
-import org.oefet.fetch.gui.tabs.Measure
 
 class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
@@ -30,7 +27,7 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
         addAll(basic)
         setIcon(Icon.SNOWFLAKE)
         basic.linkConfig(Settings.tempSingleBasic)
-        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
+        setIcon(Images.getURL("fEt.png"))
 
     }
 
@@ -40,15 +37,15 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
             basic.writeToConfig()
 
-            val T = temp.get()
+            val temperature = temp.value
 
-            queue.addAction("Change Temperature to $T K") {
+            queue.addAction("Change Temperature to $temperature K") {
 
                 val tc = Configuration.tControl.get() ?: throw Exception("No temperature controller configured")
 
-                tc.targetTemperature = T
+                tc.targetTemperature = temperature
                 tc.useAutoHeater()
-                tc.waitForStableTemperature(T, stabilityPercentage, stabilityTime)
+                tc.waitForStableTemperature(temperature, stabilityPercentage, stabilityTime)
 
             }
 
@@ -58,9 +55,9 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
     }
 
     val stabilityPercentage: Double
-        get() = stabPerc.get()
+        get() = stabPerc.value
 
     val stabilityTime: Long
-        get() = (stabTime.get() * 1000.0).toLong()
+        get() = (stabTime.value * 1000.0).toLong()
 
 }

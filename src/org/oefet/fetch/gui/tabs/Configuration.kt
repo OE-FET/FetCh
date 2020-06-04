@@ -59,29 +59,12 @@ object Configuration : Grid("Configuration", 1) {
         setGrowth(true, false)
         setIcon(Icon.COGS)
 
+        // Add all configurators, grouped in their respective sections, all collapsed to start with
         addAll(
             Section("SPA Grounding", Grid(1, ground)).apply { isExpanded = false },
-            Section(
-                "SMU Channels", Grid(
-                    2,
-                    sourceDrain,
-                    sourceGate
-                )
-            ).apply { isExpanded = false },
-            Section(
-                "Voltage Probes", Grid(
-                    2,
-                    fourPP1,
-                    fourPP2
-                )
-            ).apply { isExpanded = false },
-            Section(
-                "Temperature", Grid(
-                    2,
-                    tControl,
-                    tMeter
-                )
-            ).apply { isExpanded = false }
+            Section("SMU Channels", Grid(2, sourceDrain, sourceGate)).apply { isExpanded = false },
+            Section("Voltage Probes", Grid(2, fourPP1, fourPP2)).apply { isExpanded = false },
+            Section("Temperature", Grid(2, tControl, tMeter)).apply { isExpanded = false }
         )
     }
 

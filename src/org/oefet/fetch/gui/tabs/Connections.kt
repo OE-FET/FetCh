@@ -16,7 +16,7 @@ object Connections : ConnectorGrid("Connections", Settings.instruments) {
     val tSen    = addInstrument("Thermometer", TMeter::class.java)
 
     init {
-        setNumColumns(2)
+        numColumns = 2
         setIcon(Icon.CONNECTION)
         connectAll()
     }

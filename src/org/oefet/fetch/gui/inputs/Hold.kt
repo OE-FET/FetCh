@@ -6,7 +6,7 @@ import jisa.experiment.ActionQueue
 import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.MainWindow
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.Configuration
 
 class Hold : Grid("Voltage Hold", 1), ActionInput {
@@ -29,7 +29,7 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
         sdConf.linkConfig(Settings.holdSD)
         sgConf.linkConfig(Settings.holdSG)
 
-        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
+        setIcon(Images.getURL("fEt.png"))
 
     }
 

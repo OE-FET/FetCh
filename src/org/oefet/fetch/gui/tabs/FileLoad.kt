@@ -1,5 +1,6 @@
 package org.oefet.fetch.gui.tabs
 
+import jisa.Util
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.experiment.ResultList
@@ -10,13 +11,20 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.streams.toList
 
+/**
+ * Page for loading in and viewing previous results
+ */
 object FileLoad : BorderDisplay("Results") {
 
-    private val fileList     = ListDisplay<ResultFile>("Loaded Results")
-    private val results      = LinkedList<ResultFile>()
-    private val names        = LinkedList<String>()
+    private val fileList = ListDisplay<ResultFile>("Loaded Results")
+    private val progress = Progress("Loading Files").apply {
+        status = "Reading and processing selected files, please wait..."
+    }
+
+    private val results = LinkedList<ResultFile>()
+    private val names   = LinkedList<String>()
+
     private val notDisplayed = listOf(
         FwdSatMobility::class,
         BwdSatMobility::class,
@@ -28,75 +36,66 @@ object FileLoad : BorderDisplay("Results") {
 
     init {
 
+        // Set icon and put the list of loaded files on the left
         setIcon(Icon.DATA)
         leftElement = fileList
 
-        fileList.setOnChange {
+        // Run updateDisplay() every time the selected file is changed in the file list
+        fileList.setOnChange(::updateDisplay)
 
-            if (fileList.selected == null) {
-                centreElement = Grid()
-            } else {
-
-                val selected = fileList.selected.getObject()
-                val params = Display("Parameters")
-
-                for (quantity in selected.quantities) {
-
-                    if (!notDisplayed.contains(quantity::class)) params.addParameter(
-                        quantity.name,
-                        "%s %s".format(quantity.value, quantity.unit)
-                    )
-
-                }
-
-                for (parameter in selected.parameters) {
-                    params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
-                }
-
-                val row = Grid(2, params, selected.plot)
-                val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
-
-                centreElement = grid
-
-            }
-
-        }
-
+        // Add context menu item to all items in the file list
         fileList.addDefaultMenuItem("Remove Result") {
-
             it.remove()
             results -= it.getObject()
-
         }
 
-        val menu = fileList.addToolbarMenuButton("Add...")
+        // Add the "Add..." menu button to the file list
+        fileList.addToolbarMenuButton("Add...").apply {
+            addItem("Files...", ::addFiles)
+            addItem("Folder...", ::addFolder)
+        }
 
-        menu.addItem("Files...") { addFiles() }
-        menu.addItem("Folder...") { addFolder() }
-
+        // Add the "Clear" button to the file list, setting it to clear everything when clicked
         fileList.addToolbarButton("Clear") {
-
             fileList.clear()
             results.clear()
             names.clear()
             System.gc()
-
         }
 
     }
 
-    private fun addFiles() {
+    private fun updateDisplay() {
 
-        val paths = GUI.openFileMultipleSelect() ?: return
-        loadFiles(paths)
+        if (fileList.selected == null) {
 
-    }
+            // If nothing is selected, then show an empty pane
+            centreElement = Grid()
 
-    private fun addFolder() {
+        } else {
 
-        val folder = GUI.directorySelect() ?: return
-        val files  = File(folder).listFiles { f -> !f.isDirectory }?.map { it.absolutePath } ?: return
-        loadFiles(files)
+            val selected = fileList.selected.getObject()
+            val params   = Display("Parameters")
+
+            for (quantity in selected.quantities) {
+
+                if (!notDisplayed.contains(quantity::class)) params.addParameter(
+                    quantity.name,
+                    "%s %s".format(quantity.value, quantity.unit)
+                )
+
+            }
+
+            for (parameter in selected.parameters) {
+                params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
+            }
+
+            val row  = Grid(2, params, selected.plot)
+            val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
+
+            centreElement = grid
+
+        }
 
     }
 
@@ -116,81 +115,92 @@ object FileLoad : BorderDisplay("Results") {
 
     }
 
-    private fun loadFiles(paths: List<String>) {
-
-        val progress = Progress("Loading Files")
-        progress.title = "Loading Files"
-        progress.setStatus("Reading and processing selected files, please wait...")
-
-        progress.setProgress(0.0, paths.size.toDouble())
-        var p = 0.0
-
-        centreElement = Grid(progress)
-
-        paths.parallelStream().forEach { path ->
-
-            p++
-
-            try {
-
-                addData(ResultList.loadFile(path))
-                progress.setProgress(p)
-
-            } catch (e: UnknownResultException) {
-
-                println("Ignoring $path (${e.message})")
-
-            } catch (e: Exception) {
-
-                e.printStackTrace()
-                fileList.add(null, e.message, path, ActionQueue.Status.ERROR.image)
-
-            }
-
-        }
-
-        progress.setProgress(1.0, 1.0)
-
-        fileList.select(0)
-
-    }
-
-    fun getNames(): Map<Double, String> {
-
-        val map  = HashMap<Double, String>()
-
-        try {
-            for ((index, value) in names.withIndex()) map[(index + 1).toDouble()] = value
-        } catch (ignored: Exception) {}
-
-        return map
-
-    }
-
     fun addData(data: ResultTable) {
 
-        val result = processData(data)
+        // Determine which device number this result is for
+        val index = names.indexOf(data.getAttribute("Name"))
+
+        val n = if (index < 0) {
+            names += data.getAttribute("Name") ?: "Unknown"
+            names.size
+        } else {
+            index + 1
+        }
+
+        // Load the result as a ResultFile object, specifying device number parameter to use
+        val result = ResultFile.loadData(data, listOf(Device(n)))
+
+        // Add the loaded ResultFile to the list display and overall list of loaded results
         fileList.add(result, result.name, result.getParameterString(), result.image)
         results += result
 
     }
 
-    private fun processData(data: ResultTable): ResultFile {
+    private fun loadFiles(paths: List<String>) {
 
-        val index = names.indexOf(data.getAttribute("Name"))
+        // Display progress bar
+        progress.setProgress(0, paths.size)
+        centreElement = Grid(progress)
 
-        val n: Int
+        // Iterate over paths in alphabetical order
+        for (path in paths.sorted()) {
 
-        if (index < 0) {
-            names += data.getAttribute("Name") ?: "Unknown"
-            n      = names.size
-        } else {
-            n      = index + 1
+            try {
+
+                addData(ResultList.loadFile(path))
+
+            } catch (e: UnknownResultException) {
+
+                // If it doesn't contain a known measurement type, ignore it
+                println("Ignoring $path (${e.message})")
+
+            } catch (e: Exception) {
+
+                // Any other errors should be properly reported
+                e.printStackTrace()
+                fileList.add(null, e.message, path, ActionQueue.Status.ERROR.image)
+
+            }
+
+            // Make the progress bar tick along one unit
+            progress.incrementProgress()
+
         }
 
-        val extra = listOf(Device(n))
+        // Make sure we end with a 100% value
+        progress.setProgress(1.0, 1.0)
 
-        return ResultFile.loadData(data, extra)
+        // Show the first item in the list (thus removing the progress bar)
+        fileList.select(0)
+
+    }
+
+    private fun addFiles() {
+
+        // Add all files that the user selects
+        val paths = GUI.openFileMultipleSelect() ?: return
+        loadFiles(paths)
+
+    }
+
+    private fun addFolder() {
+
+        // Add all files in the directory the user selects (filtering out "files" that are actually directories).
+        val folder = GUI.directorySelect() ?: return
+        val files  = File(folder).listFiles { f -> !f.isDirectory }?.map { it.absolutePath } ?: return
+        loadFiles(files)
+
+    }
+
+    fun getNames(): Map<Double, String> {
+
+        val map = HashMap<Double, String>()
+
+        Util.runRegardless {
+            for ((index, value) in names.withIndex()) map[(index + 1).toDouble()] = value
+        }
+
+        return map
 
     }
 

@@ -5,7 +5,7 @@ import jisa.experiment.ActionQueue
 import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.MainWindow
+import org.oefet.fetch.gui.images.Images
 
 class Time : Grid("Wait", 1), ActionInput {
 
@@ -19,7 +19,7 @@ class Time : Grid("Wait", 1), ActionInput {
         add(fields)
         setIcon(Icon.DEVICE)
         fields.linkConfig(Settings.timeBasic)
-        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
+        setIcon(Images.getURL("fEt.png"))
     }
 
     override fun ask(queue: ActionQueue) {

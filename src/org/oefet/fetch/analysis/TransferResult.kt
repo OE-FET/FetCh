@@ -11,6 +11,7 @@ import org.oefet.fetch.*
 import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.gui.elements.TransferPlot
+import org.oefet.fetch.gui.images.Images
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -22,7 +23,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
     override val quantities = ArrayList<Quantity>()
     override val plot       = TransferPlot(data).apply { legendRows = data.getUniqueValues(SET_SD).size }
     override val name       = "Transfer Measurement (${data.getAttribute("Name")})"
-    override val image      = Image(MainWindow.javaClass.getResourceAsStream("images/transfer.png"))
+    override val image      = Images.getImage("transfer.png")
 
     private val possibleParameters = listOf(
         Temperature::class,

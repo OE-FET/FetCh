@@ -21,6 +21,7 @@ class OutputMeasurement : FetChMeasurement() {
 
     override val type = "Output"
 
+    // Measurement paramaters
     val label   = StringParameter("Basic", "Label", null, "Output")
     val intTime = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     val delTime = DoubleParameter("Basic", "Delay Time", "s", 0.5)

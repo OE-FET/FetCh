@@ -7,9 +7,8 @@ import jisa.gui.Grid
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.MainWindow
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.Configuration
-import org.oefet.fetch.gui.tabs.Measure
 
 class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
@@ -35,7 +34,7 @@ class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
         setGrowth(true, false)
         setIcon(Icon.SNOWFLAKE)
         basic.linkConfig(Settings.tempBasic)
-        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
+        setIcon(Images.getURL("fEt.png"))
 
     }
 

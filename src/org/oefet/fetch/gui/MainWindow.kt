@@ -1,7 +1,7 @@
 package org.oefet.fetch.gui
 
 import jisa.gui.Pages
-import jisa.gui.Tabs
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.*
 
 object MainWindow : Pages("FetCh - FET Characterisation Suite") {
@@ -23,7 +23,8 @@ object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
         setMaximised(true)
         setExitOnClose(true)
-        setIcon(MainWindow::class.java.getResource("images/fEt.png"))
+        setIcon(Images.getURL("fEt.png"))
+
     }
 
 }

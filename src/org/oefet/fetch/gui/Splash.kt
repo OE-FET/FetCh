@@ -1,23 +1,12 @@
 package org.oefet.fetch.gui
 
-import jisa.gui.Doc
+import jisa.gui.SplashScreen
+import org.oefet.fetch.gui.images.Images
 
-object Splash : Doc("FetCh") {
+object Splash : SplashScreen("FetCh", Images.getURL("splash.png")) {
 
     init {
-
-        setIcon(Splash::class.java.getResource("images/fEt.png"))
-
-        addImage(Splash::class.java.getResource("images/fEt.png"))
-            .setAlignment(Align.CENTRE)
-        addHeading("FetCh: FET Characterisation")
-            .setAlignment(Align.CENTRE)
-        addText("William Wood 2020")
-            .setAlignment(Align.CENTRE)
-        addText("Loading, please wait...")
-            .setAlignment(Align.CENTRE)
-        addText(" ".repeat(120))
-
+        setIcon(Images.getURL("fEt.png"))
     }
 
 }
