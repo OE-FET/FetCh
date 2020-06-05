@@ -73,16 +73,22 @@ object Analysis : BorderDisplay("Analysis") {
 
             plots.addAll(output.plots)
             tables.addAll(output.tables.map {
+
                 Table(it.quantity.name, it.table).apply {
+
                     addToolbarButton("Save") { saveTable(it.table) }
                     addToolbarSeparator()
                     addToolbarButton("⛶") {
+
                         Table(it.quantity.name, it.table).apply {
                             show()
                             isMaximised = true
                         }
+
                     }
+
                 }
+
             })
 
             centreElement = window
