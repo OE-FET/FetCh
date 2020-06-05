@@ -9,6 +9,7 @@ import jisa.gui.*
 import org.oefet.fetch.analysis.*
 import java.io.File
 import java.util.*
+import javax.swing.plaf.synth.Region
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -170,8 +171,11 @@ object FileLoad : BorderDisplay("Results") {
         // Make sure we end with a 100% value
         progress.setProgress(1.0, 1.0)
 
-        // Show the first item in the list (thus removing the progress bar)
-        fileList.select(0)
+        if (fileList.isEmpty) {
+            updateDisplay()
+        } else {
+            fileList.select(0)
+        }
 
     }
 

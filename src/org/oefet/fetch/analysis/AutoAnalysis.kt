@@ -101,12 +101,7 @@ object AutoAnalysis : Analysis {
                 val series = plot.createSeries()
                     .watch(table.table, paramIndex, valueIndex, errorIndex)
                     .setColour(Colour.CORNFLOWERBLUE)
-
-                if (table.table.getUniqueValues(paramIndex).size > 10) {
-                    series.showMarkers(false).showLine(true)
-                } else {
-                    series.showMarkers(true).showLine(false)
-                }
+                    .setMarkersVisible(table.table.getUniqueValues(paramIndex).size <= 20)
 
                 if (splits.isNotEmpty()) {
 
@@ -119,14 +114,14 @@ object AutoAnalysis : Analysis {
                         }
                     )
 
-                    plot.showLegend(true)
+                    plot.isLegendVisible = true
 
                 } else {
-                    plot.showLegend(false)
+                    plot.isLegendVisible = false
                 }
 
-                plot.useMouseCommands(true)
-                plot.useAutoLimits()
+                plot.isMouseEnabled = true
+                plot.autoLimits()
 
                 plots += plot
 

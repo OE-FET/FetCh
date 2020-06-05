@@ -55,11 +55,11 @@ object TemperatureAnalysis : Analysis {
             plot.createSeries()
                 .watch(table.table, 0, 1, 2)
                 .setColour(Series.defaultColours[plots.size % Series.defaultColours.size])
-                .showLine(false)
+                .setLineVisible(false)
 
-            plot.showLegend(false)
-            plot.useMouseCommands(true)
-            plot.useAutoLimits()
+            plot.isLegendVisible = false
+            plot.isMouseEnabled  = true
+            plot.autoLimits()
 
             plots += plot
 

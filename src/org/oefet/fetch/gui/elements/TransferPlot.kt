@@ -13,17 +13,17 @@ class TransferPlot(data: ResultTable) : FetChPlot("Transfer Curve", "SG Voltage 
 
     init {
 
-        useMouseCommands(true)
+        setMouseEnabled(true)
         setYAxisType(AxisType.LOGARITHMIC)
         setPointOrdering(Sort.ORDER_ADDED)
 
         createSeries()
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .watch(data, { it[SG_VOLTAGE] }, { abs(it[SD_CURRENT]) })
             .split(SET_SD, "D (SD: %s V)")
 
         createSeries()
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SG_VOLTAGE] }, { abs(it[SG_CURRENT]) })
             .split(SET_SD, "G (SD: %sV)")

@@ -11,20 +11,20 @@ class SyncPlot(data: ResultTable) : FetChPlot("Synced Voltage Curve", "Voltage [
 
     init {
 
-        useMouseCommands(true)
+        setMouseEnabled(true)
         setYAxisType(AxisType.LOGARITHMIC)
         setPointOrdering(Sort.ORDER_ADDED)
 
         createSeries()
             .setName("Drain")
             .setColour(Colour.CORNFLOWERBLUE)
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SD_CURRENT]) })
 
         createSeries()
             .setName("Gate")
             .setColour(Colour.ORANGERED)
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
 

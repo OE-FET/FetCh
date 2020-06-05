@@ -6,20 +6,31 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
 
     init {
 
-        useMouseCommands(true)
+        setMouseEnabled(true)
 
         addSaveButton("Save")
         addToolbarSeparator()
 
         addToolbarMenuButton("Scaling").apply {
-            addItem("Linear") { setYAxisType(Plot.AxisType.LINEAR) }
-            addItem("Logarithmic") { setYAxisType(Plot.AxisType.LOGARITHMIC) }
+            addItem("Linear") { setYAxisType(AxisType.LINEAR) }
+            addItem("Logarithmic") { setYAxisType(AxisType.LOGARITHMIC) }
         }
 
         addToolbarMenuButton("Display").apply {
-            addItem("Markers Only") { series.forEach { it.showLine(false).showMarkers(true) } }
-            addItem("Lines Only") { series.forEach { it.showLine(true).showMarkers(false) } }
-            addItem("Markers and Lines") { series.forEach { it.showLine(true).showMarkers(true) } }
+            addItem("Markers Only") { series.forEach { it.setLineVisible(false).setMarkersVisible(true) } }
+            addItem("Lines Only") { series.forEach { it.setLineVisible(true).setMarkersVisible(false) } }
+            addItem("Markers and Lines") { series.forEach { it.setLineVisible(true).setMarkersVisible(true) } }
+        }
+
+        addToolbarSeparator()
+
+        addToolbarButton("⛶") {
+
+            copy().apply {
+                show()
+                isMaximised = true
+            }
+
         }
 
     }

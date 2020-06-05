@@ -16,29 +16,29 @@ class FPPPlot(data: ResultTable) : FetChPlot("FPP Conductivity", "Drain Current 
 
     init {
 
-        useMouseCommands(true)
-        setPointOrdering(Sort.ORDER_ADDED)
+        isMouseEnabled = true
+        pointOrdering  = Sort.ORDER_ADDED
 
         createSeries()
             .setName("FPP Difference")
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .watch(data, SD_CURRENT, FPP_VOLTAGE)
 
         createSeries()
             .setName("SD Voltage")
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .setLineDash(DOTTED)
             .watch(data, SD_CURRENT, SD_VOLTAGE)
 
         createSeries()
             .setName("Probe 1")
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .setLineDash(DOTTED)
             .watch(data, SD_CURRENT, FPP1_VOLTAGE)
 
         createSeries()
             .setName("Probe 2")
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .setLineDash(DOTTED)
             .watch(data, SD_CURRENT, FPP2_VOLTAGE)
 

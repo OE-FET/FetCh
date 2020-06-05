@@ -14,17 +14,17 @@ class OutputPlot(data: ResultTable) : FetChPlot("Output Curve", "SD Voltage [V]"
 
     init {
 
-        useMouseCommands(true)
+        setMouseEnabled(true)
         setYAxisType(AxisType.LINEAR)
         setPointOrdering(Sort.ORDER_ADDED)
 
         createSeries()
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SD_CURRENT]) })
             .split(SET_SG, "D (SG: %s V)")
 
         createSeries()
-            .showMarkers(false)
+            .setMarkersVisible(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
             .split(SET_SG, "G (SG: %sV)")
