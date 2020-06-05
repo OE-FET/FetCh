@@ -61,10 +61,10 @@ object Analysis : BorderDisplay("Analysis") {
 
             val window = Tabs("Analysis", plots, tables)
 
-            val progress = Progress("Analysing")
-            progress.title = "Analysing"
-            progress.setStatus("Analysing and plotting loaded results...")
-            progress.setProgress(-1.0)
+            val progress      = Progress("Analysing")
+            progress.title    = "Analysing"
+            progress.status   = "Analysing and plotting loaded results..."
+            progress.progress = -1.0
 
             centreElement = Grid(progress)
 
@@ -82,6 +82,7 @@ object Analysis : BorderDisplay("Analysis") {
 
                         Table(it.quantity.name, it.table).apply {
                             show()
+                            Util.sleep(250)
                             isMaximised = true
                         }
 

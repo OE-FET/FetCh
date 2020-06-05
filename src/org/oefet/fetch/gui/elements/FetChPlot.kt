@@ -1,5 +1,6 @@
 package org.oefet.fetch.gui.elements
 
+import jisa.Util
 import jisa.gui.Plot
 
 open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : Plot(title, xLabel, yLabel) {
@@ -27,10 +28,12 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         addToolbarButton("⛶") {
 
             copy().apply {
-                show()
-                isMaximised = true
-            }
 
+                show()
+                Util.sleep(250)
+                isMaximised = true
+
+            }
         }
 
     }
