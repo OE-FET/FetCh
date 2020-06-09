@@ -4,8 +4,9 @@ import jisa.experiment.Col
 import jisa.experiment.ResultList
 import jisa.gui.Plot
 import jisa.gui.Series
-import org.oefet.fetch.analysis.Analysis
 import org.oefet.fetch.analysis.Analysis.*
+import org.oefet.fetch.analysis.quantities.Quantity
+import org.oefet.fetch.analysis.quantities.Temperature
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.collections.ArrayList
@@ -15,9 +16,8 @@ object TemperatureAnalysis : Analysis {
 
     private fun tabulate(quantities: List<Quantity>): List<Tabulated> {
 
-        val tables = LinkedList<Tabulated>()
-
-        val quantitySet = quantities.stream().map { it::class }.collect(Collectors.toSet())
+        val tables      = LinkedList<Tabulated>()
+        val quantitySet = quantities.map { it::class }.toSet()
 
         for (quantityClass in quantitySet) {
 
@@ -30,7 +30,7 @@ object TemperatureAnalysis : Analysis {
 
                 val temperature = value.parameters.find { it is Temperature } ?: continue
 
-                table.addData(temperature.value.toDouble(), value.value.toDouble(), value.error)
+                table.addData(temperature.value, value.value, value.error)
 
             }
 
@@ -55,7 +55,7 @@ object TemperatureAnalysis : Analysis {
             plot.createSeries()
                 .watch(table.table, 0, 1, 2)
                 .setColour(Series.defaultColours[plots.size % Series.defaultColours.size])
-                .setLineVisible(false)
+                .setMarkersVisible(table.table.numRows <= 20)
 
             plot.isLegendVisible = false
             plot.isMouseEnabled  = true

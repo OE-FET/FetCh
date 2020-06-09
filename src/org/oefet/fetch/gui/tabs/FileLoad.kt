@@ -7,9 +7,10 @@ import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.analysis.*
+import org.oefet.fetch.analysis.quantities.*
+import org.oefet.fetch.analysis.results.ResultFile
 import java.io.File
 import java.util.*
-import javax.swing.plaf.synth.Region
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -129,7 +130,7 @@ object FileLoad : BorderDisplay("Results") {
         }
 
         // Load the result as a ResultFile object, specifying device number parameter to use
-        val result = ResultFile.loadData(data, listOf(Device(n)))
+        val result = ResultFile.loadData(data, listOf(Device(n.toDouble())))
 
         // Add the loaded ResultFile to the list display and overall list of loaded results
         fileList.add(result, result.name, result.getParameterString(), result.image)

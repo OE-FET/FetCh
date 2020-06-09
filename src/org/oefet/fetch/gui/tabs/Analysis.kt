@@ -6,6 +6,8 @@ import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.analysis.*
 import org.oefet.fetch.analysis.Analysis
+import org.oefet.fetch.analysis.quantities.Device
+import org.oefet.fetch.analysis.quantities.Quantity
 import kotlin.reflect.KClass
 
 object Analysis : BorderDisplay("Analysis") {
@@ -50,7 +52,8 @@ object Analysis : BorderDisplay("Analysis") {
 
             val quantities = FileLoad.getQuantities()
             val names = FileLoad.getNames()
-            val labels = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
+            val labels = mapOf<KClass<out Quantity>, Map<Double, String>>(
+                Device::class to names)
             val analysis = sidebar.selected.getObject()
 
             val plots = Grid("Plots", 2)
