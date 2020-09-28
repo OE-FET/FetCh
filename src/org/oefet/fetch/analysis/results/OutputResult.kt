@@ -20,6 +20,7 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
     override val plot       = OutputPlot(data).apply { legendRows = data.getUniqueValues(SET_SG).size }
     override val name       = "Output Measurement (${data.getAttribute("Name")})"
     override val image      = Images.getImage("output.png")
+    override val label      = "Output"
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -37,7 +38,7 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     init {
 
-        if (data.getAttribute("Type") != "Output") {
+        if (data.getAttribute("Type") != label) {
             throw Exception("That is not a output curve file")
         }
 

@@ -117,20 +117,21 @@ object Analysis : BorderDisplay("Analysis") {
 
         if (output == null) return
 
-        val saveInput = Fields("Save Parameters")
+        val saveInput  = Fields("Save Parameters")
         val plotFormat = saveInput.addChoice("Format", "svg", "png", "tex")
-        val plotWidth = saveInput.addIntegerField("Plot Width", 600)
+        val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
         val plotHeight = saveInput.addIntegerField("Plot Height", 500)
-        val directory = saveInput.addDirectorySelect("Directory")
+        val directory  = saveInput.addDirectorySelect("Directory")
 
         if (!Grid("Save Data", 1, saveInput).showAsConfirmation()) return
 
-        val dir = directory.get()
-        val width = plotWidth.get().toDouble()
+        val dir    = directory.get()
+        val width  = plotWidth.get().toDouble()
         val height = plotHeight.get().toDouble()
+        val format = plotFormat.get()
 
         saveTables(dir)
-        savePlots(dir, width, height)
+        savePlots(dir, width, height, format)
 
     }
 

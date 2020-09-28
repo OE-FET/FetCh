@@ -18,12 +18,12 @@ class TransferPlot(data: ResultTable) : FetChPlot("Transfer Curve", "SG Voltage 
         setPointOrdering(Sort.ORDER_ADDED)
 
         createSeries()
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .watch(data, { it[SG_VOLTAGE] }, { abs(it[SD_CURRENT]) })
             .split(SET_SD, "D (SD: %s V)")
 
         createSeries()
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SG_VOLTAGE] }, { abs(it[SG_CURRENT]) })
             .split(SET_SD, "G (SD: %sV)")

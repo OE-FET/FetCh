@@ -5,6 +5,7 @@ import jisa.experiment.Combination
 import jisa.experiment.ResultList
 import jisa.gui.Colour
 import jisa.gui.Plot
+import jisa.gui.Series
 import org.oefet.fetch.analysis.Analysis.Tabulated
 import org.oefet.fetch.analysis.quantities.Quantity
 import org.oefet.fetch.gui.elements.FetChPlot
@@ -14,10 +15,12 @@ import kotlin.reflect.KClass
 
 object AutoAnalysis : Analysis {
 
+    val colours = Series.defaultColours
+
     private fun tabulate(quantities: List<Quantity>): List<Tabulated> {
 
         val tables      = LinkedList<Tabulated>()
-        val quantitySet = quantities.map { it::class }.toSet()
+        val quantitySet = quantities.map { it::class }.toSet().sortedBy { it.simpleName }
 
         for (quantityClass in quantitySet) {
 
@@ -56,7 +59,7 @@ object AutoAnalysis : Analysis {
 
         }
 
-        return tables
+        return tables.sortedBy { it.quantity.name }
 
     }
 
@@ -97,11 +100,13 @@ object AutoAnalysis : Analysis {
                 if ((table.table.getUniqueValues(paramIndex).size) < splitCount) continue
 
                 // Create the plot and the data series
+                val line   = table.table.getUniqueValues(paramIndex).size > 20
                 val plot   = FetChPlot("${table.quantity.name} vs ${parameter.name}")
                 val series = plot.createSeries()
                     .watch(table.table, paramIndex, valueIndex, errorIndex)
-                    .setColour(Colour.CORNFLOWERBLUE)
-                    .setMarkersVisible(table.table.getUniqueValues(paramIndex).size <= 20)
+                    .setColour(colours[plots.size % colours.size])
+                    .setMarkerVisible(!line)
+                    .setLineVisible(line)
 
                 if (splits.isNotEmpty()) {
 

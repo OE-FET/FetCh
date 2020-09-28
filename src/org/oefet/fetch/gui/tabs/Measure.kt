@@ -1,16 +1,13 @@
 package org.oefet.fetch.gui.tabs
 
 import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
-import org.oefet.fetch.measurement.OutputMeasurement
-import org.oefet.fetch.measurement.TransferMeasurement
 import jisa.Util
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.*
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.*
-import org.oefet.fetch.measurement.FPPMeasurement
-import org.oefet.fetch.measurement.SyncMeasurement
+import org.oefet.fetch.measurement.*
 
 object Measure : Grid("Measurement", 1) {
 
@@ -76,6 +73,8 @@ object Measure : Grid("Measurement", 1) {
             is TransferMeasurement -> TransferPlot(action.data).apply { legendColumns = 2 }
             is FPPMeasurement      -> FPPPlot(action.data)
             is SyncMeasurement     -> SyncPlot(action.data)
+            is ACHallMeasurement   -> ACHallPlot(action.data)
+            is TVMeasurement       -> TVPlot(action.data)
             else                   -> Plot("Unknown")
 
         }
@@ -130,6 +129,10 @@ object Measure : Grid("Measurement", 1) {
                 else                           -> GUI.errorAlert("Unknown queue result")
 
             }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
 
         } finally {
 

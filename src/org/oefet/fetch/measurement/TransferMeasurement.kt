@@ -6,9 +6,9 @@ import jisa.devices.SMU
 import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.experiment.Col
-import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
+import java.lang.Exception
 
 class TransferMeasurement : FetChMeasurement() {
 
@@ -32,18 +32,18 @@ class TransferMeasurement : FetChMeasurement() {
     val numVSG  = IntegerParameter("Source-Gate", "No. Steps", null, 61)
     val symVSG  = BooleanParameter("Source-Gate", "Sweep Both Ways", null, true)
 
-    override fun loadInstruments(instruments: Instruments) {
+    private fun loadInstruments() {
 
-        if (!instruments.hasSD || !instruments.hasSG) {
-            throw Exception("Source-Drain and Source-Gate SMUs must be configured first")
+        sdSMU = Instruments.sdSMU
+        sgSMU = Instruments.sgSMU
+        gdSMU = Instruments.gdSMU
+        fpp1  = Instruments.fpp1
+        fpp2  = Instruments.fpp2
+        tm    = Instruments.tMeter
+
+        if (sdSMU == null || sgSMU == null) {
+            throw Exception("Source-Drain and Source-Gate channels both need to be configured first.")
         }
-
-        sdSMU = instruments.sdSMU!!
-        sgSMU = instruments.sgSMU!!
-        gdSMU = instruments.gdSMU
-        fpp1  = instruments.fpp1
-        fpp2  = instruments.fpp2
-        tm    = instruments.tm
 
     }
 
@@ -52,6 +52,8 @@ class TransferMeasurement : FetChMeasurement() {
     }
 
     override fun run(results: ResultTable) {
+
+        loadInstruments()
 
         val intTime = intTime.value
         val delTime = (delTime.value * 1000).toInt()
@@ -67,12 +69,12 @@ class TransferMeasurement : FetChMeasurement() {
         val sgSMU = this.sgSMU!!
 
         val sdVoltages = Range.linear(minVSD, maxVSD, numVSD)
+
         val sgVoltages = if (symVSG) {
             Range.linear(minVSG, maxVSG, numVSG).mirror()
         } else {
             Range.linear(minVSG, maxVSG, numVSG)
         }
-
 
         sdSMU.turnOff()
         sgSMU.turnOff()

@@ -5,6 +5,7 @@ import jisa.gui.GUI
 import jisa.gui.Plot
 import jisa.gui.Series
 import jisa.gui.Series.Dash.DOTTED
+import jisa.maths.matrices.RealMatrix
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.measurement.FPPMeasurement.Companion.FPP1_VOLTAGE
 import org.oefet.fetch.measurement.FPPMeasurement.Companion.FPP2_VOLTAGE
@@ -20,27 +21,21 @@ class FPPPlot(data: ResultTable) : FetChPlot("FPP Conductivity", "Drain Current 
         pointOrdering  = Sort.ORDER_ADDED
 
         createSeries()
-            .setName("FPP Difference")
-            .setMarkersVisible(false)
-            .watch(data, SD_CURRENT, FPP_VOLTAGE)
-
-        createSeries()
-            .setName("SD Voltage")
-            .setMarkersVisible(false)
-            .setLineDash(DOTTED)
-            .watch(data, SD_CURRENT, SD_VOLTAGE)
-
-        createSeries()
             .setName("Probe 1")
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .setLineDash(DOTTED)
             .watch(data, SD_CURRENT, FPP1_VOLTAGE)
 
         createSeries()
             .setName("Probe 2")
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .setLineDash(DOTTED)
             .watch(data, SD_CURRENT, FPP2_VOLTAGE)
+
+        createSeries()
+            .setName("FPP Difference")
+            .polyFit(1)
+            .watch(data, SD_CURRENT, FPP_VOLTAGE)
 
 
     }

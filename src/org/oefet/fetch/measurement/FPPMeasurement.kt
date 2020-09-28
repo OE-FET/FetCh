@@ -5,10 +5,8 @@ import jisa.devices.SMU
 import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.experiment.Col
-import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
-import java.time.Duration
 import kotlin.math.abs
 
 class FPPMeasurement : FetChMeasurement() {
@@ -32,31 +30,17 @@ class FPPMeasurement : FetChMeasurement() {
     val holdG   = BooleanParameter("Source-Gate", "Active", null, false)
     val gateV   = DoubleParameter("Source-Gate","Voltage","V", 50.0)
 
-    override fun loadInstruments(instruments: Instruments) {
-
-        sdSMU = instruments.sdSMU
-        sgSMU = instruments.sgSMU
-        gdSMU = instruments.gdSMU
-        fpp1  = instruments.fpp1
-        fpp2  = instruments.fpp2
-        tm    = instruments.tm
-
-    }
-
     override fun setLabel(value: String?) {
         label.value = value
     }
 
-    override fun run(results: ResultTable) {
+    private fun loadInstruments() {
 
-        val minI    = minI.value
-        val maxI    = maxI.value
-        val numI    = numI.value
-        val symI    = symI.value
-        val holdG   = holdG.value
-        val gateV   = gateV.value
-        val intTime = intTime.value
-        val delTime = (delTime.value * 1000.0).toLong()
+        sdSMU = Instruments.sdSMU
+        fpp1  = Instruments.fpp1
+        gdSMU = Instruments.gdSMU
+        sgSMU = Instruments.sgSMU
+        fpp2  = Instruments.fpp2
 
         val errors = ArrayList<String>()
 
@@ -68,17 +52,31 @@ class FPPMeasurement : FetChMeasurement() {
             errors += "FPP channel not configured"
         }
 
-        if (holdG && sgSMU == null) {
+        if (holdG.value && sgSMU == null) {
             errors += "SG channel not configured"
         }
 
         if (errors.isNotEmpty()) throw Exception(errors.joinToString(", "))
 
+    }
+
+    override fun run(results: ResultTable) {
+
+        loadInstruments()
+
+        val minI    = minI.value
+        val maxI    = maxI.value
+        val numI    = numI.value
+        val symI    = symI.value
+        val holdG   = holdG.value
+        val gateV   = gateV.value
+        val intTime = intTime.value
+        val delTime = (delTime.value * 1000.0).toLong()
+
+        // Assert that source-drain and fpp1 must be connected
         val sdSMU = sdSMU!!
         val fpp1  = fpp1!!
-        val gdSMU = gdSMU
         val sgSMU = if (holdG) sgSMU else null
-        val fpp2  = fpp2
 
         // Turn everything off before starting
         gdSMU?.turnOff()

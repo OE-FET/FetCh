@@ -6,9 +6,9 @@ import jisa.devices.SMU
 import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.experiment.Col
-import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.maths.Range
+import java.lang.Exception
 
 class SyncMeasurement : FetChMeasurement() {
 
@@ -30,22 +30,25 @@ class SyncMeasurement : FetChMeasurement() {
     val symVSD  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
     val offset  = DoubleParameter("Source-Gate", "Offset", "V", 0.0)
 
-    override fun loadInstruments(instruments: Instruments) {
 
-        if (!instruments.hasSD || !instruments.hasSG) {
-            throw Exception("Source-Drain and Source-Gate SMUs must be configured first")
+    private fun loadInstruments() {
+
+        sdSMU = Instruments.sdSMU
+        sgSMU = Instruments.sgSMU
+        gdSMU = Instruments.gdSMU
+        fpp1  = Instruments.fpp1
+        fpp2  = Instruments.fpp2
+        tm    = Instruments.tMeter
+
+        if (sdSMU == null || sgSMU == null) {
+            throw Exception("Source-Drain and Source-Gate channels both need to be configured first.")
         }
-
-        sdSMU = instruments.sdSMU!!
-        sgSMU = instruments.sgSMU!!
-        gdSMU = instruments.gdSMU
-        fpp1  = instruments.fpp1
-        fpp2  = instruments.fpp2
-        tm    = instruments.tm
 
     }
 
     override fun run(results: ResultTable) {
+
+        loadInstruments()
 
         val intTime = intTime.value
         val delTime = (delTime.value * 1000).toInt()
@@ -58,9 +61,11 @@ class SyncMeasurement : FetChMeasurement() {
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!
 
-        var voltages = Range.linear(minVSD, maxVSD, numVSD)
-
-        if (symVSD) voltages = voltages.mirror()
+        val voltages = if (symVSD) {
+            Range.linear(minVSD, maxVSD, numVSD).mirror()
+        } else {
+            Range.linear(minVSD, maxVSD, numVSD)
+        }
 
         sdSMU.turnOff()
         sgSMU.turnOff()
@@ -94,16 +99,18 @@ class SyncMeasurement : FetChMeasurement() {
 
             sleep(delTime)
 
-
             results.addData(
-                vSD, vSG,
-                sdSMU.voltage, sdSMU.current,
-                sgSMU.voltage, sgSMU.current,
-                fpp1?.voltage ?: Double.NaN, fpp2?.voltage ?: Double.NaN,
+                vSD,
+                vSG,
+                sdSMU.voltage,
+                sdSMU.current,
+                sgSMU.voltage,
+                sgSMU.current,
+                fpp1?.voltage ?: Double.NaN,
+                fpp2?.voltage ?: Double.NaN,
                 tm?.temperature ?: Double.NaN,
                 gdSMU?.current ?: Double.NaN
             )
-
 
         }
 

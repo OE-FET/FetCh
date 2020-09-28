@@ -14,6 +14,9 @@ object Connections : ConnectorGrid("Connections", Settings.instruments) {
     val vMeter2 = addInstrument("Voltmeter 2", VMeter::class.java)
     val tCon    = addTC("Temperature Controller")
     val tSen    = addInstrument("Thermometer", TMeter::class.java)
+    val lockIn  = addDPLockIn("Lock-In Amplifier")
+    val dcPower = addDCPower("Motor Power Supply")
+    val preAmp  = addVPreAmp("Voltage Pre-Amplifier")
 
     init {
         numColumns = 2

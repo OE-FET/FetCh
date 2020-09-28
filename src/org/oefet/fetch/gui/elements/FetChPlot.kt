@@ -18,9 +18,9 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         }
 
         addToolbarMenuButton("Display").apply {
-            addItem("Markers Only") { series.forEach { it.setLineVisible(false).setMarkersVisible(true) } }
-            addItem("Lines Only") { series.forEach { it.setLineVisible(true).setMarkersVisible(false) } }
-            addItem("Markers and Lines") { series.forEach { it.setLineVisible(true).setMarkersVisible(true) } }
+            addItem("Markers Only") { series.forEach { it.setLineVisible(false).setMarkerVisible(true) } }
+            addItem("Lines Only") { series.forEach { it.setLineVisible(true).setMarkerVisible(false) } }
+            addItem("Markers and Lines") { series.forEach { it.setLineVisible(true).setMarkerVisible(true) } }
         }
 
         addToolbarSeparator()

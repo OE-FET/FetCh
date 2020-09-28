@@ -18,13 +18,13 @@ class SyncPlot(data: ResultTable) : FetChPlot("Synced Voltage Curve", "Voltage [
         createSeries()
             .setName("Drain")
             .setColour(Colour.CORNFLOWERBLUE)
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SD_CURRENT]) })
 
         createSeries()
             .setName("Gate")
             .setColour(Colour.ORANGERED)
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
 

@@ -15,6 +15,7 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
     override val plot       = FPPPlot(data)
     override val name       = "Conductivity Measurement (${data.getAttribute("Name")})"
     override val image      = Icon.ELECTRICITY.blackImage
+    override val label      = "FPP Conductivity"
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -30,7 +31,7 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
 
     init {
 
-        if (data.getAttribute("Type") != "FPP Conductivity") {
+        if (data.getAttribute("Type") != label) {
             throw Exception("That is not a FPP Conductivity measurement file")
         }
 

@@ -6,6 +6,7 @@ import jisa.experiment.ActionQueue
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.gui.*
+import org.oefet.fetch.Measurements
 import org.oefet.fetch.analysis.*
 import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.analysis.results.ResultFile
@@ -13,6 +14,8 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.collections.HashSet
+import kotlin.reflect.KClass
 
 /**
  * Page for loading in and viewing previous results
@@ -20,6 +23,7 @@ import kotlin.collections.HashMap
 object FileLoad : BorderDisplay("Results") {
 
     private val fileList = ListDisplay<ResultFile>("Loaded Results")
+
     private val progress = Progress("Loading Files").apply {
         status = "Reading and processing selected files, please wait..."
     }
@@ -28,10 +32,6 @@ object FileLoad : BorderDisplay("Results") {
     private val names   = LinkedList<String>()
 
     private val notDisplayed = listOf(
-        FwdSatMobility::class,
-        BwdSatMobility::class,
-        FwdLinMobility::class,
-        BwdLinMobility::class,
         MaxLinMobility::class,
         MaxSatMobility::class
     )
@@ -46,9 +46,9 @@ object FileLoad : BorderDisplay("Results") {
         fileList.setOnChange(::updateDisplay)
 
         // Add context menu item to all items in the file list
-        fileList.addDefaultMenuItem("Remove Result") {
-            it.remove()
-            results -= it.getObject()
+        fileList.addDefaultMenuItem("Remove Result") { listItem ->
+            results -= listItem.getObject()
+            listItem.remove()
         }
 
         // Add the "Add..." menu button to the file list
@@ -79,12 +79,19 @@ object FileLoad : BorderDisplay("Results") {
             val selected = fileList.selected.getObject()
             val params   = Display("Parameters")
 
-            for (quantity in selected.quantities) {
+            for (type in selected.quantities.map{ it::class }.distinct()) {
 
-                if (!notDisplayed.contains(quantity::class)) params.addParameter(
-                    quantity.name,
-                    "%s %s".format(quantity.value, quantity.unit)
-                )
+                if (notDisplayed.contains(type)) continue
+
+                val filtered = selected.quantities.filter { it::class == type }
+                val instance = filtered.first()
+                val unit     = instance.unit
+                val name     = instance.name
+                val values   = filtered.map{ it.value }
+                val min      = values.min()
+                val max      = values.max()
+
+                params.addParameter(name, if (min == max) "%.03g %s".format(min, unit) else "%.03g to %.03g %s".format(min, max, unit))
 
             }
 
@@ -99,6 +106,10 @@ object FileLoad : BorderDisplay("Results") {
 
         }
 
+    }
+
+    private fun toDisplay(quantity: Quantity) : Boolean {
+        return quantity::class !in notDisplayed
     }
 
     fun getQuantities(): List<Quantity> {
@@ -119,18 +130,23 @@ object FileLoad : BorderDisplay("Results") {
 
     fun addData(data: ResultTable) {
 
+        val name = data.getAttribute("Name") ?: "Unknown"
+
         // Determine which device number this result is for
-        val index = names.indexOf(data.getAttribute("Name"))
+        val index = names.indexOf(name)
 
         val n = if (index < 0) {
-            names += data.getAttribute("Name") ?: "Unknown"
+            names += name
             names.size
         } else {
             index + 1
         }
 
         // Load the result as a ResultFile object, specifying device number parameter to use
-        val result = ResultFile.loadData(data, listOf(Device(n.toDouble())))
+        val result = Measurements.loadResultFile(
+            data,
+            listOf(Device(n.toDouble()))
+        ) ?: throw UnknownResultException("Unknown result file.")
 
         // Add the loaded ResultFile to the list display and overall list of loaded results
         fileList.add(result, result.name, result.getParameterString(), result.image)

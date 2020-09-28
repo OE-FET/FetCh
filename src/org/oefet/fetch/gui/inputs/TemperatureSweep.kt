@@ -9,6 +9,7 @@ import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.Configuration
+import org.oefet.fetch.measurement.Instruments
 
 class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
@@ -61,7 +62,7 @@ class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
                 queue.addAction("Change Temperature to $T K") {
 
-                    val tc = Configuration.tControl.get() ?: throw Exception("No temperature controller configured")
+                    val tc = Instruments.tControl ?: throw Exception("No temperature controller configured")
 
                     tc.targetTemperature = T
                     tc.useAutoHeater()

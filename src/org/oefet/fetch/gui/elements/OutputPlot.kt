@@ -19,12 +19,12 @@ class OutputPlot(data: ResultTable) : FetChPlot("Output Curve", "SD Voltage [V]"
         setPointOrdering(Sort.ORDER_ADDED)
 
         createSeries()
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SD_CURRENT]) })
             .split(SET_SG, "D (SG: %s V)")
 
         createSeries()
-            .setMarkersVisible(false)
+            .setMarkerVisible(false)
             .setLineDash(Series.Dash.DOTTED)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
             .split(SET_SG, "G (SG: %sV)")

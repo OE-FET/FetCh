@@ -20,6 +20,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
     override val plot       = TransferPlot(data).apply { legendRows = data.getUniqueValues(SET_SD).size }
     override val name       = "Transfer Measurement (${data.getAttribute("Name")})"
     override val image      = Images.getImage("transfer.png")
+    override val label      = "Transfer"
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -37,7 +38,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
     init {
 
-        if (data.getAttribute("Type") != "Transfer") {
+        if (data.getAttribute("Type") != label) {
             throw Exception("That is not a transfer curve file")
         }
 

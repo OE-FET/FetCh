@@ -4,6 +4,7 @@ import jisa.experiment.ActionQueue
 import jisa.gui.ActionQueueDisplay
 import jisa.gui.GUI
 import jisa.gui.MeasurementFields
+import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.inputs.ActionInput
 import org.oefet.fetch.gui.inputs.SweepInput
@@ -22,7 +23,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         addItem("Measurements:") {}.apply { isDisabled = true }
         addSeparator()
 
-        for (type in FetChMeasurement.types) addItem(type.name) { askMeasurement(type.create()) }
+        for (type in Measurements.types) addItem(type.name) { askMeasurement(type.createMeasurement()) }
 
         addSeparator()
         addItem("Actions:") {}.apply { isDisabled = true }
@@ -72,10 +73,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             action.setAttribute("Type", measurement.type)
             action.resultsPath = "${Measure.baseFile}-%s-${measurement.label}.csv"
 
-            action.setBefore {
-                (it.measurement as FetChMeasurement).loadInstruments(Configuration.getInstruments())
-                Measure.display(it)
-            }
+            action.setBefore { Measure.display(it) }
 
             action.setAfter { FileLoad.addData(it.data) }
 
