@@ -20,7 +20,7 @@ class FPPMeasurement : FetChMeasurement() {
 
     override val type = "FPP Conductivity"
 
-    val label   = StringParameter("Basic","Name",null, "FPPCond")
+    val label   = StringParameter("Basic","Name",null, "Cond")
     val intTime = DoubleParameter("Basic","Integration Time","s", 20e-3)
     val delTime = DoubleParameter("Basic","Delay Time","s", 1.0)
     val minI    = DoubleParameter("Source-Drain", "Start", "A",0.0)
@@ -48,10 +48,6 @@ class FPPMeasurement : FetChMeasurement() {
             errors += "SD channel not configured"
         }
 
-        if (fpp1 == null) {
-            errors += "FPP channel not configured"
-        }
-
         if (holdG.value && sgSMU == null) {
             errors += "SG channel not configured"
         }
@@ -75,20 +71,19 @@ class FPPMeasurement : FetChMeasurement() {
 
         // Assert that source-drain and fpp1 must be connected
         val sdSMU = sdSMU!!
-        val fpp1  = fpp1!!
         val sgSMU = if (holdG) sgSMU else null
 
         // Turn everything off before starting
         gdSMU?.turnOff()
         sdSMU.turnOff()
         sgSMU?.turnOff()
-        fpp1.turnOff()
+        fpp1?.turnOff()
         fpp2?.turnOff()
 
         gdSMU?.integrationTime = intTime
         sdSMU.integrationTime  = intTime
         sgSMU?.integrationTime = intTime
-        fpp1.integrationTime   = intTime
+        fpp1?.integrationTime   = intTime
         fpp2?.integrationTime  = intTime
 
         // Configure all channel voltages/currents
@@ -99,7 +94,7 @@ class FPPMeasurement : FetChMeasurement() {
         // Enable all channels
         gdSMU?.turnOn()
         sdSMU.turnOn()
-        fpp1.turnOn()
+        fpp1?.turnOn()
         fpp2?.turnOn()
         sgSMU?.turnOn()
 
@@ -112,7 +107,7 @@ class FPPMeasurement : FetChMeasurement() {
             results.addData(
                 sdSMU.voltage, sdSMU.current,
                 sgSMU?.voltage ?: Double.NaN, sgSMU?.current ?: Double.NaN,
-                fpp1.voltage,
+                fpp1?.voltage ?: sdSMU.voltage,
                 fpp2?.voltage ?: 0.0,
                 tm?.temperature ?: Double.NaN,
                 gdSMU?.current ?: Double.NaN
@@ -138,7 +133,7 @@ class FPPMeasurement : FetChMeasurement() {
         return label.value
     }
 
-    override fun getName(): String = "FPP Conductivity Measurement"
+    override fun getName(): String = "Conductivity Measurement"
 
     override fun getColumns(): Array<Col> = arrayOf(
         Col("SD Voltage", "V"),
@@ -147,7 +142,7 @@ class FPPMeasurement : FetChMeasurement() {
         Col("SG Current", "A"),
         Col("FPP 1 Voltage", "V"),
         Col("FPP 2 Voltage", "V"),
-        Col("FPP Voltage", "V") { abs( it[FPP2_VOLTAGE] - it[FPP1_VOLTAGE]) },
+        Col("FPP Voltage", "V") { ( it[FPP1_VOLTAGE] - it[FPP2_VOLTAGE]) },
         Col("Temperature", "K"),
         Col("Ground Current", "A")
     )
