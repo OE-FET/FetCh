@@ -16,7 +16,7 @@ object Measure : Grid("Measurement", 1) {
     val basic     = Fields("Measurement Parameters")
     val name      = basic.addTextField("Name")
     val dir       = basic.addDirectorySelect("Output Directory")
-    val topRow    = SwapRow("Top Row")
+    val topRow    = SwapGrid("Top Row")
     val bottomRow = Grid(1)
 
     init { basic.addSeparator() }

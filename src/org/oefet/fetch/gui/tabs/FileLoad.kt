@@ -123,7 +123,6 @@ object FileLoad : BorderDisplay("Results") {
         for (result in results) {
             list += result.calculateHybrids(list)
         }
-
         return list
 
     }
