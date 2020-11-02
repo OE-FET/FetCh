@@ -2,6 +2,7 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.Util.runRegardless
+import jisa.control.RTask
 import jisa.devices.*
 import jisa.enums.Coupling
 import jisa.enums.Input
@@ -35,6 +36,7 @@ class ACHallMeasurement : FetChMeasurement() {
     private var dcPower: DCPower?   = null
     private var tMeter: TMeter?     = null
     private var fControl: FControl? = null
+    private var tControl: TC?       = null
 
     val label    = StringParameter("Basic", "Name", null, "ACHall")
     val intTime  = DoubleParameter("Basic", "Integration Time", "s", 100.0)
@@ -75,6 +77,7 @@ class ACHallMeasurement : FetChMeasurement() {
         dcPower  = Instruments.dcPower
         tMeter   = Instruments.tMeter
         fControl = if (lockIn != null && dcPower != null) FControl(lockIn!!, dcPower!!) else null
+        tControl = Instruments.tControl
 
         val errors = LinkedList<String>()
 
@@ -236,8 +239,42 @@ class ACHallMeasurement : FetChMeasurement() {
 
     }
 
+    override fun log(task: RTask, log: ResultTable) {
+
+        log.addData(
+            task.mSecFromStart.toDouble(),
+            sdSMU?.voltage ?: Double.NaN,
+            sdSMU?.current ?: Double.NaN,
+            sgSMU?.voltage ?: Double.NaN,
+            sgSMU?.current ?: Double.NaN,
+            lockIn?.frequency ?: Double.NaN,
+            lockIn?.lockedX ?: Double.NaN,
+            lockIn?.lockedY ?: Double.NaN,
+            tMeter?.temperature ?: Double.NaN,
+            tControl?.heaterPower ?: Double.NaN
+        )
+
+    }
+
     override fun setLabel(value: String?) {
         label.value = value
+    }
+
+    override fun getLogColumns(): Array<Col> {
+
+        return arrayOf(
+            Col("Running Time", "ms"),
+            Col("Source-Drain Voltage", "V"),
+            Col("Source-Drain Current", "A"),
+            Col("Source-Gate Voltage", "V"),
+            Col("Source-Gate Current", "A"),
+            Col("Field Frequency", "Hz"),
+            Col("X Voltage", "V"),
+            Col("Y Voltage", "V"),
+            Col("Temperature", "K"),
+            Col("Heater Power", "%")
+        )
+
     }
 
     override fun onInterrupt() {
@@ -259,6 +296,17 @@ class ACHallMeasurement : FetChMeasurement() {
         const val HALL_VOLTAGE = 10
         const val HALL_ERROR   = 11
         const val TEMPERATURE  = 12
+
+        const val LOG_TIME_MS      = 0
+        const val LOG_SD_VOLTAGE   = 1
+        const val LOG_SD_CURRENT   = 2
+        const val LOG_SG_VOLTAGE   = 3
+        const val LOG_SG_CURRENT   = 4
+        const val LOG_FREQUENCY    = 5
+        const val LOG_X_VOLTAGE    = 6
+        const val LOG_Y_VOLTAGE    = 7
+        const val LOG_TEMPERATURE  = 8
+        const val LOG_HEATER_POWER = 9
 
     }
 
