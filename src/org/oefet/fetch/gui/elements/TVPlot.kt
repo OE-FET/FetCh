@@ -1,20 +1,12 @@
 package org.oefet.fetch.gui.elements
 
 import jisa.experiment.ResultTable
-import jisa.gui.GUI
-import jisa.gui.Plot
-import jisa.gui.Series
-import jisa.gui.Series.Dash.DOTTED
-import jisa.maths.matrices.RealMatrix
-import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.measurement.FPPMeasurement.Companion.FPP1_VOLTAGE
-import org.oefet.fetch.measurement.FPPMeasurement.Companion.FPP2_VOLTAGE
-import org.oefet.fetch.measurement.FPPMeasurement.Companion.FPP_VOLTAGE
-import org.oefet.fetch.measurement.FPPMeasurement.Companion.SD_CURRENT
-import org.oefet.fetch.measurement.FPPMeasurement.Companion.SD_VOLTAGE
+import org.oefet.fetch.measurement.TVCalibration
 import org.oefet.fetch.measurement.TVMeasurement
+import org.oefet.fetch.measurement.TVMeasurement.Companion.HEATER_POWER
+import org.oefet.fetch.measurement.TVMeasurement.Companion.THERMAL_VOLTAGE
 
-class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Measurement No.", "Thermal Voltage [V]") {
+class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Heater Power [W]", "Thermal Voltage [V]") {
 
     init {
 
@@ -23,8 +15,27 @@ class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Measurement No."
 
         createSeries()
             .setLineVisible(false)
-            .watch(data, TVMeasurement.MEAS_NO, TVMeasurement.THERMAL_VOLTAGE)
+            .watch(data, HEATER_POWER, THERMAL_VOLTAGE)
             .split(TVMeasurement.SET_GATE, "SG = %s V")
+            .setMarkerVisible(true)
+            .setLineVisible(true)
+            .polyFit(1)
+
+    }
+
+}
+
+class TVCPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration", "Heater Power [W]", "Resistance [Ohm]") {
+
+    init {
+
+        isMouseEnabled = true
+        pointOrdering  = Sort.ORDER_ADDED
+
+        createSeries()
+            .setLineVisible(false)
+            .watch(data, TVCalibration.STRIP_CURRENT, TVCalibration.STRIP_VOLTAGE)
+            .split(TVCalibration.HEATER_POWER, "P = %.02e W")
 
     }
 

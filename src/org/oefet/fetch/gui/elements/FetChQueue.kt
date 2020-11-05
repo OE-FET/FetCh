@@ -8,10 +8,9 @@ import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.inputs.ActionInput
 import org.oefet.fetch.gui.inputs.SweepInput
-import org.oefet.fetch.gui.tabs.Configuration
 import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.measurement.FetChMeasurement
+import org.oefet.fetch.measurement.FMeasurement
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
 
@@ -57,7 +56,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         }
 
 
-    private fun askMeasurement(measurement: FetChMeasurement) {
+    private fun askMeasurement(measurement: FMeasurement) {
 
         // Generate label for measurement (ie Transfer, Transfer2, Transfer3, etc)
         val count = queue.getMeasurementCount(measurement.javaClass)

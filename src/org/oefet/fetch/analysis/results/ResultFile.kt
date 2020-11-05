@@ -5,16 +5,12 @@ import jisa.experiment.ResultTable
 import jisa.gui.Plot
 import org.oefet.fetch.analysis.quantities.Quantity
 import org.oefet.fetch.analysis.UnknownResultException
-import org.oefet.fetch.measurement.ACHallMeasurement
-import org.oefet.fetch.measurement.FPPMeasurement
-import org.reflections.Reflections
+import org.oefet.fetch.measurement.ACHall
+import org.oefet.fetch.measurement.Conductivity
 import java.util.*
-import kotlin.collections.LinkedHashMap
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
-import kotlin.reflect.KClass
-import kotlin.reflect.full.companionObjectInstance
 
 interface ResultFile {
 
@@ -64,7 +60,7 @@ interface ResultFile {
 
                 "No."           -> {
 
-                    val newData = ACHallMeasurement().newResults()
+                    val newData = ACHall().newResults()
                     var startX = 0.0
                     var startY = 0.0
                     var first = true
@@ -116,7 +112,7 @@ interface ResultFile {
                 "T_SP" -> {
 
 
-                    val newData = FPPMeasurement().newResults()
+                    val newData = Conductivity().newResults()
 
                     newData.setAttribute("Type", "FPP Conductivity")
                     newData.setAttribute("Length", "120E-6 m")

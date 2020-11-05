@@ -3,8 +3,6 @@ package org.oefet.fetch.measurement
 import jisa.Util
 import jisa.Util.runRegardless
 import jisa.devices.SMU
-import jisa.devices.TMeter
-import jisa.devices.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
@@ -12,7 +10,7 @@ import jisa.maths.Range
 import java.util.*
 import kotlin.Exception
 
-class TVMeasurement : FetChMeasurement() {
+class TVMeasurement : FMeasurement() {
 
     companion object {
 
@@ -32,33 +30,44 @@ class TVMeasurement : FetChMeasurement() {
 
     override val type = "Thermal Voltage"
 
-    var heater:  SMU?    = null
-    var ground:  SMU?    = null
-    var gate:    SMU?    = null
-    var tvMeter: VMeter? = null
-    var tMeter:  TMeter? = null
+    private val label           = StringParameter("Basic", "Name", null, "TV")
+    private val intTimeParam    = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
+    private val avgCountParam   = IntegerParameter("Basic", "Averaging Count", null, 1)
+    private val minHVParam      = DoubleParameter("Heater", "Start", "V", 0.0)
+    private val maxHVParam      = DoubleParameter("Heater", "Stop", "V", 10.0)
+    private val numHVParam      = IntegerParameter("Heater", "No. Steps", null, 11)
+    private val symHVParam      = BooleanParameter("Heater", "Sweep Both Ways", null, false)
+    private val heaterHoldParam = DoubleParameter("Heater", "Hold Time", "s", 60.0)
+    private val minSGVParam     = DoubleParameter("Gate", "Start", "V", 0.0)
+    private val maxSGVParam     = DoubleParameter("Gate", "Stop", "V", 10.0)
+    private val numSGVParam     = IntegerParameter("Gate", "No. Steps", null, 11)
+    private val symSGVParam     = BooleanParameter("Gate", "Sweep Both Ways", null, false)
+    private val gateHoldParam   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
 
-    val label      = StringParameter("Basic", "Name", null, "TV")
-    val intTime    = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
-    val avgCount   = IntegerParameter("Basic", "Averaging Count", null, 1)
-    val minHV      = DoubleParameter("Heater", "Start", "V", 0.0)
-    val maxHV      = DoubleParameter("Heater", "Stop", "V", 10.0)
-    val numHV      = IntegerParameter("Heater", "No. Steps", null, 11)
-    val symHV      = BooleanParameter("Heater", "Sweep Both Ways", null, false)
-    val heaterHold = DoubleParameter("Heater", "Hold Time", "s", 60.0)
-    val minSGV     = DoubleParameter("Gate", "Start", "V", 0.0)
-    val maxSGV     = DoubleParameter("Gate", "Stop", "V", 10.0)
-    val numSGV     = IntegerParameter("Gate", "No. Steps", null, 11)
-    val symSGV     = BooleanParameter("Gate", "Sweep Both Ways", null, false)
-    val gateHold   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
+    val intTime    get() = intTimeParam.value
+    val avgCount   get() = avgCountParam.value
+    val minHV      get() = minHVParam.value
+    val maxHV      get() = maxHVParam.value
+    val numHV      get() = numHVParam.value
+    val symHV      get() = symHVParam.value
+    val heaterHold get() = (heaterHoldParam.value * 1000).toInt()
+    val minSGV     get() = minSGVParam.value
+    val maxSGV     get() = maxSGVParam.value
+    val numSGV     get() = numSGVParam.value
+    val symSGV     get() = symSGVParam.value
+    val gateHold   get() = (gateHoldParam.value * 1000).toInt()
 
-    private fun loadInstruments() {
+    override fun loadInstruments() {
 
-        heater  = Instruments.htSMU
-        ground  = Instruments.gdSMU
-        gate    = Instruments.sgSMU
-        tvMeter = Instruments.thermalVolt
-        tMeter  = Instruments.tMeter
+        gdSMU    = Instruments.gdSMU
+        heater   = Instruments.htSMU
+        sgSMU    = Instruments.sgSMU
+        tvMeter  = Instruments.tvMeter
+        tMeter   = Instruments.tMeter
+
+    }
+
+    override fun checkForErrors(): List<String> {
 
         val errors = LinkedList<String>()
 
@@ -70,63 +79,46 @@ class TVMeasurement : FetChMeasurement() {
             errors += "Thermal-Voltage Voltmeter is not configured"
         }
 
-        if (gate == null && (numSGV.value > 1 || minSGV.value != 0.0 || maxSGV.value != 0.0)) {
+        if (sgSMU == null && (numSGV > 1 || minSGV != 0.0 || maxSGV != 0.0)) {
             errors += "No gate channel configured."
         }
 
-        if (errors.isNotEmpty()) {
-            throw Exception(errors.joinToString(", "))
-        }
+        return errors
 
     }
 
     override fun run(results: ResultTable) {
-
-        loadInstruments()
-
-        val intTime    = this.intTime.value
-        val avgCount   = this.avgCount.value
-        val minHV      = this.minHV.value
-        val maxHV      = this.maxHV.value
-        val numHV      = this.numHV.value
-        val symHV      = this.symHV.value
-        val heaterHold = (this.heaterHold.value * 1000).toInt()
-        val minSGV     = this.minSGV.value
-        val maxSGV     = this.maxSGV.value
-        val numSGV     = this.numSGV.value
-        val symSGV     = this.symSGV.value
-        val gateHold   = (this.gateHold.value * 1000).toInt()
 
         val heater  = this.heater!!
         val tvMeter = this.tvMeter!!
 
         heater.turnOff()
         tvMeter.turnOff()
-        ground?.turnOff()
-        gate?.turnOff()
+        gdSMU?.turnOff()
+        sgSMU?.turnOff()
 
-        heater.voltage          = minHV
-        heater.integrationTime  = intTime
-        tvMeter.averageMode     = AMode.MEAN_REPEAT
-        tvMeter.averageCount    = avgCount
-        tvMeter.integrationTime = intTime
-        ground?.voltage         = 0.0
-        ground?.integrationTime = intTime
-        gate?.voltage           = minSGV
-        gate?.integrationTime   = intTime
+        heater.voltage           = minHV
+        heater.integrationTime   = intTime
+        tvMeter.averageMode      = AMode.MEAN_REPEAT
+        tvMeter.averageCount     = avgCount
+        tvMeter.integrationTime  = intTime
+        gdSMU?.voltage           = 0.0
+        gdSMU?.integrationTime   = intTime
+        sgSMU?.voltage           = minSGV
+        sgSMU?.integrationTime   = intTime
 
         val gateVoltages   = Range.linear(minSGV, maxSGV, numSGV)
         val heaterVoltages = if (symHV) Range.linear(minHV, maxHV, numHV).mirror() else Range.linear(minHV, maxHV, numHV)
 
         tvMeter.turnOn()
-        ground?.turnOn()
+        gdSMU?.turnOn()
 
         var count = 0.0
 
         for (gateVoltage in gateVoltages) {
 
-            gate?.voltage = gateVoltage
-            gate?.turnOn()
+            sgSMU?.voltage = gateVoltage
+            sgSMU?.turnOn()
 
             sleep(gateHold)
 
@@ -142,8 +134,8 @@ class TVMeasurement : FetChMeasurement() {
                     gateVoltage,
                     heaterVoltage,
                     tMeter?.temperature ?: Double.NaN,
-                    gate?.voltage ?: Double.NaN,
-                    gate?.current ?: Double.NaN,
+                    sgSMU?.voltage ?: Double.NaN,
+                    sgSMU?.current ?: Double.NaN,
                     heater.voltage,
                     heater.current,
                     tvMeter.voltage,
@@ -157,14 +149,14 @@ class TVMeasurement : FetChMeasurement() {
 
         }
 
-        gate?.turnOff()
+        sgSMU?.turnOff()
 
     }
 
     override fun onFinish() {
-        runRegardless { heater?.turnOff() }
-        runRegardless { gate?.turnOff() }
-        runRegardless { ground?.turnOff() }
+        runRegardless { heater?.turnOff()  }
+        runRegardless { sgSMU?.turnOff()    }
+        runRegardless { gdSMU?.turnOff()  }
         runRegardless { tvMeter?.turnOff() }
     }
 

@@ -16,7 +16,7 @@ object Configuration : Grid("Configuration", 1) {
 
     private var loaded: Instruments? = null
 
-    val ground = Configurator.SMU("Ground Channel (for SPA)", Settings.groundConfig, Connections)
+    val ground      = Configurator.SMU("Ground Channel (for SPA)", Settings.groundConfig, Connections)
     val sourceDrain = Configurator.SMU("Source-Drain Channel", Settings.sourceDrainConfig, Connections)
     val sourceGate  = Configurator.SMU("Source-Gate Channel", Settings.sourceGateConfig, Connections)
     val heater      = Configurator.SMU("Heater", Settings.heaterConfig, Connections)

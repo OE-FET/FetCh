@@ -4,6 +4,9 @@ import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import jisa.Util
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
+import jisa.experiment.ActionQueue.Result.*
+import jisa.experiment.ResultStream
+import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.*
@@ -35,6 +38,8 @@ object Measure : Grid("Measurement", 1) {
     val baseFile: String get() = Util.joinPath(dir.get(), name.get())
     var table:    Table?       = null
     var plot:     Plot?        = null
+
+    private var log: ResultTable? = null
 
     init {
 
@@ -69,13 +74,14 @@ object Measure : Grid("Measurement", 1) {
 
         val plot  = when (action.measurement) {
 
-            is OutputMeasurement   -> OutputPlot(action.data).apply { legendColumns = 2 }
-            is TransferMeasurement -> TransferPlot(action.data).apply { legendColumns = 2 }
-            is FPPMeasurement      -> FPPPlot(action.data)
-            is SyncMeasurement     -> SyncPlot(action.data)
-            is ACHallMeasurement   -> ACHallPlot(action.data)
-            is TVMeasurement       -> TVPlot(action.data)
-            else                   -> Plot("Unknown")
+            is Output        -> OutputPlot(action.data).apply { legendColumns = 2 }
+            is Transfer      -> TransferPlot(action.data).apply { legendColumns = 2 }
+            is Conductivity  -> FPPPlot(action.data)
+            is VSync         -> SyncPlot(action.data)
+            is ACHall        -> ACHallPlot(action.data)
+            is TVMeasurement -> TVPlot(action.data)
+            is TVCalibration -> TVCPlot(action.data)
+            else             -> Plot("Unknown")
 
         }
 
@@ -112,6 +118,10 @@ object Measure : Grid("Measurement", 1) {
 
     private fun runMeasurement() {
 
+        Instruments.loadInstruments()
+
+        Log.start("${baseFile}-${System.currentTimeMillis()}-log.csv")
+
         if (queue.size < 1) {
             GUI.errorAlert("Measurement sequence is empty!")
             return
@@ -123,10 +133,10 @@ object Measure : Grid("Measurement", 1) {
 
             when (queue.start()) {
 
-                ActionQueue.Result.COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
-                ActionQueue.Result.INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
-                ActionQueue.Result.ERROR       -> GUI.errorAlert("Measurement sequence completed with error(s)")
-                else                           -> GUI.errorAlert("Unknown queue result")
+                COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
+                INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
+                ERROR       -> GUI.errorAlert("Measurement sequence completed with error(s)")
+                else        -> GUI.errorAlert("Unknown queue result")
 
             }
 
@@ -138,6 +148,7 @@ object Measure : Grid("Measurement", 1) {
 
             System.gc()
             disable(false)
+            Log.stop()
 
         }
 

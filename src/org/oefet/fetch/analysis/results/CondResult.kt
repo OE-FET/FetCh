@@ -5,7 +5,7 @@ import jisa.experiment.ResultTable
 import jisa.maths.fits.Fitting
 import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.gui.elements.FPPPlot
-import org.oefet.fetch.measurement.FPPMeasurement
+import org.oefet.fetch.measurement.Conductivity
 
 class CondResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) :
     ResultFile {
@@ -56,7 +56,7 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
         }
 
         if (parameters.count { it is Temperature } == 0) parameters += Temperature(
-            data.getMean(FPPMeasurement.TEMPERATURE),
+            data.getMean(Conductivity.TEMPERATURE),
             0.0,
             emptyList()
         )
@@ -64,8 +64,8 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
         parameters += extraParams
 
         val fit = Fitting.linearFit(
-            data.getColumns(FPPMeasurement.FPP_VOLTAGE),
-            data.getColumns(FPPMeasurement.SD_CURRENT)
+            data.getColumns(Conductivity.FPP_VOLTAGE),
+            data.getColumns(Conductivity.SD_CURRENT)
         )
 
         val value = fit.gradient * separation / (width * thickness) / 100.0

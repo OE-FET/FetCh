@@ -2,24 +2,21 @@ package org.oefet.fetch.analysis.results
 
 import jisa.enums.Icon
 import jisa.experiment.ResultTable
-import jisa.gui.Colour
 import jisa.gui.Plot
-import jisa.gui.Series
 import jisa.maths.Range
 import jisa.maths.fits.Fitting
 import jisa.maths.matrices.RealMatrix
 import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.gui.elements.ACHallPlot
-import org.oefet.fetch.measurement.ACHallMeasurement
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.FREQUENCY
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.HALL_VOLTAGE
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.RMS_FIELD
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.SD_CURRENT
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.TEMPERATURE
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.X_ERROR
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.X_VOLTAGE
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.Y_ERROR
-import org.oefet.fetch.measurement.ACHallMeasurement.Companion.Y_VOLTAGE
+import org.oefet.fetch.measurement.ACHall.Companion.FREQUENCY
+import org.oefet.fetch.measurement.ACHall.Companion.HALL_VOLTAGE
+import org.oefet.fetch.measurement.ACHall.Companion.RMS_FIELD
+import org.oefet.fetch.measurement.ACHall.Companion.SD_CURRENT
+import org.oefet.fetch.measurement.ACHall.Companion.TEMPERATURE
+import org.oefet.fetch.measurement.ACHall.Companion.X_ERROR
+import org.oefet.fetch.measurement.ACHall.Companion.X_VOLTAGE
+import org.oefet.fetch.measurement.ACHall.Companion.Y_ERROR
+import org.oefet.fetch.measurement.ACHall.Companion.Y_VOLTAGE
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.PI
@@ -147,7 +144,7 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
         for (conductivity in conductivities) {
 
-            val condValue = conductivity.value.toDouble()
+            val condValue = conductivity.value
             val condError = conductivity.error
             val mobility  = hallValue * condValue * 100.0 * 10000.0
             val error     = mobility * sqrt((hallError / hallValue).pow(2) + (condError / condValue).pow(2))

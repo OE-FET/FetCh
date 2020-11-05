@@ -11,7 +11,7 @@ object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
         addSeparator("Measure")
 
-        addAll(Measure)
+        addAll(Measure, Dashboard)
 
         addSeparator("Analyse")
 

@@ -15,3 +15,17 @@ class Drain(
     override val extra  = true
 
 }
+
+class Power(
+    override val value: Double,
+    override val error: Double,
+    override val parameters: List<Quantity> = emptyList(),
+    override val possibleParameters: List<KClass<out Quantity>> = emptyList()
+) : Quantity {
+
+    override val name   = "Power"
+    override val symbol = "P"
+    override val unit   = "W"
+    override val extra  = true
+
+}
