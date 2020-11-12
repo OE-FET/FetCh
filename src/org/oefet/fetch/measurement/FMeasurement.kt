@@ -29,13 +29,6 @@ abstract class FMeasurement : Measurement() {
 
     protected open fun loadInstruments() {
 
-        gdSMU    = Instruments.gdSMU
-        sdSMU    = Instruments.sdSMU
-        sgSMU    = Instruments.sgSMU
-        heater   = Instruments.htSMU
-        tvMeter  = Instruments.tvMeter
-        fpp1     = Instruments.fpp1
-        fpp2     = Instruments.fpp2
         tControl = Instruments.tControl
         tMeter   = Instruments.tMeter
         lockIn   = Instruments.lockIn

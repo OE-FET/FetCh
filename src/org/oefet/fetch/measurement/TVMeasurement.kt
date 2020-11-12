@@ -6,7 +6,9 @@ import jisa.devices.SMU
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.tabs.Connections
 import java.util.*
 import kotlin.Exception
 
@@ -44,6 +46,11 @@ class TVMeasurement : FMeasurement() {
     private val symSGVParam     = BooleanParameter("Gate", "Sweep Both Ways", null, false)
     private val gateHoldParam   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
 
+    val gdSMUConfig   = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    val htSMUConfig   = addInstrument(Configurator.SMU("Heater Channel", Connections))
+    val sgSMUConfig   = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
+    val tvMeterConfig = addInstrument(Configurator.VMeter("Thermal Voltage Channel", Connections))
+
     val intTime    get() = intTimeParam.value
     val avgCount   get() = avgCountParam.value
     val minHV      get() = minHVParam.value
@@ -59,10 +66,10 @@ class TVMeasurement : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU    = Instruments.gdSMU
-        heater   = Instruments.htSMU
-        sgSMU    = Instruments.sgSMU
-        tvMeter  = Instruments.tvMeter
+        gdSMU    = gdSMUConfig.get()
+        heater   = htSMUConfig.get()
+        sgSMU    = sgSMUConfig.get()
+        tvMeter  = tvMeterConfig.get()
         tMeter   = Instruments.tMeter
 
     }

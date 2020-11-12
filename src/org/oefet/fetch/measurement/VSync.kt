@@ -5,7 +5,9 @@ import jisa.Util.runRegardless
 import jisa.devices.TMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.tabs.Connections
 import java.lang.Exception
 
 class VSync : FMeasurement() {
@@ -21,6 +23,12 @@ class VSync : FMeasurement() {
     private val paramSymVSD  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
     private val paramOffset  = DoubleParameter("Source-Gate", "Offset", "V", 0.0)
 
+    val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    val sdSMUConfig = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
+    val sgSMUConfig = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
+    val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 1", Connections))
+    val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 2", Connections))
+
     val intTime get() = paramIntTime.value
     val delTime get() = (paramDelTime.value * 1000).toInt()
     val minVSD  get() = paramMinVSD .value
@@ -31,11 +39,11 @@ class VSync : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU    = Instruments.gdSMU
-        sdSMU    = Instruments.sdSMU
-        sgSMU    = Instruments.sgSMU
-        fpp1     = Instruments.fpp1
-        fpp2     = Instruments.fpp2
+        gdSMU    = gdSMUConfig.get()
+        sdSMU    = sdSMUConfig.get()
+        sgSMU    = sgSMUConfig.get()
+        fpp1     = fpp1Config.get()
+        fpp2     = fpp2Config.get()
         tMeter   = Instruments.tMeter
 
     }

@@ -80,6 +80,7 @@ object Dashboard : Grid("Dashboard", 3) {
         }
 
         prog.close()
+        grid.isMaximised = true
         grid.show()
 
     }

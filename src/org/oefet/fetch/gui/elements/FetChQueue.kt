@@ -3,7 +3,7 @@ package org.oefet.fetch.gui.elements
 import jisa.experiment.ActionQueue
 import jisa.gui.ActionQueueDisplay
 import jisa.gui.GUI
-import jisa.gui.MeasurementFields
+import jisa.gui.MeasurementConfigurator
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.inputs.ActionInput
@@ -13,6 +13,26 @@ import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.measurement.FMeasurement
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
+
+    init {
+
+        setOnDoubleClick {
+
+            if (it is ActionQueue.MeasureAction) {
+
+                val measurement = it.measurement
+
+                val input = MeasurementConfigurator(measurement.name, measurement).apply {
+                    windowHeight = 750.0
+                    windowWidth  = 1024.0
+                }
+
+                input.showInput()
+
+            }
+
+        }
+    }
 
     /**
      * Button for adding actions to the queue
@@ -63,7 +83,11 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         measurement.label = "${measurement.label}${if (count > 0) count + 1 else ""}"
 
         // Generate measurement parameter input GUI and make it remember values from last time
-        val input = MeasurementFields(measurement.name, measurement).apply { linkConfig(Settings.inputs) }
+        val input = MeasurementConfigurator(measurement.name, measurement).apply {
+            linkConfig(Settings.inputs)
+            windowHeight = 750.0
+            windowWidth  = 1024.0
+        }
 
         if (input.showInput()) {
 

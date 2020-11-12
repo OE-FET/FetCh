@@ -7,6 +7,9 @@ import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVMeasurement
+import org.oefet.fetch.measurement.TVMeasurement.Companion.HEATER_POWER
+import org.oefet.fetch.measurement.TVMeasurement.Companion.SET_GATE
+import org.oefet.fetch.measurement.TVMeasurement.Companion.THERMAL_VOLTAGE
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -14,10 +17,17 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
-    override val plot = TVPlot(data)
-    override val name = "Thermal Voltage Measurement (${data.getAttribute("Name")})"
-    override val image = Images.getImage("fire.png")
-    override val label = "Thermal Voltage"
+    override val plot       = TVPlot(data)
+    override val name       = "Thermal Voltage Measurement (${data.getAttribute("Name")})"
+    override val image      = Images.getImage("fire.png")
+    override val label      = "Thermal Voltage"
+
+    override var length:       Double = 0.0
+    override var separation:   Double = 0.0
+    override var width:        Double = 0.0
+    override var thickness:    Double = 0.0
+    override var dielectric:   Double = 0.0
+    override var permittivity: Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,
@@ -31,38 +41,14 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
     init {
 
-        if (data.getAttribute("Type") != label) {
-            throw Exception("That is not a thermal voltage measurement file")
-        }
+        parseParameters(data, extraParams)
 
-        val length = data.getAttribute("Length").removeSuffix("m").toDouble()
-        val separation = data.getAttribute("FPP Separation").removeSuffix("m").toDouble()
-        val width = data.getAttribute("Width").removeSuffix("m").toDouble()
-        val thickness = data.getAttribute("Thickness").removeSuffix("m").toDouble()
-        val dielectric = data.getAttribute("Dielectric Thickness").removeSuffix("m").toDouble()
-        val permittivity = data.getAttribute("Dielectric Permittivity").toDouble()
-
-        parameters += Length(length, 0.0)
-        parameters += FPPSeparation(separation, 0.0)
-        parameters += Width(width, 0.0)
-        parameters += Thickness(thickness, 0.0)
-        parameters += DThickness(dielectric, 0.0)
-        parameters += Permittivity(permittivity, 0.0)
-
-        for ((_, value) in data.attributes) {
-
-            parameters += Quantity.parseValue(value) ?: continue
-
-        }
-
-        parameters += extraParams
-
-        for ((gate, data) in data.split(TVMeasurement.SET_GATE)) {
+        for ((gate, data) in data.split(SET_GATE)) {
 
             val params = ArrayList(parameters)
             params    += Gate(gate, 0.0)
 
-            val fit = data.linearFit(TVMeasurement.HEATER_POWER, TVMeasurement.THERMAL_VOLTAGE)
+            val fit = data.linearFit(HEATER_POWER, THERMAL_VOLTAGE)
 
             if (fit != null) quantities += SeebeckPower(fit.gradient, fit.gradientError, params, possibleParameters)
 
@@ -152,12 +138,14 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         val extras = ArrayList<Quantity>()
 
-        for ((gate, data) in data.split(TVMeasurement.SET_GATE)) {
+        for ((gate, data) in data.split(SET_GATE)) {
 
             val params = ArrayList(parameters)
             params    += Gate(gate, 0.0)
-            val dT     = rightPowerFit.value(data.getColumns(TVMeasurement.HEATER_POWER)) - leftPowerFit.value(data.getColumns(TVMeasurement.HEATER_POWER))
-            val fit    = Fitting.linearFit(dT, data.getColumns(TVMeasurement.THERMAL_VOLTAGE))
+            val dT     = rightPowerFit.value(data.getColumns(HEATER_POWER)) - leftPowerFit.value(data.getColumns(
+                HEATER_POWER
+            ))
+            val fit    = Fitting.linearFit(dT, data.getColumns(THERMAL_VOLTAGE))
 
             if (fit != null) extras += SeebeckCoefficient(fit.gradient, fit.gradientError, params, possibleParameters)
 

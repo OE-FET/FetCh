@@ -22,6 +22,13 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
     override val image      = Images.getImage("transfer.png")
     override val label      = "Transfer"
 
+    override var length:       Double = 0.0
+    override var separation:   Double = 0.0
+    override var width:        Double = 0.0
+    override var thickness:    Double = 0.0
+    override var dielectric:   Double = 0.0
+    override var permittivity: Double = 0.0
+
     private val possibleParameters = listOf(
         Temperature::class,
         Repeat::class,
@@ -38,31 +45,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
     init {
 
-        if (data.getAttribute("Type") != label) {
-            throw Exception("That is not a transfer curve file")
-        }
-
-        val length        = data.getAttribute("Length").removeSuffix("m").toDouble()
-        val separation    = data.getAttribute("FPP Separation").removeSuffix("m").toDouble()
-        val width         = data.getAttribute("Width").removeSuffix("m").toDouble()
-        val thickness     = data.getAttribute("Thickness").removeSuffix("m").toDouble()
-        val dielectric    = data.getAttribute("Dielectric Thickness").removeSuffix("m").toDouble()
-        val permittivity  = data.getAttribute("Dielectric Permittivity").toDouble()
-
-        parameters += Length(length, 0.0)
-        parameters += FPPSeparation(separation, 0.0)
-        parameters += Width(width, 0.0)
-        parameters += Thickness(thickness, 0.0)
-        parameters += DThickness(dielectric, 0.0)
-        parameters += Permittivity(permittivity, 0.0)
-
-        for ((_, value) in data.attributes) {
-
-            parameters += Quantity.parseValue(value) ?: continue
-
-        }
-
-        parameters += extraParams
+        parseParameters(data, extraParams)
 
         val capacitance = permittivity * EPSILON / dielectric
 

@@ -4,7 +4,9 @@ import jisa.Util
 import jisa.Util.runRegardless
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.tabs.Connections
 
 class Output : FMeasurement() {
 
@@ -22,6 +24,12 @@ class Output : FMeasurement() {
     private val maxVSGParam  = DoubleParameter("Source-Gate", "Stop", "V", 60.0)
     private val numVSGParam  = IntegerParameter("Source-Gate", "No. Steps", null, 7)
 
+    val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    val sdSMUConfig = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
+    val sgSMUConfig = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
+    val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 1", Connections))
+    val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 2", Connections))
+
     val intTime get() = intTimeParam.value
     val delTime get() = (1e3 * delTimeParam.value).toInt()
     val minVSD get()  = minVSDParam.value
@@ -34,11 +42,11 @@ class Output : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU    = Instruments.gdSMU
-        sdSMU    = Instruments.sdSMU
-        sgSMU    = Instruments.sgSMU
-        fpp1     = Instruments.fpp1
-        fpp2     = Instruments.fpp2
+        gdSMU    = gdSMUConfig.get()
+        sdSMU    = sdSMUConfig.get()
+        sgSMU    = sgSMUConfig.get()
+        fpp1     = fpp1Config.get()
+        fpp2     = fpp2Config.get()
         tMeter   = Instruments.tMeter
 
     }

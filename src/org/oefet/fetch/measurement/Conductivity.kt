@@ -3,7 +3,9 @@ package org.oefet.fetch.measurement
 import jisa.Util.runRegardless
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.tabs.Connections
 
 class Conductivity : FMeasurement() {
 
@@ -18,6 +20,12 @@ class Conductivity : FMeasurement() {
     private val symIParam    = BooleanParameter("Source-Drain", "Sweep Both Ways", null, false)
     private val holdGParam   = BooleanParameter("Source-Gate", "Active", null, false)
     private val gateVParam   = DoubleParameter("Source-Gate", "Voltage", "V", 50.0)
+
+    val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    val sdSMUConfig = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
+    val sgSMUConfig = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
+    val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 1", Connections))
+    val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 2", Connections))
 
     val intTime get() = intTimeParam.value
     val delTime get() = (1e3 * delTimeParam.value).toInt()
@@ -38,12 +46,13 @@ class Conductivity : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU    = Instruments.gdSMU
-        sdSMU    = Instruments.sdSMU
-        sgSMU    = Instruments.sgSMU
-        fpp1     = Instruments.fpp1
-        fpp2     = Instruments.fpp2
-        tMeter   = Instruments.tMeter
+        gdSMU    = gdSMUConfig.get()
+        sdSMU    = sdSMUConfig.get()
+        sgSMU    = sgSMUConfig.get()
+        fpp1     = fpp1Config.get()
+        fpp2     = fpp2Config.get()
+
+        super.loadInstruments()
 
     }
 

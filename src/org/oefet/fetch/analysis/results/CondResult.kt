@@ -17,6 +17,13 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
     override val image      = Icon.ELECTRICITY.blackImage
     override val label      = "FPP Conductivity"
 
+    override var length:       Double = 0.0
+    override var separation:   Double = 0.0
+    override var width:        Double = 0.0
+    override var thickness:    Double = 0.0
+    override var dielectric:   Double = 0.0
+    override var permittivity: Double = 0.0
+
     private val possibleParameters = listOf(
         Temperature::class,
         Repeat::class,
@@ -31,37 +38,13 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
 
     init {
 
-        if (data.getAttribute("Type") != label) {
-            throw Exception("That is not a FPP Conductivity measurement file")
-        }
-
-        val length        = data.getAttribute("Length").removeSuffix("m").toDouble()
-        val separation    = data.getAttribute("FPP Separation").removeSuffix("m").toDouble()
-        val width         = data.getAttribute("Width").removeSuffix("m").toDouble()
-        val thickness     = data.getAttribute("Thickness").removeSuffix("m").toDouble()
-        val dielectric    = data.getAttribute("Dielectric Thickness").removeSuffix("m").toDouble()
-        val permittivity  = data.getAttribute("Dielectric Permittivity").toDouble()
-
-        parameters += Length(length, 0.0)
-        parameters += FPPSeparation(separation, 0.0)
-        parameters += Width(width, 0.0)
-        parameters += Thickness(thickness, 0.0)
-        parameters += DThickness(dielectric, 0.0)
-        parameters += Permittivity(permittivity, 0.0)
-
-        for ((_, value) in data.attributes) {
-
-            parameters += Quantity.parseValue(value) ?: continue
-
-        }
+        parseParameters(data, extraParams)
 
         if (parameters.count { it is Temperature } == 0) parameters += Temperature(
             data.getMean(Conductivity.TEMPERATURE),
             0.0,
             emptyList()
         )
-
-        parameters += extraParams
 
         val fit = Fitting.linearFit(
             data.getColumns(Conductivity.FPP_VOLTAGE),

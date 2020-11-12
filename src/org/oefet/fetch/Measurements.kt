@@ -1,38 +1,49 @@
 package org.oefet.fetch
 
+import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
+import jisa.gui.Plot
 import org.oefet.fetch.analysis.quantities.Quantity
 import org.oefet.fetch.analysis.results.*
+import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.measurement.*
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.jvm.reflect
 
 object Measurements {
 
     class Config(
         val type: String,
         val measurement: () -> FMeasurement,
-        val result: (ResultTable, List<Quantity>) -> ResultFile
+        val result: (ResultTable, List<Quantity>) -> ResultFile,
+        val plot: (ResultTable) -> Plot
     ) {
 
-        val name = measurement().name
+        private val example = measurement()
+
+        val name   = example.name
+        val mClass = example::class
+        val rClass = result.reflect()?.returnType?.jvmErasure
 
         fun createMeasurement(): FMeasurement = measurement()
         fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = result(data, extra)
+        fun createPlot(data: ResultTable) = plot(data)
 
 
     }
 
     val types = listOf(
-        Config("Output", ::Output, ::OutputResult),
-        Config("Transfer", ::Transfer, ::TransferResult),
-        Config("Sync", ::VSync, ::TransferResult),
-        Config("FPP Conductivity", ::Conductivity, ::CondResult),
-        Config("AC Hall", ::ACHall, ::ACHallResult),
-        Config("Thermal Voltage", ::TVMeasurement, ::TVResult),
-        Config("Thermal Voltage Calibration", ::TVCalibration, ::TVCResult)
+        Config("Output",                      ::Output,        ::OutputResult,   ::OutputPlot),
+        Config("Transfer",                    ::Transfer,      ::TransferResult, ::TransferPlot),
+        Config("Sync",                        ::VSync,         ::TransferResult, ::SyncPlot),
+        Config("FPP Conductivity",            ::Conductivity,  ::CondResult,     ::FPPPlot),
+        Config("AC Hall",                     ::ACHall,        ::ACHallResult,   { ACHallPlot(it) }),
+        Config("Thermal Voltage",             ::TVMeasurement, ::TVResult,       ::TVPlot),
+        Config("Thermal Voltage Calibration", ::TVCalibration, ::TVCResult,      ::TVCPlot)
     )
 
     fun loadResultFile(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile? {
@@ -42,6 +53,20 @@ object Measurements {
             extra
         )
 
+    }
+
+    fun createPlot(data: ResultTable): Plot? {
+
+        return types.find { it.type == data.getAttribute("Type") }?.createPlot(data)
+
+    }
+
+    fun createPlot(result: ResultFile): Plot? {
+        return types.find { it.rClass == result::class }?.createPlot(result.data)
+    }
+
+    fun createPlot(measurement: Measurement): Plot? {
+        return types.find { it.mClass == measurement::class }?.createPlot(measurement.results)
     }
 
     private fun convertFile(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile? {

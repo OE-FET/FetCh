@@ -35,7 +35,7 @@ class TVCPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration", "Hea
         createSeries()
             .setLineVisible(false)
             .watch(data, TVCalibration.STRIP_CURRENT, TVCalibration.STRIP_VOLTAGE)
-            .split(TVCalibration.HEATER_POWER, "P = %.02e W")
+            .split(TVCalibration.HEATER_VOLTAGE, "H = %.02f V")
 
     }
 

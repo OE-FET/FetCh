@@ -6,7 +6,9 @@ import jisa.enums.Coupling
 import jisa.enums.Input
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.tabs.Connections
 import java.time.Duration
 import java.util.*
 import kotlin.math.pow
@@ -33,6 +35,9 @@ class ACHall : FMeasurement() {
     private val minGParam     = DoubleParameter("Source-Gate", "Start", "V", 0.0)
     private val maxGParam     = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
     private val numGParam     = IntegerParameter("Source-Gate", "No. Steps", null, 1)
+    private val gdSMUConfig   = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    private val sdSMUConfig   = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
+    private val sgSMUConfig   = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
 
     val intTime  get() = intTimeParam.value
     val delTime  get() = (1e3 * delTimeParam.value).toInt()
@@ -65,14 +70,11 @@ class ACHall : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU    = Instruments.gdSMU
-        sdSMU    = Instruments.sdSMU
-        sgSMU    = Instruments.sgSMU
-        tMeter   = Instruments.tMeter
-        lockIn   = Instruments.lockIn
-        dcPower  = Instruments.dcPower
-        preAmp   = Instruments.preAmp
-        fControl = if (lockIn != null && dcPower != null) FControl(lockIn!!, dcPower!!) else null
+        gdSMU    = gdSMUConfig.get()
+        sdSMU    = sdSMUConfig.get()
+        sgSMU    = sgSMUConfig.get()
+
+        super.loadInstruments()
 
     }
 

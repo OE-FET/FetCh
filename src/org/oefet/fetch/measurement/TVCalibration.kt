@@ -4,7 +4,9 @@ import jisa.Util.runRegardless
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.tabs.Connections
 import java.util.*
 
 class TVCalibration : FMeasurement() {
@@ -24,6 +26,12 @@ class TVCalibration : FMeasurement() {
     val numSIParam    = IntegerParameter("Resistive Thermometer", "No. Steps", null, 11)
     val holdSIParam   = DoubleParameter("Resistive Thermometer", "Hold Time", "s", 0.5)
 
+    val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    val htSMUConfig = addInstrument(Configurator.SMU("Heater Channel", Connections))
+    val sdSMUConfig = addInstrument(Configurator.SMU("Strip Source-Drain Channel", Connections))
+    val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 1", Connections))
+    val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 2", Connections))
+
     val intTime  get() = intTimeParam .value
     val avgCount get() = avgCountParam.value
     val probe    get() = probeParam.value
@@ -38,11 +46,11 @@ class TVCalibration : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU    = Instruments.gdSMU
-        heater   = Instruments.htSMU
-        sdSMU    = Instruments.sdSMU
-        fpp1     = Instruments.fpp1
-        fpp2     = Instruments.fpp2
+        gdSMU    = gdSMUConfig.get()
+        heater   = htSMUConfig.get()
+        sdSMU    = sdSMUConfig.get()
+        fpp1     = fpp1Config.get()
+        fpp2     = fpp2Config.get()
         tMeter   = Instruments.tMeter
 
     }
@@ -90,6 +98,24 @@ class TVCalibration : FMeasurement() {
 
         gdSMU?.turnOn()
 
+        val voltage = if (fpp1 != null && fpp2 != null) {
+
+            { fpp2!!.voltage - fpp1!!.voltage }
+
+        } else if (fpp1 != null) {
+
+            { fpp1!!.voltage }
+
+        } else if (fpp2 != null) {
+
+            { fpp2!!.voltage }
+
+        } else {
+
+            { sdSMU.voltage }
+
+        }
+
         for (heaterVoltage in Range.linear(minHV, maxHV, numHV)) {
 
             heater.voltage = heaterVoltage
@@ -108,7 +134,7 @@ class TVCalibration : FMeasurement() {
                     gdSMU?.current ?: Double.NaN,
                     heater.voltage,
                     heater.current,
-                    sdSMU.voltage,
+                    voltage(),
                     sdSMU.current,
                     tMeter.temperature
                 )

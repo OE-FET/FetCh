@@ -8,6 +8,7 @@ import jisa.experiment.ActionQueue.Result.*
 import jisa.experiment.ResultStream
 import jisa.experiment.ResultTable
 import jisa.gui.*
+import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.measurement.*
@@ -71,19 +72,7 @@ object Measure : Grid("Measurement", 1) {
         action.setAttribute("Dielectric Permittivity", dielConst.value)
 
         val table = Table("Data", action.data)
-
-        val plot  = when (action.measurement) {
-
-            is Output        -> OutputPlot(action.data).apply { legendColumns = 2 }
-            is Transfer      -> TransferPlot(action.data).apply { legendColumns = 2 }
-            is Conductivity  -> FPPPlot(action.data)
-            is VSync         -> SyncPlot(action.data)
-            is ACHall        -> ACHallPlot(action.data)
-            is TVMeasurement -> TVPlot(action.data)
-            is TVCalibration -> TVCPlot(action.data)
-            else             -> Plot("Unknown")
-
-        }
+        val plot  = Measurements.createPlot(action.measurement) ?: FetChPlot("Unknown Measurement Plot", "X", "Y")
 
         topRow.remove(this.plot);
         bottomRow.remove(this.table)
