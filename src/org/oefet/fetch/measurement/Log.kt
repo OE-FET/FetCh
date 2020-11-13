@@ -41,22 +41,28 @@ object Log {
                 }
 
                 is SMU -> {
+
                     columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
                     columns.add(Col("${inst.javaClass.simpleName} Current", "A"))
                     logTasks.add { inst.voltage }
                     logTasks.add { inst.current }
+
                 }
 
                 is DCPower -> {
+
                     columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
                     columns.add(Col("${inst.javaClass.simpleName} Current", "A"))
                     logTasks.add { inst.voltage }
                     logTasks.add { inst.current }
+
                 }
 
                 is VMeter -> {
+
                     columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
                     logTasks.add { inst.voltage }
+
                 }
 
                 is MSMOTC -> {
@@ -86,31 +92,39 @@ object Log {
                 }
 
                 is TC -> {
+
                     columns.add(Col("${inst.javaClass.simpleName} Temperature", "K"))
                     columns.add(Col("${inst.javaClass.simpleName} Heater Power", "%"))
                     logTasks.add { inst.temperature }
                     logTasks.add { inst.heaterPower }
+
                 }
 
                 is TMeter -> {
+
                     columns.add(Col("${inst.javaClass.simpleName} Temperature", "K"))
                     logTasks.add { inst.temperature }
+
                 }
 
                 is DPLockIn -> {
+
                     columns.add(Col("${inst.javaClass.simpleName} X Voltage", "V"))
                     columns.add(Col("${inst.javaClass.simpleName} Y Voltage", "V"))
                     columns.add(Col("${inst.javaClass.simpleName} Frequency", "Hz"))
                     logTasks.add { inst.lockedX }
                     logTasks.add { inst.lockedY }
                     logTasks.add { inst.frequency }
+
                 }
 
                 is LockIn -> {
+
                     columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
                     columns.add(Col("${inst.javaClass.simpleName} Frequency", "Hz"))
                     logTasks.add { inst.lockedAmplitude }
                     logTasks.add { inst.frequency }
+
                 }
 
             }
