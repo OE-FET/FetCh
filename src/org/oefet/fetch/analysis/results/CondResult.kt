@@ -7,8 +7,7 @@ import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.measurement.Conductivity
 
-class CondResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    ResultFile {
+class CondResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()

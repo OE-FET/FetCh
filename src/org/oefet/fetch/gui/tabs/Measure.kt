@@ -120,7 +120,10 @@ object Measure : Grid("Measurement", 1) {
 
         try {
 
-            when (queue.start()) {
+            val result = queue.start()
+            Log.stop()
+
+            when (result) {
 
                 COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
                 INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")

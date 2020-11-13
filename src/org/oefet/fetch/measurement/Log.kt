@@ -12,37 +12,22 @@ import kotlin.collections.ArrayList
 
 object Log {
 
-    private var gdSMU: SMU? = null
-    private var sdSMU: SMU? = null
-    private var sgSMU: SMU? = null
-    private var lockIn: DPLockIn? = null
-    private var preAmp: VPreAmp? = null
-    private var dcPower: DCPower? = null
-    private var tMeter: TMeter? = null
-    private var fControl: FControl? = null
-    private var tControl: TC? = null
-    private var fpp1: VMeter? = null
-    private var fpp2: VMeter? = null
-    private var tvMeter: VMeter? = null
-    private var heater: SMU? = null
-    private var logTasks: MutableList<() -> Double> = ArrayList()
-
-    private var log: ResultTable? = null;
+    private val logTasks: MutableList<() -> Double> = ArrayList()
     private val logger: RTask = RTask(2500) { it -> log(log!!, it) }
+    private var log: ResultTable? = null;
 
     fun start(path: String) {
 
         logTasks.clear()
 
         val columns = LinkedList<Col>()
+        columns.add(Col("Time", "s"))
 
         for (connection in Connections.getInstrumentsByType(Instrument::class.java)) {
 
             if (!connection.isConnected) continue
 
-            val inst = connection.get()
-
-            when (inst) {
+            when (val inst = connection.get()) {
 
                 is MCSMU -> {
 
@@ -82,7 +67,7 @@ object Log {
                     }
 
                     for ((output, tc) in inst.outputs.withIndex()) {
-                        columns.add(Col("${inst.javaClass.simpleName} Output $output Heater Power", "K"))
+                        columns.add(Col("${inst.javaClass.simpleName} Output $output Heater Power", "%"))
                         logTasks.add { tc.heaterPower }
                     }
 
@@ -95,7 +80,7 @@ object Log {
                         logTasks.add { tMeter.temperature }
                     }
 
-                    columns.add(Col("${inst.javaClass.simpleName} Heater Power", "K"))
+                    columns.add(Col("${inst.javaClass.simpleName} Heater Power", "%"))
                     logTasks.add { inst.heaterPower }
 
                 }
@@ -149,10 +134,11 @@ object Log {
 
     private fun log(log: ResultTable, task: RTask) {
 
-        val data = DoubleArray(logTasks.size)
+        val data = DoubleArray(logTasks.size + 1)
+        data[0]  = task.secFromStart
 
         for ((i, logTask) in logTasks.withIndex()) {
-            data[i] = logTask()
+            data[i + 1] = logTask()
         }
 
         log.addData(*data)
