@@ -8,12 +8,18 @@ import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.measurement.FMeasurement
+import java.util.*
+import kotlin.collections.ArrayList
 
 object Dashboard : Grid("Dashboard", 3) {
+
+    private val plots = ArrayList<Plot>()
+    private val shown = ArrayList<Boolean>()
 
     init {
 
         setIcon(Icon.DASHBOARD)
+        setGrowth(true, false)
 
         addToolbarButton("Open Log File") {
 
@@ -23,6 +29,10 @@ object Dashboard : Grid("Dashboard", 3) {
                 openLogFile(ResultList.loadFile(path))
             }
 
+        }
+
+        addToolbarButton("Configure Visible Plots") {
+            editVisible()
         }
 
     }
@@ -43,7 +53,40 @@ object Dashboard : Grid("Dashboard", 3) {
                 .setLineVisible(true)
                 .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
 
+            plots.add(plot)
+            shown.add(true)
+
             add(plot)
+
+        }
+
+    }
+
+    fun editVisible() {
+
+        val input = Fields("Visible Plots")
+        val grid  = Grid("Visible Plots", input)
+        val ticks = ArrayList<Field<Boolean>>()
+
+        for ((i, plot) in plots.withIndex()) {
+            ticks.add(input.addCheckBox(plot.title, shown[i]))
+        }
+
+        grid.windowHeight = 500.0
+        grid.windowWidth  = 350.0
+
+        if (grid.showAsConfirmation()) {
+
+            clear()
+
+            for ((i, field) in ticks.withIndex()) {
+                shown[i] = field.value
+
+                if (field.value) {
+                    add(plots[i])
+                }
+
+            }
 
         }
 
