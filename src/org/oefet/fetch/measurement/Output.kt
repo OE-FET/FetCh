@@ -64,6 +64,9 @@ class Output : FMeasurement() {
 
     override fun run(results: ResultTable) {
 
+        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Delay Time", "$delTime ms")
+
         // Assert that source-drain and source-gate must be connected
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!

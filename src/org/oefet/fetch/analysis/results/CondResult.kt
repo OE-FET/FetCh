@@ -6,6 +6,7 @@ import jisa.maths.fits.Fitting
 import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.measurement.Conductivity
+import org.oefet.fetch.measurement.Conductivity.Companion.TEMPERATURE
 
 class CondResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
@@ -22,6 +23,9 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
     override var thickness:    Double = 0.0
     override var dielectric:   Double = 0.0
     override var permittivity: Double = 0.0
+    override var temperature:  Double = Double.NaN
+    override var repeat:       Double = 0.0
+    override var stress:       Double = 0.0
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -37,10 +41,10 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
 
     init {
 
-        parseParameters(data, extraParams)
+        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         if (parameters.count { it is Temperature } == 0) parameters += Temperature(
-            data.getMean(Conductivity.TEMPERATURE),
+            data.getMean(TEMPERATURE),
             0.0,
             emptyList()
         )

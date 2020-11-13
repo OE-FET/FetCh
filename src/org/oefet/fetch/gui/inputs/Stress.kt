@@ -14,7 +14,7 @@ import org.oefet.fetch.gui.tabs.Configuration
 class Stress : Grid("Stress", 2), SweepInput {
 
     private val basic = Fields("Stress Parameters")
-    private val name = basic.addTextField("Name", "S")
+    private val name = basic.addTextField("Variable Name", "S").apply { isDisabled = true }
 
     init {
         basic.addSeparator()
@@ -60,10 +60,6 @@ class Stress : Grid("Stress", 2), SweepInput {
 
         clear();
         addAll(Grid(1, basic, interval), FetChQueue("Interval Actions", subQueue))
-
-        var i = 0
-        while (queue.getVariableCount("S${if (i > 0) i.toString() else ""}") > 0) i++
-        name.set("S${if (i > 0) i.toString() else ""}")
 
         subQueue.clear()
 

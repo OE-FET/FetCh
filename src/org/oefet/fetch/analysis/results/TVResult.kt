@@ -9,6 +9,7 @@ import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVMeasurement
 import org.oefet.fetch.measurement.TVMeasurement.Companion.HEATER_POWER
 import org.oefet.fetch.measurement.TVMeasurement.Companion.SET_GATE
+import org.oefet.fetch.measurement.TVMeasurement.Companion.TEMPERATURE
 import org.oefet.fetch.measurement.TVMeasurement.Companion.THERMAL_VOLTAGE
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -28,6 +29,9 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
     override var thickness:    Double = 0.0
     override var dielectric:   Double = 0.0
     override var permittivity: Double = 0.0
+    override var temperature:  Double = Double.NaN
+    override var repeat:       Double = 0.0
+    override var stress:       Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,
@@ -41,7 +45,7 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
     init {
 
-        parseParameters(data, extraParams)
+        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         for ((gate, data) in data.split(SET_GATE)) {
 

@@ -64,6 +64,9 @@ class Transfer : FMeasurement() {
 
     override fun run(results: ResultTable) {
 
+        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Delay Time", "$delTime ms")
+
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!
 

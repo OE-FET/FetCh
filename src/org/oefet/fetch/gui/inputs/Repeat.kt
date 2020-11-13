@@ -10,7 +10,7 @@ import org.oefet.fetch.gui.images.Images
 class Repeat : Grid("Repeat", 2), SweepInput {
 
     val basic     = Fields("Repeat Parameters")
-    val name      = basic.addTextField("Repeat Name")
+    val name      = basic.addTextField("Variable Name", "N").apply { isDisabled = true }
     val times     = basic.addIntegerField("Repeat Count", 5)
     val subQueue  = ActionQueue()
 
@@ -23,10 +23,6 @@ class Repeat : Grid("Repeat", 2), SweepInput {
 
         clear();
         addAll(basic, FetChQueue("Interval Actions", subQueue))
-
-        var i = 0
-        while (queue.getVariableCount("N${if (i > 0) i.toString() else ""}") > 0) i++
-        name.set("N${if (i > 0) i.toString() else ""}")
 
         subQueue.clear()
 
@@ -43,7 +39,7 @@ class Repeat : Grid("Repeat", 2), SweepInput {
 
                     val copy = action.copy()
                     copy.setVariable(name, n.toString())
-                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, "$n rep")
+                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, "$n")
 
                     queue.addAction(copy)
 

@@ -28,6 +28,9 @@ interface ResultFile {
     var thickness:    Double
     var dielectric:   Double
     var permittivity: Double
+    var temperature:  Double
+    var repeat:       Double
+    var stress:       Double
 
     fun calculateHybrids(quantities: List<Quantity>) : List<Quantity>
 
@@ -37,7 +40,7 @@ interface ResultFile {
 
         for (parameter in parameters) {
 
-            if (parameter.extra) parts += "%s = %s %s".format(parameter.name, parameter.value, parameter.unit)
+            if (parameter.extra) parts += "%s = %s %s".format(parameter.symbol, parameter.value, parameter.unit)
 
         }
 
@@ -45,7 +48,7 @@ interface ResultFile {
 
     }
 
-    fun parseParameters(data: ResultTable, extra: List<Quantity> = emptyList()) {
+    fun parseParameters(data: ResultTable, extra: List<Quantity>, altTemperature: Double) {
 
         if (data.getAttribute("Type") != label) {
             throw Exception("That is not a $label measurement file")
@@ -57,6 +60,15 @@ interface ResultFile {
         thickness     = data.getAttribute("Thickness").removeSuffix("m").toDouble()
         dielectric    = data.getAttribute("Dielectric Thickness").removeSuffix("m").toDouble()
         permittivity  = data.getAttribute("Dielectric Permittivity").toDouble()
+        temperature   = data.getAttribute("T")?.removeSuffix("K")?.toDouble() ?: Double.NaN
+        repeat        = data.getAttribute("N")?.toDouble() ?: 0.0
+        stress        = data.getAttribute("S")?.removeSuffix("s")?.toDouble() ?: 0.0
+
+        val intTime = data.getAttribute("Integration Time")?.removeSuffix("s")?.toDouble() ?: Double.NaN
+        val delTime = data.getAttribute("Delay Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
+        val hhTime  = data.getAttribute("Heater Hold Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
+        val ghTime  = data.getAttribute("Gate Hold Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
+        val aCount  = data.getAttribute("Averaging Count")?.toDouble() ?: Double.NaN
 
         parameters += Length(length, 0.0)
         parameters += FPPSeparation(separation, 0.0)
@@ -64,10 +76,21 @@ interface ResultFile {
         parameters += Thickness(thickness, 0.0)
         parameters += DThickness(dielectric, 0.0)
         parameters += Permittivity(permittivity, 0.0)
+        parameters += Repeat(repeat)
+        parameters += Time(stress, 0.0)
 
-        for ((_, value) in data.attributes) {
-            parameters += Quantity.parseValue(value) ?: continue
+        parameters += if (temperature.isFinite()) {
+            Temperature(temperature, 0.0)
+        } else {
+            temperature = altTemperature
+            Temperature(altTemperature, 0.0)
         }
+
+        if (intTime.isFinite()) parameters += IntegrationTime(intTime)
+        if (delTime.isFinite()) parameters += DelayTime(delTime)
+        if (hhTime.isFinite())  parameters += HeaterHoldTime(hhTime)
+        if (ghTime.isFinite())  parameters += GateHoldTime(ghTime)
+        if (aCount.isFinite())  parameters += AveragingCount(aCount)
 
     }
 

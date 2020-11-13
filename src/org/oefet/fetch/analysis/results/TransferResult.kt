@@ -28,6 +28,9 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
     override var thickness:    Double = 0.0
     override var dielectric:   Double = 0.0
     override var permittivity: Double = 0.0
+    override var temperature:  Double = Double.NaN
+    override var repeat:       Double = 0.0
+    override var stress:       Double = 0.0
 
     private val possibleParameters = listOf(
         Temperature::class,
@@ -45,7 +48,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
     init {
 
-        parseParameters(data, extraParams)
+        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         val capacitance = permittivity * EPSILON / dielectric
 

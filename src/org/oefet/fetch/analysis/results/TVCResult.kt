@@ -11,6 +11,7 @@ import org.oefet.fetch.measurement.TVCalibration.Companion.HEATER_POWER
 import org.oefet.fetch.measurement.TVCalibration.Companion.SET_HEATER_VOLTAGE
 import org.oefet.fetch.measurement.TVCalibration.Companion.STRIP_CURRENT
 import org.oefet.fetch.measurement.TVCalibration.Companion.STRIP_VOLTAGE
+import org.oefet.fetch.measurement.TVCalibration.Companion.TEMPERATURE
 
 class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
@@ -27,6 +28,9 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
     override var thickness:    Double = 0.0
     override var dielectric:   Double = 0.0
     override var permittivity: Double = 0.0
+    override var temperature:  Double = Double.NaN
+    override var repeat:       Double = 0.0
+    override var stress:       Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,
@@ -40,7 +44,7 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
 
     init {
 
-        parseParameters(data, extraParams)
+        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         val probeNumber = data.getAttribute("Probe Number").toInt()
 

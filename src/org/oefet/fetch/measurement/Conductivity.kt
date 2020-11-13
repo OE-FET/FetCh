@@ -74,6 +74,9 @@ class Conductivity : FMeasurement() {
 
     override fun run(results: ResultTable) {
 
+        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Delay Time", "$delTime ms")
+
         // Assert that source-drain must be connected
         val sdSMU = sdSMU!!
         val sgSMU = if (holdG) sgSMU else null

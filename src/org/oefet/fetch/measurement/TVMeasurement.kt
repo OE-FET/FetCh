@@ -96,6 +96,11 @@ class TVMeasurement : FMeasurement() {
 
     override fun run(results: ResultTable) {
 
+        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Averaging Count", avgCount.toString())
+        results.setAttribute("Heater Hold Time", "$heaterHold ms")
+        results.setAttribute("Gate Hold Time", "$gateHold ms")
+
         val heater  = this.heater!!
         val tvMeter = this.tvMeter!!
 

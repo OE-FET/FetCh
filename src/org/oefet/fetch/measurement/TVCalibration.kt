@@ -77,11 +77,15 @@ class TVCalibration : FMeasurement() {
 
     override fun run(results: ResultTable) {
 
+        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Averaging Count", avgCount.toString())
+        results.setAttribute("Probe Number", probe.toString())
+        results.setAttribute("Heater Hold Time", "$holdHV ms")
+        results.setAttribute("Delay Time", "$holdSI ms")
+
         val tMeter = this.tMeter!!
         val heater = this.heater!!
         val sdSMU  = this.sdSMU!!
-
-        results.setAttribute("Probe Number", probe.toString())
 
         gdSMU?.turnOff()
         heater.turnOff()

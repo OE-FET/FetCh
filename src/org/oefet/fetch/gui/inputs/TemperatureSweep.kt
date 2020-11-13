@@ -14,7 +14,7 @@ import org.oefet.fetch.measurement.Instruments
 class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
     val basic = Fields("Temperature Set-Points")
-    val name  = basic.addTextField("Sweep Name")
+    val name  = basic.addTextField("Variable Name", "T").apply { isDisabled = true }
 
     init { basic.addSeparator() }
 
@@ -47,10 +47,6 @@ class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
         clear();
         addAll(basic, FetChQueue("Interval Actions", subQueue))
-
-        var i = 0
-        while (queue.getVariableCount("T${if (i > 0) i.toString() else ""}") > 0) i++
-        name.set("T${if (i > 0) i.toString() else ""}")
 
         if (showAsConfirmation()) {
 

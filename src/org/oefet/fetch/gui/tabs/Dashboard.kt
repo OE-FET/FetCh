@@ -40,6 +40,8 @@ object Dashboard : Grid("Dashboard", 3) {
     fun watchLog(log: ResultTable) {
 
         clear()
+        plots.clear()
+        shown.clear()
 
         for (i in 1 until log.numCols) {
 
@@ -74,6 +76,18 @@ object Dashboard : Grid("Dashboard", 3) {
 
         grid.windowHeight = 500.0
         grid.windowWidth  = 350.0
+
+        grid.addToolbarButton("Select All") {
+            ticks.forEach { it.value = true }
+        }
+
+        grid.addToolbarButton("Deselect All") {
+            ticks.forEach { it.value = false }
+        }
+
+        grid.addToolbarButton("Toggle All") {
+            ticks.forEach { it.value = !it.value }
+        }
 
         if (grid.showAsConfirmation()) {
 

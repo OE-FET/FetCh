@@ -94,6 +94,12 @@ class ACHall : FMeasurement() {
 
     override fun run(results: ResultTable) {
 
+        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Delay Time", "$delTime ms")
+        results.setAttribute("Averaging Count", repeats.toDouble())
+        results.setAttribute("Pre-Amp Gain", paGain)
+        results.setAttribute("Extra Pre-Amp Gain", exGain)
+
         // Assert that all required instruments must be connected
         val sdSMU    = sdSMU!!
         val sgSMU    = sgSMU!!

@@ -34,8 +34,6 @@ object Configuration : Grid("Configuration", 1) {
         // Add all configurators, grouped in their respective sections, all collapsed to start with
         addAll(
             Section("Standard SMU Channels", Grid(3, ground, sourceDrain, sourceGate)).apply { isExpanded = false },
-            Section("Four Point Probe Channels", Grid(2, fourPP1, fourPP2)).apply { isExpanded = false },
-            Section("Thermal Voltage Measurement Channels", Grid(2, heater, thermal)).apply { isExpanded = false },
             Section("Temperature", Grid(2, tControl, tMeter)).apply { isExpanded = false }
         )
     }

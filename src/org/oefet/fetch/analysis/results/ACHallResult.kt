@@ -40,6 +40,9 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
     override var thickness:    Double = 0.0
     override var dielectric:   Double = 0.0
     override var permittivity: Double = 0.0
+    override var temperature:  Double = Double.NaN
+    override var repeat:       Double = 0.0
+    override var stress:       Double = 0.0
 
     override val plot : Plot
 
@@ -65,18 +68,13 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     init {
 
-        parseParameters(data, extraParams)
+        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         val rmsField     = data.getMean(RMS_FIELD)
         val voltages     = data.getColumns(X_VOLTAGE, Y_VOLTAGE).transpose()
         val currents     = data.getColumns(SD_CURRENT)
 
         parameters += Frequency(data.getMean(FREQUENCY), 0.0, emptyList())
-
-        // If the temperature was not defined in the meta-data, take the average of the temperatue column instead
-        if (parameters.count { it is Temperature } == 0) {
-            runRegardless { parameters += Temperature(data.getMean(TEMPERATURE), 0.0, emptyList()) }
-        }
 
         var minVolts: RealMatrix? = null
         var minParam              = Double.POSITIVE_INFINITY
