@@ -56,8 +56,8 @@ object Analysis : BorderDisplay("Analysis") {
                 Device::class to names)
             val analysis = sidebar.selected.getObject()
 
-            val plots = Grid("Plots", 2)
-            val tables = Grid("Tables", 2)
+            val plots  = Grid("Plots", 2)
+            val tables = Grid("Tables", 1)
 
             plots.setGrowth(true, false)
             tables.setGrowth(true, true)
