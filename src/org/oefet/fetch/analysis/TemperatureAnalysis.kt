@@ -7,6 +7,7 @@ import jisa.gui.Series
 import org.oefet.fetch.analysis.Analysis.*
 import org.oefet.fetch.analysis.quantities.Quantity
 import org.oefet.fetch.analysis.quantities.Temperature
+import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.collections.ArrayList
@@ -50,12 +51,13 @@ object TemperatureAnalysis : Analysis {
         for (table in processed) {
 
             val name = table.quantity.name
-            val plot = Plot("$name vs Temperature")
+            val plot = FetChPlot("$name vs Temperature")
 
             plot.createSeries()
                 .watch(table.table, 0, 1, 2)
                 .setColour(Series.defaultColours[plots.size % Series.defaultColours.size])
                 .setMarkerVisible(table.table.numRows <= 20)
+                .setLineVisible(table.table.numRows > 20)
 
             plot.isLegendVisible = false
             plot.isMouseEnabled  = true
