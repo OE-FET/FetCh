@@ -78,10 +78,6 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     private fun askMeasurement(measurement: FMeasurement) {
 
-        // Generate label for measurement (ie Transfer, Transfer2, Transfer3, etc)
-        val count = queue.getMeasurementCount(measurement.javaClass)
-        measurement.label = "${measurement.label}${if (count > 0) count + 1 else ""}"
-
         // Generate measurement parameter input GUI and make it remember values from last time
         val input = MeasurementConfigurator(measurement.name, measurement).apply {
             linkConfig(Settings.inputs)
@@ -94,7 +90,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             val action = queue.addMeasurement(measurement.label, measurement)
 
             action.setAttribute("Type", measurement.type)
-            action.resultsPath = "${Measure.baseFile}-%s-${measurement.label}.csv"
+            action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
 
             action.setBefore { Measure.display(it) }
 

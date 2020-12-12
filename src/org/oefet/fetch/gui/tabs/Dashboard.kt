@@ -1,14 +1,10 @@
 package org.oefet.fetch.gui.tabs
 
 import jisa.enums.Icon
-import jisa.experiment.ActionQueue
-import jisa.experiment.Measurement
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.measurement.FMeasurement
-import java.util.*
 import kotlin.collections.ArrayList
 
 object Dashboard : Grid("Dashboard", 3) {
@@ -54,6 +50,23 @@ object Dashboard : Grid("Dashboard", 3) {
                 .setMarkerVisible(false)
                 .setLineVisible(true)
                 .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
+                .setAutoReduction(500, 1000)
+
+            plot.addToolbarButton("Full") {
+
+                val fullPlot = FetChPlot(log.getName(i), "Time [s]", log.getTitle(i))
+
+                fullPlot.isLegendVisible = false
+
+                fullPlot.createSeries()
+                    .watch(log, 0, i)
+                    .setMarkerVisible(false)
+                    .setLineVisible(true)
+                    .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
+
+                fullPlot.show()
+
+            }
 
             plots.add(plot)
             shown.add(true)
@@ -125,6 +138,7 @@ object Dashboard : Grid("Dashboard", 3) {
             plot.isLegendVisible = false
 
             plot.createSeries()
+                .setAutoReduction(3000, 5000)
                 .watch(log, 0, i)
                 .setMarkerVisible(false)
                 .setLineVisible(true)
