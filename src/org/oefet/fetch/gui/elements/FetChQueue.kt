@@ -29,6 +29,8 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
                 input.showInput()
 
+                it.name = measurement.label
+
             }
 
         }
