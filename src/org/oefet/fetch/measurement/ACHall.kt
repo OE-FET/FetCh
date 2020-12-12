@@ -18,44 +18,45 @@ class ACHall : FMeasurement() {
 
     override val type: String = "AC Hall"
 
-    private val label         = StringParameter("Basic", "Name", null, "ACHall")
-    private val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 100.0)
-    private val delTimeParam  = DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
-    private val repeatsParam  = IntegerParameter("Basic", "Repeats", null, 600)
-    private val paGainParam   = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
-    private val exGainParam   = DoubleParameter("Basic", "Extra Gain", null, 10.0)
+    private val label = StringParameter("Basic", "Name", null, "ACHall")
+    private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 100.0)
+    private val delTimeParam =
+        DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
+    private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 600)
+    private val paGainParam = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
+    private val exGainParam = DoubleParameter("Basic", "Extra Gain", null, 10.0)
     private val rmsFieldParam = DoubleParameter("Magnets", "RMS Field Strength", "T", 0.666 / sqrt(2.0))
-    private val minFParam     = DoubleParameter("Magnets", "Min Frequency", "Hz", 1.0)
-    private val maxFParam     = DoubleParameter("Magnets", "Max Frequency", "Hz", 1.0)
-    private val numFParam     = IntegerParameter("Magnets", "No. Steps", null, 1)
-    private val spinParam     = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
-    private val minIParam     = DoubleParameter("Source-Drain", "Start", "A", 0.0)
-    private val maxIParam     = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
-    private val numIParam     = IntegerParameter("Source-Drain", "No. Steps", null, 11)
-    private val minGParam     = DoubleParameter("Source-Gate", "Start", "V", 0.0)
-    private val maxGParam     = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
-    private val numGParam     = IntegerParameter("Source-Gate", "No. Steps", null, 1)
-    private val gdSMUConfig   = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
-    private val sdSMUConfig   = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
-    private val sgSMUConfig   = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
+    private val minFParam = DoubleParameter("Magnets", "Min Frequency", "Hz", 1.0)
+    private val maxFParam = DoubleParameter("Magnets", "Max Frequency", "Hz", 1.0)
+    private val numFParam = IntegerParameter("Magnets", "No. Steps", null, 1)
+    private val spinParam = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
+    private val minIParam = DoubleParameter("Source-Drain", "Start", "A", 0.0)
+    private val maxIParam = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
+    private val numIParam = IntegerParameter("Source-Drain", "No. Steps", null, 11)
+    private val minGParam = DoubleParameter("Source-Gate", "Start", "V", 0.0)
+    private val maxGParam = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
+    private val numGParam = IntegerParameter("Source-Gate", "No. Steps", null, 1)
+    private val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    private val sdSMUConfig = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
+    private val sgSMUConfig = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
 
-    val intTime  get() = intTimeParam.value
-    val delTime  get() = (1e3 * delTimeParam.value).toInt()
-    val repeats  get() = repeatsParam.value
-    val paGain   get() = paGainParam.value
-    val exGain   get() = exGainParam.value
+    val intTime get() = intTimeParam.value
+    val delTime get() = (1e3 * delTimeParam.value).toInt()
+    val repeats get() = repeatsParam.value
+    val paGain get() = paGainParam.value
+    val exGain get() = exGainParam.value
     val rmsField get() = rmsFieldParam.value
-    val minF     get() = minFParam.value
-    val maxF     get() = maxFParam.value
-    val numF     get() = numFParam.value
-    val spin     get() = (1e3 * spinParam.value).toInt()
-    val minI     get() = minIParam.value
-    val maxI     get() = maxIParam.value
-    val numI     get() = numIParam.value
-    val minG     get() = minGParam.value
-    val maxG     get() = maxGParam.value
-    val numG     get() = numGParam.value
-    val totGain  get() = paGain * exGain
+    val minF get() = minFParam.value
+    val maxF get() = maxFParam.value
+    val numF get() = numFParam.value
+    val spin get() = (1e3 * spinParam.value).toInt()
+    val minI get() = minIParam.value
+    val maxI get() = maxIParam.value
+    val numI get() = numIParam.value
+    val minG get() = minGParam.value
+    val maxG get() = maxGParam.value
+    val numG get() = numGParam.value
+    val totGain get() = paGain * exGain
 
     private fun Array<out Double>.stdDeviation(): Double {
 
@@ -70,23 +71,23 @@ class ACHall : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU    = gdSMUConfig.get()
-        sdSMU    = sdSMUConfig.get()
-        sgSMU    = sgSMUConfig.get()
+        gdSMU = gdSMUConfig.get()
+        sdSMU = sdSMUConfig.get()
+        sgSMU = sgSMUConfig.get()
 
         super.loadInstruments()
 
     }
 
-    override fun checkForErrors() : List<String> {
+    override fun checkForErrors(): List<String> {
 
         val errors = LinkedList<String>()
 
-        if (sdSMU == null)    errors += "No SD channel configured"
-        if (sgSMU == null)    errors += "No SG channel configured"
-        if (lockIn == null)   errors += "No lock-in configured"
-        if (preAmp == null)   errors += "No pre-amp configured"
-        if (fControl == null) errors += "No frequency control available"
+        if (sdSMU == null)                                   errors += "No SD channel configured"
+        if (sgSMU == null && !(minG == 0.0 && maxG == 0.0))  errors += "No SG channel configured"
+        if (lockIn == null)                                  errors += "No lock-in configured"
+        if (preAmp == null)                                  errors += "No pre-amp configured"
+        if (fControl == null)                                errors += "No frequency control available"
 
         return errors
 
@@ -101,14 +102,13 @@ class ACHall : FMeasurement() {
         results.setAttribute("Extra Pre-Amp Gain", exGain)
 
         // Assert that all required instruments must be connected
-        val sdSMU    = sdSMU!!
-        val sgSMU    = sgSMU!!
-        val lockIn   = lockIn!!
-        val preAmp   = preAmp!!
+        val sdSMU = sdSMU!!
+        val lockIn = lockIn!!
+        val preAmp = preAmp!!
         val fControl = fControl!!
 
         sdSMU.turnOff()
-        sgSMU.turnOff()
+        sgSMU?.turnOff()
         gdSMU?.turnOff()
 
         // Configure the pre-amp
@@ -118,7 +118,7 @@ class ACHall : FMeasurement() {
 
         // Initialise the SMUs
         sdSMU.current = minI
-        sgSMU.voltage = minG
+        sgSMU?.voltage = minG
         gdSMU?.voltage = 0.0
 
         // Configure the lock-in amplifier
@@ -127,7 +127,7 @@ class ACHall : FMeasurement() {
 
         // Set everything going
         sdSMU.turnOn()
-        sgSMU.turnOn()
+        sgSMU?.turnOn()
         gdSMU?.turnOn()
         fControl.start()
 
@@ -135,11 +135,15 @@ class ACHall : FMeasurement() {
 
             fControl.target = frequency
 
+            sleep(spin/10)
+
+            lockIn.autoRange();
+
             sleep(spin)
 
             for (gate in Range.linear(minG, maxG, numG)) {
 
-                sgSMU.voltage = gate
+                sgSMU?.voltage = gate
 
                 var startX: Double? = null
                 var startY: Double? = null
@@ -161,9 +165,9 @@ class ACHall : FMeasurement() {
 
                     }
 
-                    val x  = xValues.average()
-                    val y  = yValues.average()
-                    val r  = sqrt(x.pow(2) + y.pow(2))
+                    val x = xValues.average()
+                    val y = yValues.average()
+                    val r = sqrt(x.pow(2) + y.pow(2))
                     val eX = xValues.stdDeviation()
                     val eY = yValues.stdDeviation()
 
@@ -177,7 +181,7 @@ class ACHall : FMeasurement() {
                         sdSMU.voltage,                                            // SD Voltage
                         current,                                                  // SD Current
                         gate,                                                     // SG Voltage
-                        sgSMU.current,                                            // SG Current
+                        sgSMU?.current ?: Double.NaN,                             // SG Current
                         rmsField,                                                 // RMS Field
                         frequency,                                                // Field Frequency
                         x - startX,                                               // Locked X

@@ -96,7 +96,10 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
             action.setBefore { Measure.display(it) }
 
-            action.setAfter { FileLoad.addData(it.data) }
+            action.setAfter {
+                it.data.finalise()
+                FileLoad.addData(it.data)
+            }
 
         }
 
