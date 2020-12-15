@@ -32,7 +32,7 @@ class TVCalibration : FMeasurement() {
     val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 1", Connections))
     val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 2", Connections))
 
-    val intTime  get() = intTimeParam .value
+    val intTime  get() = intTimeParam.value
     val avgCount get() = avgCountParam.value
     val probe    get() = probeParam.value
     val minHV    get() = minHVParam.value
