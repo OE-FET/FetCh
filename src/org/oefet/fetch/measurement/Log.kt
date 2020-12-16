@@ -127,6 +127,17 @@ object Log {
 
                 }
 
+                is LevelMeter -> {
+
+                    for ((channel, meter) in inst.channels.withIndex()) {
+
+                        columns.add(Col("${inst.javaClass.simpleName} Channel $channel Level"))
+                        logTasks.add { meter.level }
+
+                    }
+
+                }
+
             }
 
         }

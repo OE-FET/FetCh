@@ -42,6 +42,7 @@ object Measurements {
         Config("Sync",                        ::VSync,         ::TransferResult, ::SyncPlot),
         Config("FPP Conductivity",            ::Conductivity,  ::CondResult,     ::FPPPlot),
         Config("AC Hall",                     ::ACHall,        ::ACHallResult,   { ACHallPlot(it) }),
+        Config("DC Hall",                     ::DCHall,        ::DCHallResult,   ::DCHallPlot),
         Config("Thermal Voltage",             ::TVMeasurement, ::TVResult,       ::TVPlot),
         Config("Thermal Voltage Calibration", ::TVCalibration, ::TVCResult,      ::TVCPlot)
     )

@@ -67,9 +67,9 @@ class TVCalibration : FMeasurement() {
             errors += "Source-drain channel is not configured"
         }
 
-        if (tMeter == null) {
-            errors += "No thermometer configured"
-        }
+//        if (tMeter == null) {
+//            errors += "No thermometer configured"
+//        }
 
         return errors
 
@@ -83,7 +83,7 @@ class TVCalibration : FMeasurement() {
         results.setAttribute("Heater Hold Time", "$holdHV ms")
         results.setAttribute("Delay Time", "$holdSI ms")
 
-        val tMeter = this.tMeter!!
+//        val tMeter = this.tMeter!!
         val heater = this.heater!!
         val sdSMU  = this.sdSMU!!
 
@@ -140,7 +140,7 @@ class TVCalibration : FMeasurement() {
                     heater.current,
                     voltage(),
                     sdSMU.current,
-                    tMeter.temperature
+                    tMeter?.temperature ?: Double.NaN
                 )
 
             }

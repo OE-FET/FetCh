@@ -18,47 +18,50 @@ class ACHall : FMeasurement() {
 
     override val type: String = "AC Hall"
 
-    private val label = StringParameter("Basic", "Name", null, "ACHall")
-    private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 100.0)
-    private val delTimeParam =
-        DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
-    private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 600)
-    private val paGainParam = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
-    private val exGainParam = DoubleParameter("Basic", "Extra Gain", null, 10.0)
+    private val label         = StringParameter("Basic", "Name", null, "ACHall")
+    private val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 100.0)
+    private val delTimeParam  = DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
+    private val repeatsParam  = IntegerParameter("Basic", "Repeats", null, 600)
+    private val paGainParam   = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
+    private val exGainParam   = DoubleParameter("Basic", "Extra Gain", null, 10.0)
     private val rmsFieldParam = DoubleParameter("Magnets", "RMS Field Strength", "T", 0.666 / sqrt(2.0))
-    private val minFParam = DoubleParameter("Magnets", "Min Frequency", "Hz", 1.0)
-    private val maxFParam = DoubleParameter("Magnets", "Max Frequency", "Hz", 1.0)
-    private val numFParam = IntegerParameter("Magnets", "No. Steps", null, 1)
-    private val spinParam = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
-    private val minIParam = DoubleParameter("Source-Drain", "Start", "A", 0.0)
-    private val maxIParam = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
-    private val numIParam = IntegerParameter("Source-Drain", "No. Steps", null, 11)
-    private val minGParam = DoubleParameter("Source-Gate", "Start", "V", 0.0)
-    private val maxGParam = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
-    private val numGParam = IntegerParameter("Source-Gate", "No. Steps", null, 1)
-    private val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
-    private val sdSMUConfig = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
-    private val sgSMUConfig = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
+    private val minFParam     = DoubleParameter("Magnets", "Min Frequency", "Hz", 1.0)
+    private val maxFParam     = DoubleParameter("Magnets", "Max Frequency", "Hz", 1.0)
+    private val numFParam     = IntegerParameter("Magnets", "No. Steps", null, 1)
+    private val spinParam     = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
+    private val minIParam     = DoubleParameter("Source-Drain", "Start", "A", 0.0)
+    private val maxIParam     = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
+    private val numIParam     = IntegerParameter("Source-Drain", "No. Steps", null, 11)
+    private val minGParam     = DoubleParameter("Source-Gate", "Start", "V", 0.0)
+    private val maxGParam     = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
+    private val numGParam     = IntegerParameter("Source-Gate", "No. Steps", null, 1)
+    private val gdSMUConfig   = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
+    private val sdSMUConfig   = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
+    private val sgSMUConfig   = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
 
-    val intTime get() = intTimeParam.value
-    val delTime get() = (1e3 * delTimeParam.value).toInt()
-    val repeats get() = repeatsParam.value
-    val paGain get() = paGainParam.value
-    val exGain get() = exGainParam.value
+    val intTime  get() = intTimeParam.value
+    val delTime  get() = (1e3 * delTimeParam.value).toInt()
+    val repeats  get() = repeatsParam.value
+    val paGain   get() = paGainParam.value
+    val exGain   get() = exGainParam.value
     val rmsField get() = rmsFieldParam.value
-    val minF get() = minFParam.value
-    val maxF get() = maxFParam.value
-    val numF get() = numFParam.value
-    val spin get() = (1e3 * spinParam.value).toInt()
-    val minI get() = minIParam.value
-    val maxI get() = maxIParam.value
-    val numI get() = numIParam.value
-    val minG get() = minGParam.value
-    val maxG get() = maxGParam.value
-    val numG get() = numGParam.value
-    val totGain get() = paGain * exGain
+    val minF     get() = minFParam.value
+    val maxF     get() = maxFParam.value
+    val numF     get() = numFParam.value
+    val spin     get() = (1e3 * spinParam.value).toInt()
+    val minI     get() = minIParam.value
+    val maxI     get() = maxIParam.value
+    val numI     get() = numIParam.value
+    val minG     get() = minGParam.value
+    val maxG     get() = maxGParam.value
+    val numG     get() = numGParam.value
+    val totGain  get() = paGain * exGain
 
     private fun Array<out Double>.stdDeviation(): Double {
+
+        if (size < 2) {
+            return 0.0
+        }
 
         val mean = average()
         var sum = 0.0

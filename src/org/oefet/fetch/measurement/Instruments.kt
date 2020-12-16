@@ -14,6 +14,7 @@ object Instruments {
     val tvMeter: VMeter? get() = Configuration.thermal.get()
     val fpp1: VMeter?    get() = Configuration.fourPP1.get()
     val fpp2: VMeter?    get() = Configuration.fourPP2.get()
+    val magnet: EMController? get() = Connections.magnet.get();
 
     // These should be cached for an entire run
     var tControl: TC?     = null

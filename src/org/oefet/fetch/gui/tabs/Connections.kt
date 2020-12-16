@@ -1,5 +1,7 @@
 package org.oefet.fetch.gui.tabs
 
+import jisa.devices.EMController
+import jisa.devices.LevelMeter
 import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.enums.Icon
@@ -17,6 +19,8 @@ object Connections : ConnectorGrid("Connections", Settings.instruments) {
     val lockIn  = addDPLockIn("Lock-In Amplifier")
     val dcPower = addDCPower("Motor Power Supply")
     val preAmp  = addVPreAmp("Voltage Pre-Amplifier")
+    val magnet  = addInstrument("Electromagnet Controller", EMController::class.java)
+    val hMeter  = addInstrument("Helium Level Meter", LevelMeter::class.java)
 
     init {
         numColumns = 2

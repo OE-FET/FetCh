@@ -7,6 +7,7 @@ import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.elements.TVPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVCalibration
 import org.oefet.fetch.measurement.TVCalibration.Companion.HEATER_POWER
 import org.oefet.fetch.measurement.TVCalibration.Companion.SET_HEATER_VOLTAGE
@@ -20,7 +21,7 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
     override val quantities = ArrayList<Quantity>()
     override val plot       = TVCResultPlot(data)
     override val name       = "Thermal Voltage Calibration (${data.getAttribute("Name")})"
-    override val image      = Icon.THERMOMETER.blackImage
+    override val image      = Images.getImage("calibration.png")
     override val label      = "Thermal Voltage Calibration"
 
     override var length:       Double = 0.0

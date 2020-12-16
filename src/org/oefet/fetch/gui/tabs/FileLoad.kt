@@ -49,6 +49,7 @@ object FileLoad : BorderDisplay("Results") {
         fileList.addDefaultMenuItem("Remove Result") { listItem ->
             results -= listItem.getObject()
             listItem.remove()
+            updateDisplay()
         }
 
         // Add the "Add..." menu button to the file list
@@ -57,12 +58,14 @@ object FileLoad : BorderDisplay("Results") {
             addItem("Folder...", ::addFolder)
         }
 
-        // Add the "Clear" button to the file list, setting it to clear everything when clicked
-        fileList.addToolbarButton("Clear") {
-            fileList.clear()
-            results.clear()
-            names.clear()
-            System.gc()
+        fileList.addToolbarMenuButton("Clear").apply {
+            addItem("Errors") { clearErrors() }
+            addItem("All") {
+                fileList.clear()
+                results.clear()
+                names.clear()
+                System.gc()
+            }
         }
 
     }
@@ -187,11 +190,20 @@ object FileLoad : BorderDisplay("Results") {
         // Make sure we end with a 100% value
         progress.setProgress(1.0, 1.0)
 
+        centreElement = Grid()
+
         if (fileList.isEmpty) {
             updateDisplay()
         } else {
             fileList.select(0)
         }
+
+    }
+
+    private fun clearErrors() {
+
+        fileList.filter { it.getObject() == null }.forEach { it.remove() }
+        updateDisplay()
 
     }
 
