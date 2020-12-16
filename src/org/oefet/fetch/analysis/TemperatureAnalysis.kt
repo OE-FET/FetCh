@@ -39,7 +39,7 @@ object TemperatureAnalysis : Analysis {
 
         }
 
-        return tables
+        return tables.sortedBy { it.quantity.name }
 
     }
 

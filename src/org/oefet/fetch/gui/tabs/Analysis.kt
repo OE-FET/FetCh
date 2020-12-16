@@ -40,6 +40,13 @@ object Analysis : BorderDisplay("Analysis") {
             Icon.THERMOMETER.blackImage
         )
 
+        sidebar.add(
+            HallAnlysis,
+            "Hall Analysis",
+            "Plot quantities in ways useful for Hall analysis",
+            Icon.MAGNET.blackImage
+        )
+
         sidebar.select(0)
 
         leftElement = sidebar

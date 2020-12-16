@@ -70,6 +70,7 @@ interface ResultFile {
         val ghTime  = data.getAttribute("Gate Hold Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
         val aCount  = data.getAttribute("Averaging Count")?.toDouble() ?: Double.NaN
 
+        parameters += extra
         parameters += Length(length, 0.0)
         parameters += FPPSeparation(separation, 0.0)
         parameters += Width(width, 0.0)
