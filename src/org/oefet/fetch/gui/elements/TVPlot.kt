@@ -25,7 +25,7 @@ class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Heater Power [W]
 
 }
 
-class TVCPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration", "Heater Power [W]", "Resistance [Ohm]") {
+class TVCPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration", "Strip Current [A]", "4-Wire Strip Voltage [V]") {
 
     init {
 
