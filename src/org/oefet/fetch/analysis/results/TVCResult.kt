@@ -5,6 +5,7 @@ import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import org.oefet.fetch.analysis.quantities.*
 import org.oefet.fetch.gui.elements.TVCPlot
+import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.measurement.TVCalibration
 import org.oefet.fetch.measurement.TVCalibration.Companion.HEATER_POWER
@@ -17,7 +18,7 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
-    override val plot       = TVCPlot(data)
+    override val plot       = TVCResultPlot(data)
     override val name       = "Thermal Voltage Calibration (${data.getAttribute("Name")})"
     override val image      = Icon.THERMOMETER.blackImage
     override val label      = "Thermal Voltage Calibration"
