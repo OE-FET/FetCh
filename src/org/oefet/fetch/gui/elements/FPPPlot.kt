@@ -7,7 +7,7 @@ import org.oefet.fetch.measurement.Conductivity.Companion.FPP2_VOLTAGE
 import org.oefet.fetch.measurement.Conductivity.Companion.FPP_VOLTAGE
 import org.oefet.fetch.measurement.Conductivity.Companion.SD_CURRENT
 
-class FPPPlot(data: ResultTable) : FetChPlot("FPP Conductivity", "Drain Current [A]", "Voltage [V]") {
+class FPPPlot(data: ResultTable) : FetChPlot("Conductivity", "Drain Current [A]", "Voltage [V]") {
 
     init {
 
