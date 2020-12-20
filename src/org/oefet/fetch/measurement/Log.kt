@@ -127,6 +127,15 @@ object Log {
 
                 }
 
+                is EMController -> {
+
+                    columns.add(Col("${inst.javaClass.simpleName} Current"))
+                    columns.add(Col("${inst.javaClass.simpleName} Field"))
+                    logTasks.add { inst.current }
+                    logTasks.add { inst.field }
+
+                }
+
                 is LevelMeter -> {
 
                     for ((channel, meter) in inst.channels.withIndex()) {

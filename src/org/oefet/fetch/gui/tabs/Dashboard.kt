@@ -5,6 +5,7 @@ import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.measurement.Log
 import kotlin.collections.ArrayList
 
 object Dashboard : Grid("Dashboard", 3) {
@@ -17,6 +18,29 @@ object Dashboard : Grid("Dashboard", 3) {
         setIcon(Icon.DASHBOARD)
         setGrowth(true, false)
 
+        addToolbarButton("Start Logging") {
+
+            val path = GUI.saveFileSelect();
+
+            if (path != null) {
+                Log.start(path);
+            }
+
+        }
+
+        addToolbarButton("Stop Logging") {
+            Log.stop();
+        }
+
+
+        addToolbarSeparator()
+
+        addToolbarButton("Configure Visible Plots") {
+            editVisible()
+        }
+
+        addToolbarSeparator()
+
         addToolbarButton("Open Log File") {
 
             val path = GUI.openFileSelect()
@@ -25,10 +49,6 @@ object Dashboard : Grid("Dashboard", 3) {
                 openLogFile(ResultList.loadFile(path))
             }
 
-        }
-
-        addToolbarButton("Configure Visible Plots") {
-            editVisible()
         }
 
     }
