@@ -78,10 +78,14 @@ class ACHall : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU = gdSMUConfig.instrument
-        sdSMU = sdSMUConfig.instrument
-        sgSMU = sgSMUConfig.instrument
-        dcPower = dcPowerConfig.instrument
+        gdSMU    = gdSMUConfig.instrument
+        sdSMU    = sdSMUConfig.instrument
+        sgSMU    = sgSMUConfig.instrument
+        dcPower  = dcPowerConfig.instrument
+        lockIn   = lockInConfig.instrument
+        preAmp   = preAmpConfig.instrument
+        tMeter   = tMeterConfig.instrument
+        fControl = if (lockIn != null && dcPower != null) FControl(lockIn!!, dcPower!!) else null
 
 
     }
