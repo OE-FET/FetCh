@@ -18,15 +18,16 @@ class Time : Grid("Wait", 1), ActionInput {
     init {
         add(fields)
         setIcon(Icon.DEVICE)
-        fields.linkConfig(Settings.timeBasic)
         setIcon(Images.getURL("fEt.png"))
     }
 
     override fun ask(queue: ActionQueue) {
 
+        fields.loadFromConfig(Settings.timeBasic)
+
         if (showAsConfirmation()) {
 
-            fields.writeToConfig()
+            fields.writeToConfig(Settings.timeBasic)
             queue.addWait(
                 (millis.get() + (1000 * seconds.get()) + (1000 * 60 * minutes.get()) + (1000 * 60 * 60 * hours.get())).toLong()
             )

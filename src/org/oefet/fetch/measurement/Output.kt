@@ -2,6 +2,9 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.Util.runRegardless
+import jisa.devices.SMU
+import jisa.devices.TMeter
+import jisa.devices.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Configurator
@@ -24,11 +27,12 @@ class Output : FMeasurement() {
     private val maxVSGParam  = DoubleParameter("Source-Gate", "Stop", "V", 60.0)
     private val numVSGParam  = IntegerParameter("Source-Gate", "No. Steps", null, 7)
 
-    val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
-    val sdSMUConfig = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
-    val sgSMUConfig = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
-    val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 1", Connections))
-    val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 2", Connections))
+    val gdSMUConfig = addInstrument("Ground Channel (SPA)", SMU::class.java)
+    val sdSMUConfig = addInstrument("Source-Drain Channel", SMU::class.java)
+    val sgSMUConfig = addInstrument("Source-Gate Channel", SMU::class.java)
+    val fpp1Config  = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
+    val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
+    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
     val intTime get() = intTimeParam.value
     val delTime get() = (1e3 * delTimeParam.value).toInt()
@@ -47,7 +51,7 @@ class Output : FMeasurement() {
         sgSMU    = sgSMUConfig.get()
         fpp1     = fpp1Config.get()
         fpp2     = fpp2Config.get()
-        tMeter   = Instruments.tMeter
+        tMeter   = tMeterConfig.get()
 
     }
 

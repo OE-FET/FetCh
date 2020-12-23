@@ -1,20 +1,21 @@
 package org.oefet.fetch.gui.inputs
 
+import jisa.devices.TC
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
+import jisa.gui.Configurator
 import jisa.gui.Fields
 import jisa.gui.Grid
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.gui.tabs.Configuration
-import org.oefet.fetch.measurement.Instruments
 
-class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
+class TemperatureSweep : Grid("Temperature Sweep", 1), SweepInput {
 
-    val basic = Fields("Temperature Set-Points")
-    val name  = basic.addTextField("Variable Name", "T").apply { isDisabled = true }
+    val basic  = Fields("Temperature Set-Points")
+    val config = Configurator<TC>("Temperature Controller", TC::class.java)
+    val name   = basic.addTextField("Variable Name", "T").apply { isDisabled = true }
 
     init { basic.addSeparator() }
 
@@ -34,7 +35,6 @@ class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
         setGrowth(true, false)
         setIcon(Icon.SNOWFLAKE)
-        basic.linkConfig(Settings.tempBasic)
         setIcon(Images.getURL("fEt.png"))
 
     }
@@ -46,11 +46,15 @@ class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
     override fun ask(queue: ActionQueue) {
 
         clear();
-        addAll(basic, FetChQueue("Interval Actions", subQueue))
+        addAll(Grid(2, basic, FetChQueue("Interval Actions", subQueue)), config)
+
+        basic.loadFromConfig(Settings.tempBasic)
+        config.loadFromConfig(Settings.tempConfig)
 
         if (showAsConfirmation()) {
 
-            basic.writeToConfig()
+            basic.writeToConfig(Settings.tempBasic)
+            config.writeToConfig(Settings.tempConfig)
 
             val name = name.get()
 
@@ -58,7 +62,7 @@ class TemperatureSweep : Grid("Temperature Sweep", 2), SweepInput {
 
                 queue.addAction("Change Temperature to $T K") {
 
-                    val tc = Instruments.tControl ?: throw Exception("No temperature controller configured")
+                    val tc = config.configuration.get() ?: throw Exception("No temperature controller configured")
 
                     tc.targetTemperature = T
                     tc.useAutoHeater()

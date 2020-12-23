@@ -1,5 +1,6 @@
 package org.oefet.fetch.measurement
 
+import jisa.control.Connection
 import jisa.control.RTask
 import jisa.devices.*
 import jisa.experiment.Col
@@ -23,11 +24,11 @@ object Log {
         val columns = LinkedList<Col>()
         columns.add(Col("Time", "s"))
 
-        for (connection in Connections.getInstrumentsByType(Instrument::class.java)) {
+        for (connection in Connection.getAllConnections()) {
 
             if (!connection.isConnected) continue
 
-            when (val inst = connection.get()) {
+            when (val inst = connection.instrument) {
 
                 is MCSMU -> {
 

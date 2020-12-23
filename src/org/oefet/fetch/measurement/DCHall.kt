@@ -3,6 +3,8 @@ package org.oefet.fetch.measurement
 import jisa.Util
 import jisa.Util.runRegardless
 import jisa.devices.EMController
+import jisa.devices.SMU
+import jisa.devices.TMeter
 import jisa.devices.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
@@ -16,56 +18,59 @@ class DCHall : FMeasurement() {
 
     override val type: String = "DC Hall"
 
-    private val label         = StringParameter("Basic", "Name", null, "DCHall")
-    private val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 1.0 / 50.0)
-    private val delTimeParam  = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val repeatsParam  = IntegerParameter("Basic", "Repeats", null, 50)
+    private val label = StringParameter("Basic", "Name", null, "DCHall")
+    private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 1.0 / 50.0)
+    private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
+    private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
     private val minFieldParam = DoubleParameter("Magnets", "Start", "T", -1.0)
     private val maxFieldParam = DoubleParameter("Magnets", "Stop", "T", +1.0)
     private val numFieldParam = IntegerParameter("Magnets", "No. Steps", null, 11)
-    private val minIParam     = DoubleParameter("Source-Drain", "Start", "A", 0.0)
-    private val maxIParam     = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
-    private val numIParam     = IntegerParameter("Source-Drain", "No. Steps", null, 11)
-    private val minGParam     = DoubleParameter("Source-Gate", "Start", "V", 0.0)
-    private val maxGParam     = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
-    private val numGParam     = IntegerParameter("Source-Gate", "No. Steps", null, 1)
+    private val minIParam = DoubleParameter("Source-Drain", "Start", "A", 0.0)
+    private val maxIParam = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
+    private val numIParam = IntegerParameter("Source-Drain", "No. Steps", null, 11)
+    private val minGParam = DoubleParameter("Source-Gate", "Start", "V", 0.0)
+    private val maxGParam = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
+    private val numGParam = IntegerParameter("Source-Gate", "No. Steps", null, 1)
 
-    val intTime get()  = intTimeParam.value
-    val delTime get()  = (1e3 * delTimeParam.value).toInt()
-    val repeats get()  = repeatsParam.value
+    val intTime get() = intTimeParam.value
+    val delTime get() = (1e3 * delTimeParam.value).toInt()
+    val repeats get() = repeatsParam.value
     val minField get() = minFieldParam.value
     val maxField get() = maxFieldParam.value
     val numField get() = numFieldParam.value
-    val minI get()     = minIParam.value
-    val maxI get()     = maxIParam.value
-    val numI get()     = numIParam.value
-    val minG get()     = minGParam.value
-    val maxG get()     = maxGParam.value
-    val numG get()     = numGParam.value
+    val minI get() = minIParam.value
+    val maxI get() = maxIParam.value
+    val numI get() = numIParam.value
+    val minG get() = minGParam.value
+    val maxG get() = maxGParam.value
+    val numG get() = numGParam.value
 
     private var hvm1: VMeter? = null
     private var hvm2: VMeter? = null
     private var magnet: EMController? = null
 
-    private val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
-    private val sdSMUConfig = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
-    private val sgSMUConfig = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
-    private val hvm1Config  = addInstrument(Configurator.VMeter("Hall Voltmeter 1", Connections))
-    private val hvm2Config  = addInstrument(Configurator.VMeter("Hall Voltmeter 2", Connections))
-    private val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe 1", Connections))
-    private val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe 2", Connections))
+
+    private val magnetConfig = addInstrument("Magnet Controller", EMController::class.java)
+    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class.java)
+    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class.java)
+    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class.java)
+    private val hvm1Config   = addInstrument("Hall Voltmeter 1", VMeter::class.java)
+    private val hvm2Config   = addInstrument("Hall Voltmeter 2", VMeter::class.java)
+    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
+    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
+    private val tMeterConfig = addInstrument("Thermometer", TMeter::class.java)
 
     override fun loadInstruments() {
 
-        gdSMU  = gdSMUConfig.get()
-        sdSMU  = sdSMUConfig.get()
-        sgSMU  = sgSMUConfig.get()
-        hvm1   = hvm1Config.get()
-        hvm2   = hvm2Config.get()
-        fpp1   = fpp1Config.get()
-        fpp2   = fpp2Config.get()
-        tMeter = Instruments.tMeter
-        magnet = Instruments.magnet
+        gdSMU = gdSMUConfig.get()
+        sdSMU = sdSMUConfig.get()
+        sgSMU = sgSMUConfig.get()
+        hvm1 = hvm1Config.get()
+        hvm2 = hvm2Config.get()
+        fpp1 = fpp1Config.get()
+        fpp2 = fpp2Config.get()
+        tMeter = tMeterConfig.get()
+        magnet = magnetConfig.get()
 
     }
 
@@ -125,13 +130,13 @@ class DCHall : FMeasurement() {
         magnet?.turnOff()
 
         gdSMU?.integrationTime = intTime
-        sdSMU.integrationTime  = intTime
+        sdSMU.integrationTime = intTime
         sgSMU?.integrationTime = intTime
-        hvm1?.integrationTime  = intTime
-        hvm2?.integrationTime  = intTime
+        hvm1?.integrationTime = intTime
+        hvm2?.integrationTime = intTime
 
         gdSMU?.voltage = 0.0
-        sdSMU.current  = minI
+        sdSMU.current = minI
         sgSMU?.voltage = minG
 
         gdSMU?.turnOn()
@@ -168,7 +173,7 @@ class DCHall : FMeasurement() {
                         current,
                         gate,
                         sgSMU?.current ?: Double.NaN,
-                        magnet?.field  ?: minField,
+                        magnet?.field ?: minField,
                         hvm1Values.average(),
                         hvm1Values.stdDeviation(),
                         hvm2Values.average(),
@@ -218,16 +223,16 @@ class DCHall : FMeasurement() {
 
     companion object {
 
-        const val SD_VOLTAGE   = 0
-        const val SD_CURRENT   = 1
-        const val SG_VOLTAGE   = 2
-        const val SG_CURRENT   = 3
-        const val FIELD        = 4
-        const val HALL_1       = 5
+        const val SD_VOLTAGE = 0
+        const val SD_CURRENT = 1
+        const val SG_VOLTAGE = 2
+        const val SG_CURRENT = 3
+        const val FIELD = 4
+        const val HALL_1 = 5
         const val HALL_1_ERROR = 6
-        const val HALL_2       = 7
+        const val HALL_2 = 7
         const val HALL_2_ERROR = 8
-        const val TEMPERATURE  = 9
+        const val TEMPERATURE = 9
 
     }
 

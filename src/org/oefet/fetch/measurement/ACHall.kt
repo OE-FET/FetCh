@@ -1,7 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util.runRegardless
-import jisa.devices.LockIn
+import jisa.devices.*
 import jisa.enums.Coupling
 import jisa.enums.Input
 import jisa.experiment.Col
@@ -35,9 +35,13 @@ class ACHall : FMeasurement() {
     private val minGParam     = DoubleParameter("Source-Gate", "Start", "V", 0.0)
     private val maxGParam     = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
     private val numGParam     = IntegerParameter("Source-Gate", "No. Steps", null, 1)
-    private val gdSMUConfig   = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
-    private val sdSMUConfig   = addInstrument(Configurator.SMU("Source-Drain Channel", Connections))
-    private val sgSMUConfig   = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
+    private val gdSMUConfig   = addInstrument("Ground Channel (SPA)", SMU::class.java)
+    private val sdSMUConfig   = addInstrument("Source-Drain Channel", SMU::class.java)
+    private val sgSMUConfig   = addInstrument("Source-Gate Channel", SMU::class.java)
+    private val dcPowerConfig = addInstrument("Motor Power Supply", DCPower::class.java)
+    private val lockInConfig  = addInstrument("Lock-In Amplifier", DPLockIn::class.java)
+    private val preAmpConfig  = addInstrument("Voltage Pre-Amplifier", VPreAmp::class.java)
+    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
     val intTime  get() = intTimeParam.value
     val delTime  get() = (1e3 * delTimeParam.value).toInt()
@@ -74,11 +78,11 @@ class ACHall : FMeasurement() {
 
     override fun loadInstruments() {
 
-        gdSMU = gdSMUConfig.get()
-        sdSMU = sdSMUConfig.get()
-        sgSMU = sgSMUConfig.get()
+        gdSMU = gdSMUConfig.instrument
+        sdSMU = sdSMUConfig.instrument
+        sgSMU = sgSMUConfig.instrument
+        dcPower = dcPowerConfig.instrument
 
-        super.loadInstruments()
 
     }
 
@@ -125,7 +129,7 @@ class ACHall : FMeasurement() {
         gdSMU?.voltage = 0.0
 
         // Configure the lock-in amplifier
-        lockIn.setRefMode(LockIn.RefMode.EXTERNAL)
+        lockIn.refMode = LockIn.RefMode.EXTERNAL
         lockIn.timeConstant = intTime
 
         // Set everything going

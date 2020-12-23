@@ -54,7 +54,7 @@ object Measure : Grid("Measurement", 1) {
 
         addAll(topRow, bottomRow)
 
-        basic.linkConfig(Settings.measureBasic)
+        basic.linkToConfig(Settings.measureBasic)
 
         dielectric.setOnChange(::setDielectric)
         setDielectric()
@@ -106,8 +106,6 @@ object Measure : Grid("Measurement", 1) {
     }
 
     private fun runMeasurement() {
-
-        Instruments.loadInstruments()
 
         Log.start("${baseFile}-${System.currentTimeMillis()}-log.csv")
 

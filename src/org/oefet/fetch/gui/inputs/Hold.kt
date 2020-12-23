@@ -3,11 +3,11 @@ package org.oefet.fetch.gui.inputs
 import jisa.Util
 import jisa.devices.SMU
 import jisa.experiment.ActionQueue
+import jisa.gui.Configurator
 import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.gui.tabs.Configuration
 
 class Hold : Grid("Voltage Hold", 1), ActionInput {
 
@@ -22,12 +22,12 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
     private val sgHold = sgConf.addCheckBox("Enabled", false)
     private val sgV    = sgConf.addDoubleField("Voltage [V]", 50.0)
 
+    private val sd = Configurator<SMU>("Source-Drain Channel", SMU::class.java)
+    private val sg = Configurator<SMU>("Source-Gate Channel", SMU::class.java)
+
     init {
 
-        addAll(basic, Grid(2, sdConf, sgConf))
-        basic.linkConfig(Settings.holdBasic)
-        sdConf.linkConfig(Settings.holdSD)
-        sgConf.linkConfig(Settings.holdSG)
+        addAll(basic, Grid(2, sdConf, sgConf), Grid(2, sd, sg))
 
         setIcon(Images.getURL("fEt.png"))
 
@@ -35,11 +35,20 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
 
     override fun ask(queue: ActionQueue) {
 
+        basic.loadFromConfig(Settings.holdBasic)
+        sdConf.loadFromConfig(Settings.holdSD)
+        sgConf.loadFromConfig(Settings.holdSG)
+        sd.loadFromConfig(Settings.holdSDConf)
+        sg.loadFromConfig(Settings.holdSDConf)
+
         if (showAsConfirmation()) {
 
-            basic.writeToConfig()
-            sdConf.writeToConfig()
-            sgConf.writeToConfig()
+            basic.writeToConfig(Settings.holdBasic)
+            sdConf.writeToConfig(Settings.holdSD)
+            sgConf.writeToConfig(Settings.holdSG)
+
+            sd.writeToConfig(Settings.holdSDConf)
+            sg.writeToConfig(Settings.holdSDConf)
 
             val time   = time.get()
             val sdHold = sdHold.get()
@@ -56,7 +65,7 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
 
                     if (sdHold) {
 
-                        sdSMU = Configuration.sourceDrain.get() ?: throw Exception("No source-drain channel configured")
+                        sdSMU = sd.configuration.get() ?: throw Exception("No source-drain channel configured")
 
                         sdSMU.voltage = sdV
                         sdSMU.turnOn()
@@ -65,7 +74,7 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
 
                     if (sgHold) {
 
-                        sgSMU = Configuration.sourceGate.get() ?: throw Exception("No source-gate channel configured")
+                        sgSMU = sg.configuration.get() ?: throw Exception("No source-gate channel configured")
 
                         sgSMU.voltage = sgV
                         sgSMU.turnOn()

@@ -82,7 +82,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
         // Generate measurement parameter input GUI and make it remember values from last time
         val input = MeasurementConfigurator(measurement.name, measurement).apply {
-            linkConfig(Settings.inputs)
+            linkToConfig(Settings.inputs)
             windowHeight = 750.0
             windowWidth  = 1024.0
         }

@@ -3,6 +3,8 @@ package org.oefet.fetch.measurement
 import jisa.Util
 import jisa.Util.runRegardless
 import jisa.devices.SMU
+import jisa.devices.TMeter
+import jisa.devices.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
@@ -46,10 +48,11 @@ class TVMeasurement : FMeasurement() {
     private val symSGVParam     = BooleanParameter("Gate", "Sweep Both Ways", null, false)
     private val gateHoldParam   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
 
-    val gdSMUConfig   = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
-    val htSMUConfig   = addInstrument(Configurator.SMU("Heater Channel", Connections))
-    val sgSMUConfig   = addInstrument(Configurator.SMU("Source-Gate Channel", Connections))
-    val tvMeterConfig = addInstrument(Configurator.VMeter("Thermal Voltage Channel", Connections))
+    val gdSMUConfig   = addInstrument("Ground Channel (SPA)", SMU::class.java)
+    val htSMUConfig   = addInstrument("Heater Channel", SMU::class.java)
+    val sgSMUConfig   = addInstrument("Source-Gate Channel", SMU::class.java)
+    val tvMeterConfig = addInstrument("Thermal Voltage Channel", VMeter::class.java)
+    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
     val intTime    get() = intTimeParam.value
     val avgCount   get() = avgCountParam.value
@@ -70,7 +73,7 @@ class TVMeasurement : FMeasurement() {
         heater   = htSMUConfig.get()
         sgSMU    = sgSMUConfig.get()
         tvMeter  = tvMeterConfig.get()
-        tMeter   = Instruments.tMeter
+        tMeter   = tMeterConfig.get()
 
     }
 

@@ -27,16 +27,7 @@ abstract class FMeasurement : Measurement() {
      */
     abstract fun checkForErrors() : List<String>
 
-    protected open fun loadInstruments() {
-
-        tControl = Instruments.tControl
-        tMeter   = Instruments.tMeter
-        lockIn   = Instruments.lockIn
-        dcPower  = Instruments.dcPower
-        preAmp   = Instruments.preAmp
-        fControl = if (lockIn != null && dcPower != null) FControl(lockIn!!, dcPower!!) else null
-
-    }
+    abstract fun loadInstruments()
 
     override fun start() {
 

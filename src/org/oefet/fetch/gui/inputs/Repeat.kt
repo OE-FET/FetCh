@@ -15,7 +15,6 @@ class Repeat : Grid("Repeat", 2), SweepInput {
     val subQueue  = ActionQueue()
 
     init {
-        basic.linkConfig(Settings.repeatBasic)
         setIcon(Images.getURL("fEt.png"))
     }
 
@@ -26,9 +25,11 @@ class Repeat : Grid("Repeat", 2), SweepInput {
 
         subQueue.clear()
 
+        basic.loadFromConfig(Settings.repeatBasic)
+
         if (showAsConfirmation()) {
 
-            basic.writeToConfig()
+            basic.writeToConfig(Settings.repeatBasic)
 
             val name  = name.get()
             val times = times.get()

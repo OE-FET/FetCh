@@ -1,16 +1,18 @@
 package org.oefet.fetch.gui.inputs
 
+import jisa.devices.TC
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
+import jisa.gui.Configurator
 import jisa.gui.Fields
 import jisa.gui.Grid
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.gui.tabs.Configuration
 
 class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
-    val basic = Fields("Temperature Set-Points")
+    val basic  = Fields("Temperature Set-Points")
+    val config = Configurator<TC>("Temperature Controller", TC::class.java)
 
     val temp = basic.addDoubleField("Temperature [K]", 300.0)
 
@@ -24,24 +26,26 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
     init {
 
         setGrowth(true, false)
-        addAll(basic)
+        addAll(basic, config)
         setIcon(Icon.SNOWFLAKE)
-        basic.linkConfig(Settings.tempSingleBasic)
         setIcon(Images.getURL("fEt.png"))
 
     }
 
     override fun ask(queue: ActionQueue) {
 
+        config.linkToConfig(Settings.tempSingleConfig)
+
         if (showAsConfirmation()) {
 
-            basic.writeToConfig()
+            basic.writeToConfig(Settings.tempSingleBasic)
+            config.writeToConfig(Settings.tempSingleConfig)
 
             val temperature = temp.value
 
             queue.addAction("Change Temperature to $temperature K") {
 
-                val tc = Configuration.tControl.get() ?: throw Exception("No temperature controller configured")
+                val tc = config.configuration.get() ?: throw Exception("No temperature controller configured")
 
                 tc.targetTemperature = temperature
                 tc.useAutoHeater()

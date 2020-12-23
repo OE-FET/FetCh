@@ -1,6 +1,9 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util.runRegardless
+import jisa.devices.SMU
+import jisa.devices.TMeter
+import jisa.devices.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
@@ -26,11 +29,12 @@ class TVCalibration : FMeasurement() {
     val numSIParam    = IntegerParameter("Resistive Thermometer", "No. Steps", null, 11)
     val holdSIParam   = DoubleParameter("Resistive Thermometer", "Hold Time", "s", 0.5)
 
-    val gdSMUConfig = addInstrument(Configurator.SMU("Ground Channel (SPA)", Connections))
-    val htSMUConfig = addInstrument(Configurator.SMU("Heater Channel", Connections))
-    val sdSMUConfig = addInstrument(Configurator.SMU("Strip Source-Drain Channel", Connections))
-    val fpp1Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 1", Connections))
-    val fpp2Config  = addInstrument(Configurator.VMeter("Four-Point-Probe Channel 2", Connections))
+    val gdSMUConfig = addInstrument("Ground Channel (SPA)", SMU::class.java)
+    val htSMUConfig = addInstrument("Heater Channel", SMU::class.java)
+    val sdSMUConfig = addInstrument("Strip Source-Drain Channel", SMU::class.java)
+    val fpp1Config  = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
+    val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
+    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
     val intTime  get() = intTimeParam.value
     val avgCount get() = avgCountParam.value
@@ -51,7 +55,7 @@ class TVCalibration : FMeasurement() {
         sdSMU    = sdSMUConfig.get()
         fpp1     = fpp1Config.get()
         fpp2     = fpp2Config.get()
-        tMeter   = Instruments.tMeter
+        tMeter   = tMeterConfig.get()
 
     }
 
