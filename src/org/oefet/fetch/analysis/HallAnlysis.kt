@@ -4,10 +4,10 @@ import jisa.experiment.Col
 import jisa.experiment.Combination
 import jisa.experiment.ResultList
 import jisa.gui.Plot
-import org.oefet.fetch.analysis.quantities.Device
-import org.oefet.fetch.analysis.quantities.Gate
-import org.oefet.fetch.analysis.quantities.Quantity
-import org.oefet.fetch.analysis.quantities.Temperature
+import org.oefet.fetch.quantities.Device
+import org.oefet.fetch.quantities.Gate
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.quantities.Temperature
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 import kotlin.reflect.KClass

@@ -5,11 +5,10 @@ import jisa.experiment.ResultList
 import jisa.gui.Plot
 import jisa.gui.Series
 import org.oefet.fetch.analysis.Analysis.*
-import org.oefet.fetch.analysis.quantities.Quantity
-import org.oefet.fetch.analysis.quantities.Temperature
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.quantities.Temperature
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
-import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 

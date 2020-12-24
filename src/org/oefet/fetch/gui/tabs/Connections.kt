@@ -14,7 +14,7 @@ object Connections : ConnectorGrid("Connections", 3) {
     init {
         numColumns = 3
         setIcon(Icon.CONNECTION)
-        linkToConfig(Settings.subBlock("Connections"))
+        linkToConfig(Settings.connections)
     }
 
 }

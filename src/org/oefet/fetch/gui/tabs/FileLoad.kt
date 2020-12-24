@@ -8,14 +8,12 @@ import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.analysis.*
-import org.oefet.fetch.analysis.quantities.*
-import org.oefet.fetch.analysis.results.ResultFile
+import org.oefet.fetch.quantities.*
+import org.oefet.fetch.results.ResultFile
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.collections.HashSet
-import kotlin.reflect.KClass
 
 /**
  * Page for loading in and viewing previous results

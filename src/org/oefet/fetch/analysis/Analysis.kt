@@ -2,7 +2,7 @@ package org.oefet.fetch.analysis
 
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
-import org.oefet.fetch.analysis.quantities.Quantity
+import org.oefet.fetch.quantities.Quantity
 import kotlin.reflect.KClass
 
 interface Analysis {

@@ -6,7 +6,7 @@ object Settings : ConfigFile("FetCh") {
 
     val holdSDConf        = subBlock("holdSDConf")
     val holdSGConf        = subBlock("holdSGConf")
-    val instruments       = subBlock("instruments")
+    val connections       = subBlock("connections")
     val measureBasic      = subBlock("measureBasic")
     val repeatBasic       = subBlock("repeatBasic")
     val timeBasic         = subBlock("timeBasic")
@@ -20,14 +20,5 @@ object Settings : ConfigFile("FetCh") {
     val tempConfig        = subBlock("tempConfig")
     val tempSingleBasic   = subBlock("tempSingleBasic")
     val tempSingleConfig  = subBlock("tempSingleConfig")
-    val groundConfig      = subBlock("groundConfig")
-    val sourceDrainConfig = subBlock("sourceDrainConfig")
-    val heaterConfig      = subBlock("heaterConfig")
-    val sourceGateConfig  = subBlock("sourceGateConfig")
-    val tvMeterConfig     = subBlock("tvMeterConfig")
-    val fourPP1Config     = subBlock("fourPP1Config")
-    val fourPP2Config     = subBlock("fourPP2Config")
-    val tControlConfig    = subBlock("tControlConfig")
-    val tMeterConfig      = subBlock("tMeterConfig")
 
 }

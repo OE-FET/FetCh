@@ -3,11 +3,10 @@ package org.oefet.fetch.analysis
 import jisa.experiment.Col
 import jisa.experiment.Combination
 import jisa.experiment.ResultList
-import jisa.gui.Colour
 import jisa.gui.Plot
 import jisa.gui.Series
 import org.oefet.fetch.analysis.Analysis.Tabulated
-import org.oefet.fetch.analysis.quantities.Quantity
+import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 import kotlin.collections.LinkedHashMap

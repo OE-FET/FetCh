@@ -39,7 +39,7 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
         sdConf.loadFromConfig(Settings.holdSD)
         sgConf.loadFromConfig(Settings.holdSG)
         sd.loadFromConfig(Settings.holdSDConf)
-        sg.loadFromConfig(Settings.holdSDConf)
+        sg.loadFromConfig(Settings.holdSGConf)
 
         if (showAsConfirmation()) {
 
@@ -48,7 +48,7 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
             sgConf.writeToConfig(Settings.holdSG)
 
             sd.writeToConfig(Settings.holdSDConf)
-            sg.writeToConfig(Settings.holdSDConf)
+            sg.writeToConfig(Settings.holdSGConf)
 
             val time   = time.get()
             val sdHold = sdHold.get()

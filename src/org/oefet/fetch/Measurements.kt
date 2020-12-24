@@ -3,11 +3,10 @@ package org.oefet.fetch
 import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
-import org.oefet.fetch.analysis.quantities.Quantity
-import org.oefet.fetch.analysis.results.*
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.*
 import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.measurement.*
-import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -15,26 +14,6 @@ import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.reflect
 
 object Measurements {
-
-    class Config(
-        val type: String,
-        val measurement: () -> FMeasurement,
-        val result: (ResultTable, List<Quantity>) -> ResultFile,
-        val plot: (ResultTable) -> Plot
-    ) {
-
-        private val example = measurement()
-
-        val name   = example.name
-        val mClass = example::class
-        val rClass = result.reflect()?.returnType?.jvmErasure
-
-        fun createMeasurement(): FMeasurement = measurement()
-        fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = result(data, extra)
-        fun createPlot(data: ResultTable) = plot(data)
-
-
-    }
 
     val types = listOf(
         Config("Output",                      ::Output,        ::OutputResult,   ::OutputPlot),
@@ -46,6 +25,21 @@ object Measurements {
         Config("Thermal Voltage",             ::TVMeasurement, ::TVResult,       ::TVPlot),
         Config("Thermal Voltage Calibration", ::TVCalibration, ::TVCResult,      ::TVCPlot)
     )
+
+    class Config(val type: String, val measurement: () -> FMeasurement, val result: (ResultTable, List<Quantity>) -> ResultFile, val plot: (ResultTable) -> Plot) {
+
+        private val example = measurement()
+
+        val name   = example.name
+        val mClass = example::class
+        val rClass = result.reflect()?.returnType?.jvmErasure
+
+        fun createMeasurement(): FMeasurement                                                = measurement()
+        fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = result(data, extra)
+        fun createPlot(data: ResultTable)                                                    = plot(data)
+
+
+    }
 
     fun loadResultFile(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile? {
 

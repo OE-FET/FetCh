@@ -6,15 +6,15 @@ import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.analysis.*
 import org.oefet.fetch.analysis.Analysis
-import org.oefet.fetch.analysis.quantities.Device
-import org.oefet.fetch.analysis.quantities.Quantity
+import org.oefet.fetch.quantities.Device
+import org.oefet.fetch.quantities.Quantity
 import kotlin.reflect.KClass
 
 object Analysis : BorderDisplay("Analysis") {
 
-    val sidebar = ListDisplay<Analysis>("Available Analyses")
+    val sidebar       = ListDisplay<Analysis>("Available Analyses")
     val analyseButton = sidebar.addToolbarButton("Analyse") { analyse() }
-    val saveButton = sidebar.addToolbarMenuButton("Save...").apply {
+    val saveButton    = sidebar.addToolbarMenuButton("Save...").apply {
         addItem("Plots...") { savePlots() }
         addItem("Tables...") { saveTables() }
         addItem("Plots and Tables...") { save() }
@@ -58,27 +58,25 @@ object Analysis : BorderDisplay("Analysis") {
         try {
 
             val quantities = FileLoad.getQuantities()
-            val names = FileLoad.getNames()
-            val labels = mapOf<KClass<out Quantity>, Map<Double, String>>(
-                Device::class to names)
-            val analysis = sidebar.selected.getObject()
-
-            val plots  = Grid("Plots", 2)
-            val tables = Grid("Tables", 1)
+            val names      = FileLoad.getNames()
+            val labels     = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
+            val analysis   = sidebar.selected.getObject()
+            val plots      = Grid("Plots", 2)
+            val tables     = Grid("Tables", 1)
 
             plots.setGrowth(true, false)
             tables.setGrowth(true, true)
 
             val window = Tabs("Analysis", plots, tables)
 
-            val progress = Progress("Analysing")
-            progress.title = "Analysing"
-            progress.status = "Analysing and plotting loaded results..."
+            val progress      = Progress("Analysing")
+            progress.title    = "Analysing"
+            progress.status   = "Analysing and plotting loaded results..."
             progress.progress = -1.0
 
             centreElement = Grid(progress)
 
-            val output = analysis.analyse(quantities, labels)
+            val output  = analysis.analyse(quantities, labels)
             this.output = output
 
             plots.addAll(output.plots)

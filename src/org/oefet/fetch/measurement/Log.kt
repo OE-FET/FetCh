@@ -32,9 +32,9 @@ object Log {
 
                 is MCSMU -> {
 
-                    for ((channel, smu) in inst.channels.withIndex()) {
-                        columns.add(Col("${inst.javaClass.simpleName} Channel $channel Voltage", "V"))
-                        columns.add(Col("${inst.javaClass.simpleName} Channel $channel Current", "A"))
+                    for (smu in inst.channels) {
+                        columns.add(Col("${inst.javaClass.simpleName} ${smu.channelName} Voltage", "V"))
+                        columns.add(Col("${inst.javaClass.simpleName} ${smu.channelName} Current", "A"))
                         logTasks.add { smu.voltage }
                         logTasks.add { smu.current }
                     }
@@ -68,13 +68,13 @@ object Log {
 
                 is MSMOTC -> {
 
-                    for ((sensor, tMeter) in inst.sensors.withIndex()) {
-                        columns.add(Col("${inst.javaClass.simpleName} Sensor $sensor Temperature", "K"))
+                    for (tMeter in inst.sensors) {
+                        columns.add(Col("${inst.javaClass.simpleName} ${tMeter.sensorName} Temperature", "K"))
                         logTasks.add { tMeter.temperature }
                     }
 
-                    for ((output, tc) in inst.outputs.withIndex()) {
-                        columns.add(Col("${inst.javaClass.simpleName} Output $output Heater Power", "%"))
+                    for (tc in inst.outputs) {
+                        columns.add(Col("${inst.javaClass.simpleName} ${tc.outputName} Heater Power", "%"))
                         logTasks.add { tc.heaterPower }
                     }
 
@@ -82,8 +82,8 @@ object Log {
 
                 is MSTC -> {
 
-                    for ((sensor, tMeter) in inst.sensors.withIndex()) {
-                        columns.add(Col("${inst.javaClass.simpleName} Sensor $sensor Temperature", "K"))
+                    for (tMeter in inst.sensors) {
+                        columns.add(Col("${inst.javaClass.simpleName} ${tMeter.sensorName} Temperature", "K"))
                         logTasks.add { tMeter.temperature }
                     }
 
@@ -139,9 +139,9 @@ object Log {
 
                 is LevelMeter -> {
 
-                    for ((channel, meter) in inst.channels.withIndex()) {
+                    for (meter in inst.channels) {
 
-                        columns.add(Col("${inst.javaClass.simpleName} Channel $channel Level"))
+                        columns.add(Col("${inst.javaClass.simpleName} ${meter.getChannelName(0)} Level"))
                         logTasks.add { meter.level }
 
                     }
