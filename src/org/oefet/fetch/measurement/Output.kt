@@ -19,13 +19,9 @@ class Output : FMeasurement() {
     private val label = StringParameter("Basic", "Label", null, "Output")
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val minVSDParam  = DoubleParameter("Source-Drain", "Start", "V", 0.0)
-    private val maxVSDParam  = DoubleParameter("Source-Drain", "Stop", "V", 60.0)
-    private val numVSDParam  = IntegerParameter("Source-Drain", "No. Steps", null, 61)
+    private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 61, Range.Type.LINEAR, 1)
     private val symVSDParam  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
-    private val minVSGParam  = DoubleParameter("Source-Gate", "Start", "V", 0.0)
-    private val maxVSGParam  = DoubleParameter("Source-Gate", "Stop", "V", 60.0)
-    private val numVSGParam  = IntegerParameter("Source-Gate", "No. Steps", null, 7)
+    private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 7, Range.Type.LINEAR, 1)
 
     val gdSMUConfig = addInstrument("Ground Channel (SPA)", SMU::class.java)
     val sdSMUConfig = addInstrument("Source-Drain Channel", SMU::class.java)
@@ -34,15 +30,11 @@ class Output : FMeasurement() {
     val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
     private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
-    val intTime get() = intTimeParam.value
-    val delTime get() = (1e3 * delTimeParam.value).toInt()
-    val minVSD get()  = minVSDParam.value
-    val maxVSD get()  = maxVSDParam.value
-    val numVSD get()  = numVSDParam.value
-    val symVSD get()  = symVSDParam.value
-    val minVSG get()  = minVSGParam.value
-    val maxVSG get()  = maxVSGParam.value
-    val numVSG get()  = numVSGParam.value
+    val intTime    get() = intTimeParam.value
+    val delTime    get() = (1e3 * delTimeParam.value).toInt()
+    val sdVoltages get() = sdvParam.value
+    val symVSD     get() = symVSDParam.value
+    val sgVoltages get() = sgvParam.value
 
     override fun loadInstruments() {
 
@@ -75,14 +67,6 @@ class Output : FMeasurement() {
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!
 
-        val sdVoltages = if (symVSD) {
-            Range.linear(minVSD, maxVSD, numVSD).mirror()
-        } else {
-            Range.linear(minVSD, maxVSD, numVSD)
-        }
-
-        val sgVoltages = Range.linear(minVSG, maxVSG, numVSG)
-
         sdSMU.turnOff()
         sgSMU.turnOff()
         gdSMU?.turnOff()
@@ -90,8 +74,8 @@ class Output : FMeasurement() {
         fpp2?.turnOff()
 
         // Configure initial source modes
-        sdSMU.voltage = minVSD
-        sgSMU.voltage = minVSG
+        sdSMU.voltage = sdVoltages.first()
+        sgSMU.voltage = sgVoltages.first()
         gdSMU?.voltage = 0.0
 
         // Configure integration times
@@ -110,7 +94,7 @@ class Output : FMeasurement() {
 
             sgSMU.voltage = vSG
 
-            for (vSD in sdVoltages) {
+            for (vSD in (if (symVSD) sdVoltages.mirror() else sdVoltages)) {
 
                 sdSMU.voltage = vSD
 

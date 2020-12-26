@@ -12,7 +12,7 @@ import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 import kotlin.reflect.KClass
 
-object HallAnlysis : Analysis {
+object HallAnalysis : Analysis {
     override fun analyse(quantities: List<Quantity>, labels: Map<KClass<out Quantity>, Map<Double, String>>): Analysis.Output {
 
         val processed = tabulate(quantities)

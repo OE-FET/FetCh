@@ -27,9 +27,9 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
                     windowWidth  = 1024.0
                 }
 
-                input.showInput()
-
-                it.name = measurement.label
+                if (input.showInput()) {
+                    it.name = measurement.label
+                }
 
             }
 

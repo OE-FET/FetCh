@@ -6,13 +6,16 @@ import jisa.experiment.ActionQueue
 import jisa.gui.Configurator
 import jisa.gui.Fields
 import jisa.gui.Grid
+import jisa.gui.Tabs
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
 
-class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
+class TemperatureChange : Tabs("Temperature Change"), ActionInput {
 
-    val basic  = Fields("Temperature Set-Points")
-    val config = Configurator<TC>("Temperature Controller", TC::class.java)
+    val basic       = Fields("Temperature Set-Points")
+    val config      = Configurator<TC>("Temperature Controller", TC::class.java)
+    val parameters  = Grid("Parameters", 1, basic)
+    val instruments = Grid("Instruments", 1, config)
 
     val temp = basic.addDoubleField("Temperature [K]", 300.0)
 
@@ -25,8 +28,10 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
     init {
 
-        setGrowth(true, false)
-        addAll(basic, config)
+        parameters.setGrowth(true, false)
+        instruments.setGrowth(true, false)
+
+        addAll(parameters, instruments)
         setIcon(Icon.SNOWFLAKE)
         setIcon(Images.getURL("fEt.png"))
 
@@ -34,7 +39,8 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
     override fun ask(queue: ActionQueue) {
 
-        config.linkToConfig(Settings.tempSingleConfig)
+        config.loadFromConfig(Settings.tempSingleConfig)
+        basic.loadFromConfig(Settings.tempSingleBasic)
 
         if (showAsConfirmation()) {
 

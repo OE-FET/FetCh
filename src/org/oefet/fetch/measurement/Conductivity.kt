@@ -17,9 +17,7 @@ class Conductivity : FMeasurement() {
     private val labelParam   = StringParameter("Basic", "Name", null, "Cond")
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 1.0)
-    private val minIParam    = DoubleParameter("Source-Drain", "Start", "A", 0.0)
-    private val maxIParam    = DoubleParameter("Source-Drain", "Stop", "A", 10e-6)
-    private val numIParam    = IntegerParameter("Source-Drain", "No. Steps", null, 11)
+    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -10e-6, +10e-6, 11, Range.Type.LINEAR, 1)
     private val symIParam    = BooleanParameter("Source-Drain", "Sweep Both Ways", null, false)
     private val holdGParam   = BooleanParameter("Source-Gate", "Active", null, false)
     private val gateVParam   = DoubleParameter("Source-Gate", "Voltage", "V", 50.0)
@@ -31,14 +29,12 @@ class Conductivity : FMeasurement() {
     val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
     private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
-    val intTime get() = intTimeParam.value
-    val delTime get() = (1e3 * delTimeParam.value).toInt()
-    val minI    get() = minIParam.value
-    val maxI    get() = maxIParam.value
-    val numI    get() = numIParam.value
-    val symI    get() = symIParam.value
-    val holdG   get() = holdGParam.value
-    val gateV   get() = gateVParam.value
+    val intTime  get() = intTimeParam.value
+    val delTime  get() = (1e3 * delTimeParam.value).toInt()
+    val currents get() = currentParam.value
+    val symI     get() = symIParam.value
+    val holdG    get() = holdGParam.value
+    val gateV    get() = gateVParam.value
 
     override fun setLabel(value: String?) {
         labelParam.value = value
@@ -92,15 +88,15 @@ class Conductivity : FMeasurement() {
         fpp2?.turnOff()
 
         gdSMU?.integrationTime = intTime
-        sdSMU.integrationTime = intTime
+        sdSMU.integrationTime  = intTime
         sgSMU?.integrationTime = intTime
-        fpp1?.integrationTime = intTime
-        fpp2?.integrationTime = intTime
+        fpp1?.integrationTime  = intTime
+        fpp2?.integrationTime  = intTime
 
         // Configure all channel voltages/currents
         gdSMU?.voltage = 0.0
         sgSMU?.voltage = gateV
-        sdSMU.current = minI
+        sdSMU.current  = currents.first()
 
         // Enable all channels
         gdSMU?.turnOn()
@@ -110,7 +106,7 @@ class Conductivity : FMeasurement() {
         sgSMU?.turnOn()
 
         // Sweep current
-        for (current in if (symI) Range.linear(minI, maxI, numI).mirror() else Range.linear(minI, maxI, numI)) {
+        for (current in if (symI) currents.mirror() else currents) {
 
             sdSMU.current = current
             sleep(delTime)

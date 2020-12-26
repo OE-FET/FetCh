@@ -22,28 +22,16 @@ class DCHall : FMeasurement() {
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 1.0 / 50.0)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
-    private val minFieldParam = DoubleParameter("Magnets", "Start", "T", -1.0)
-    private val maxFieldParam = DoubleParameter("Magnets", "Stop", "T", +1.0)
-    private val numFieldParam = IntegerParameter("Magnets", "No. Steps", null, 11)
-    private val minIParam = DoubleParameter("Source-Drain", "Start", "A", 0.0)
-    private val maxIParam = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
-    private val numIParam = IntegerParameter("Source-Drain", "No. Steps", null, 11)
-    private val minGParam = DoubleParameter("Source-Gate", "Start", "V", 0.0)
-    private val maxGParam = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
-    private val numGParam = IntegerParameter("Source-Gate", "No. Steps", null, 1)
+    private val fieldParam   = RangeParameter("Magnet", "Field", "T", -1.0, +1.0, 11, Range.Type.LINEAR, 1)
+    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -50e-6, +50e-6, 11, Range.Type.LINEAR, 1)
+    private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
 
-    val intTime get() = intTimeParam.value
-    val delTime get() = (1e3 * delTimeParam.value).toInt()
-    val repeats get() = repeatsParam.value
-    val minField get() = minFieldParam.value
-    val maxField get() = maxFieldParam.value
-    val numField get() = numFieldParam.value
-    val minI get() = minIParam.value
-    val maxI get() = maxIParam.value
-    val numI get() = numIParam.value
-    val minG get() = minGParam.value
-    val maxG get() = maxGParam.value
-    val numG get() = numGParam.value
+    val intTime  get() = intTimeParam.value
+    val delTime  get() = (1e3 * delTimeParam.value).toInt()
+    val repeats  get() = repeatsParam.value
+    val fields   get() = fieldParam.value
+    val currents get() = currentParam.value
+    val gates    get() = gateParam.value
 
     private var hvm1: VMeter? = null
     private var hvm2: VMeter? = null
@@ -94,9 +82,9 @@ class DCHall : FMeasurement() {
         val errors = ArrayList<String>()
 
         if (sdSMU == null) errors += "Source-Drain channel is not configured"
-        if (sgSMU == null && !(minG == 0.0 && maxG == 0.0)) errors += "Source-Gate channel is not configured"
+        if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0)) errors += "Source-Gate channel is not configured"
         if (hvm1 == null && hvm2 == null) errors += "No Hall voltmeters are configured"
-        if (magnet == null && minField != maxField) errors += "No electromagnet controller configured"
+        if (magnet == null && fields.min() != fields.max()) errors += "No electromagnet controller configured"
 
         return errors
 
@@ -136,22 +124,22 @@ class DCHall : FMeasurement() {
         hvm2?.integrationTime = intTime
 
         gdSMU?.voltage = 0.0
-        sdSMU.current = minI
-        sgSMU?.voltage = minG
+        sdSMU.current  = currents.first()
+        sgSMU?.voltage = gates.first()
 
         gdSMU?.turnOn()
         sdSMU.turnOn()
         sgSMU?.turnOn()
 
-        for (gate in Range.linear(minG, maxG, numG)) {
+        for (gate in gates) {
 
             gdSMU?.voltage = gate
 
-            for (field in Range.linear(minField, maxField, numField)) {
+            for (field in fields) {
 
                 magnet?.field = field
 
-                for (current in Range.linear(minI, maxI, numI)) {
+                for (current in currents) {
 
                     sdSMU.current = current
                     sleep(delTime)
@@ -173,7 +161,7 @@ class DCHall : FMeasurement() {
                         current,
                         gate,
                         sgSMU?.current ?: Double.NaN,
-                        magnet?.field ?: minField,
+                        magnet?.field ?: fields.first(),
                         hvm1Values.average(),
                         hvm1Values.stdDeviation(),
                         hvm2Values.average(),

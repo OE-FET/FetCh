@@ -7,26 +7,29 @@ import jisa.experiment.ActionQueue
 import jisa.gui.Configurator
 import jisa.gui.Fields
 import jisa.gui.Grid
+import jisa.gui.Tabs
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.gui.images.Images
 
-class Stress : Grid("Stress", 2), SweepInput {
+class Stress : Tabs("Stress"), SweepInput {
 
-    private val basic = Fields("Stress Parameters")
-    private val name = basic.addTextField("Variable Name", "S").apply { isDisabled = true }
+    private val sd = Configurator<SMU>("Source-Drain Channel", SMU::class.java)
+    private val sg = Configurator<SMU>("Source-Gate Channel", SMU::class.java)
+
+    private val params      = Grid("Parameters", 2)
+    private val instruments = Grid("Instruments", 2, sd, sg)
+    private val basic       = Fields("Stress Parameters")
+    private val name        = basic.addTextField("Variable Name", "S").apply { isDisabled = true }
 
     init {
         basic.addSeparator()
     }
 
     private val drain = basic.addCheckBox("Enable SD", false)
-    private val sdV = basic.addDoubleField("SD Voltage [V]", 50.0)
-    private val gate = basic.addCheckBox("Enabled SG", false)
-    private val sgV = basic.addDoubleField("SG Voltage [V]", 50.0)
-
-    private val sd = Configurator<SMU>("Source-Drain Channel", SMU::class.java)
-    private val sg = Configurator<SMU>("Source-Gate Channel", SMU::class.java)
+    private val sdV   = basic.addDoubleField("SD Voltage [V]", 50.0)
+    private val gate  = basic.addCheckBox("Enabled SG", false)
+    private val sgV   = basic.addDoubleField("SG Voltage [V]", 50.0)
 
     init {
         basic.addSeparator()
@@ -44,6 +47,11 @@ class Stress : Grid("Stress", 2), SweepInput {
     private val subQueue = ActionQueue()
 
     init {
+
+
+        params.setGrowth(true, false)
+        instruments.setGrowth(true, false)
+
         setIcon(Icon.DIODE)
 
         drain.setOnChange { sdV.isDisabled = !drain.get() }
@@ -54,6 +62,8 @@ class Stress : Grid("Stress", 2), SweepInput {
 
         setIcon(Images.getURL("fEt.png"))
 
+        addAll(params, instruments)
+
     }
 
     override fun ask(queue: ActionQueue) {
@@ -61,10 +71,10 @@ class Stress : Grid("Stress", 2), SweepInput {
         basic.loadFromConfig(Settings.stressBasic)
         interval.loadFromConfig(Settings.stressInterval)
         sd.loadFromConfig(Settings.holdSDConf)
-        sg.loadFromConfig(Settings.holdSDConf)
+        sg.loadFromConfig(Settings.holdSGConf)
 
-        clear();
-        addAll(Grid(1, basic, interval), FetChQueue("Interval Actions", subQueue))
+        params.clear();
+        params.addAll(Grid(1, basic, interval), FetChQueue("Interval Actions", subQueue))
 
         subQueue.clear()
 
@@ -74,7 +84,7 @@ class Stress : Grid("Stress", 2), SweepInput {
             interval.writeToConfig(Settings.stressInterval)
 
             sd.writeToConfig(Settings.holdSDConf)
-            sg.writeToConfig(Settings.holdSDConf)
+            sg.writeToConfig(Settings.holdSGConf)
 
             val name = name.get()
             val time =

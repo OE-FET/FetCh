@@ -6,16 +6,19 @@ import jisa.experiment.ActionQueue
 import jisa.gui.Configurator
 import jisa.gui.Fields
 import jisa.gui.Grid
+import jisa.gui.Tabs
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
 
-class TemperatureSweep : Grid("Temperature Sweep", 1), SweepInput {
+class TemperatureSweep : Tabs("Temperature Sweep"), SweepInput {
 
-    val basic  = Fields("Temperature Set-Points")
-    val config = Configurator<TC>("Temperature Controller", TC::class.java)
-    val name   = basic.addTextField("Variable Name", "T").apply { isDisabled = true }
+    val params      = Grid("Parameters", 2)
+    val instruments = Grid("Instruments", 2)
+    val basic       = Fields("Temperature Set-Points")
+    val config      = Configurator<TC>("Temperature Controller", TC::class.java)
+    val name        = basic.addTextField("Variable Name", "T").apply { isDisabled = true }
 
     init { basic.addSeparator() }
 
@@ -33,7 +36,10 @@ class TemperatureSweep : Grid("Temperature Sweep", 1), SweepInput {
 
     init {
 
-        setGrowth(true, false)
+        instruments.addAll(config)
+        params.setGrowth(true, false)
+        instruments.setGrowth(true, false)
+        addAll(params, instruments)
         setIcon(Icon.SNOWFLAKE)
         setIcon(Images.getURL("fEt.png"))
 
@@ -45,8 +51,8 @@ class TemperatureSweep : Grid("Temperature Sweep", 1), SweepInput {
 
     override fun ask(queue: ActionQueue) {
 
-        clear();
-        addAll(Grid(2, basic, FetChQueue("Interval Actions", subQueue)), config)
+        params.clear()
+        params.addAll(basic, FetChQueue("Interval Actions", subQueue))
 
         basic.loadFromConfig(Settings.tempBasic)
         config.loadFromConfig(Settings.tempConfig)

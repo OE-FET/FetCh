@@ -33,6 +33,7 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
     override var stress:       Double = 0.0
 
     private val possibleParameters = listOf(
+        Device::class,
         Temperature::class,
         Repeat::class,
         Time::class,

@@ -51,6 +51,7 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
     private val hallQuantity: Quantity
     private val densityQuantity: Quantity
     private val possibleParameters = listOf(
+        Device::class,
         Temperature::class,
         Repeat::class,
         Time::class,

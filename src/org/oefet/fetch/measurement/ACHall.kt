@@ -18,48 +18,36 @@ class ACHall : FMeasurement() {
 
     override val type: String = "AC Hall"
 
-    private val label         = StringParameter("Basic", "Name", null, "ACHall")
-    private val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 100.0)
-    private val delTimeParam  = DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
-    private val repeatsParam  = IntegerParameter("Basic", "Repeats", null, 600)
-    private val paGainParam   = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
-    private val exGainParam   = DoubleParameter("Basic", "Extra Gain", null, 10.0)
-    private val rmsFieldParam = DoubleParameter("Magnets", "RMS Field Strength", "T", 0.666 / sqrt(2.0))
-    private val minFParam     = DoubleParameter("Magnets", "Min Frequency", "Hz", 1.0)
-    private val maxFParam     = DoubleParameter("Magnets", "Max Frequency", "Hz", 1.0)
-    private val numFParam     = IntegerParameter("Magnets", "No. Steps", null, 1)
-    private val spinParam     = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
-    private val minIParam     = DoubleParameter("Source-Drain", "Start", "A", 0.0)
-    private val maxIParam     = DoubleParameter("Source-Drain", "Stop", "A", 50e-6)
-    private val numIParam     = IntegerParameter("Source-Drain", "No. Steps", null, 11)
-    private val minGParam     = DoubleParameter("Source-Gate", "Start", "V", 0.0)
-    private val maxGParam     = DoubleParameter("Source-Gate", "Stop", "V", 0.0)
-    private val numGParam     = IntegerParameter("Source-Gate", "No. Steps", null, 1)
-    private val gdSMUConfig   = addInstrument("Ground Channel (SPA)", SMU::class.java)
-    private val sdSMUConfig   = addInstrument("Source-Drain Channel", SMU::class.java)
-    private val sgSMUConfig   = addInstrument("Source-Gate Channel", SMU::class.java)
-    private val dcPowerConfig = addInstrument("Motor Power Supply", DCPower::class.java)
-    private val lockInConfig  = addInstrument("Lock-In Amplifier", DPLockIn::class.java)
-    private val preAmpConfig  = addInstrument("Voltage Pre-Amplifier", VPreAmp::class.java)
-    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
+    private val label          = StringParameter("Basic", "Name", null, "ACHall")
+    private val intTimeParam   = DoubleParameter("Basic", "Integration Time", "s", 100.0)
+    private val delTimeParam   = DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
+    private val repeatsParam   = IntegerParameter("Basic", "Repeats", null, 600)
+    private val paGainParam    = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
+    private val exGainParam    = DoubleParameter("Basic", "Extra Gain", null, 10.0)
+    private val rmsFieldParam  = DoubleParameter("Magnets", "RMS Field Strength", "T", 0.666 / sqrt(2.0))
+    private val frequencyParam = RangeParameter("Magnets", "Frequency", "Hz", 1.5, 1.5, 1, Range.Type.LINEAR, 1)
+    private val spinParam      = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
+    private val currentParam   = RangeParameter("Source-Drain", "Current", "A", -50e-6, 50e-6, 5, Range.Type.LINEAR, 1)
+    private val gateParam      = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
+    private val gdSMUConfig    = addInstrument("Ground Channel (SPA)", SMU::class.java)
+    private val sdSMUConfig    = addInstrument("Source-Drain Channel", SMU::class.java)
+    private val sgSMUConfig    = addInstrument("Source-Gate Channel", SMU::class.java)
+    private val dcPowerConfig  = addInstrument("Motor Power Supply", DCPower::class.java)
+    private val lockInConfig   = addInstrument("Lock-In Amplifier", DPLockIn::class.java)
+    private val preAmpConfig   = addInstrument("Voltage Pre-Amplifier", VPreAmp::class.java)
+    private val tMeterConfig   = addInstrument("Thermometer", TMeter::class.java)
 
-    val intTime  get() = intTimeParam.value
-    val delTime  get() = (1e3 * delTimeParam.value).toInt()
-    val repeats  get() = repeatsParam.value
-    val paGain   get() = paGainParam.value
-    val exGain   get() = exGainParam.value
-    val rmsField get() = rmsFieldParam.value
-    val minF     get() = minFParam.value
-    val maxF     get() = maxFParam.value
-    val numF     get() = numFParam.value
-    val spin     get() = (1e3 * spinParam.value).toInt()
-    val minI     get() = minIParam.value
-    val maxI     get() = maxIParam.value
-    val numI     get() = numIParam.value
-    val minG     get() = minGParam.value
-    val maxG     get() = maxGParam.value
-    val numG     get() = numGParam.value
-    val totGain  get() = paGain * exGain
+    val intTime     get() = intTimeParam.value
+    val delTime     get() = (1e3 * delTimeParam.value).toInt()
+    val repeats     get() = repeatsParam.value
+    val paGain      get() = paGainParam.value
+    val exGain      get() = exGainParam.value
+    val rmsField    get() = rmsFieldParam.value
+    val frequencies get() = frequencyParam.value
+    val spin        get() = (1e3 * spinParam.value).toInt()
+    val currents    get() = currentParam.value
+    val gates       get() = gateParam.value
+    val totGain     get() = paGain * exGain
 
     private fun Array<out Double>.stdDeviation(): Double {
 
@@ -94,11 +82,11 @@ class ACHall : FMeasurement() {
 
         val errors = LinkedList<String>()
 
-        if (sdSMU == null)                                   errors += "No SD channel configured"
-        if (sgSMU == null && !(minG == 0.0 && maxG == 0.0))  errors += "No SG channel configured"
-        if (lockIn == null)                                  errors += "No lock-in configured"
-        if (preAmp == null)                                  errors += "No pre-amp configured"
-        if (fControl == null)                                errors += "No frequency control available"
+        if (sdSMU == null)                                                 errors += "No SD channel configured"
+        if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0))  errors += "No SG channel configured"
+        if (lockIn == null)                                                errors += "No lock-in configured"
+        if (preAmp == null)                                                errors += "No pre-amp configured"
+        if (fControl == null)                                              errors += "No frequency control available"
 
         return errors
 
@@ -124,16 +112,16 @@ class ACHall : FMeasurement() {
 
         // Configure the pre-amp
         preAmp.coupling = Coupling.AC;
-        preAmp.input = Input.DIFF;
-        preAmp.gain = paGain;
+        preAmp.input    = Input.DIFF;
+        preAmp.gain     = paGain;
 
         // Initialise the SMUs
-        sdSMU.current = minI
-        sgSMU?.voltage = minG
+        sdSMU.current  = currents.first()
+        sgSMU?.voltage = gates.first()
         gdSMU?.voltage = 0.0
 
         // Configure the lock-in amplifier
-        lockIn.refMode = LockIn.RefMode.EXTERNAL
+        lockIn.refMode      = LockIn.RefMode.EXTERNAL
         lockIn.timeConstant = intTime
 
         // Set everything going
@@ -142,7 +130,7 @@ class ACHall : FMeasurement() {
         gdSMU?.turnOn()
         fControl.start()
 
-        for (frequency in Range.linear(minF, maxF, numF)) {
+        for (frequency in frequencies) {
 
             fControl.target = frequency
 
@@ -152,14 +140,14 @@ class ACHall : FMeasurement() {
 
             sleep(spin)
 
-            for (gate in Range.linear(minG, maxG, numG)) {
+            for (gate in gates) {
 
                 sgSMU?.voltage = gate
 
                 var startX: Double? = null
                 var startY: Double? = null
 
-                for (current in Range.linear(minI, maxI, numI)) {
+                for (current in currents) {
 
                     sdSMU.current = current
 

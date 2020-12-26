@@ -38,6 +38,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
     override val plot : Plot =  DCHallPlot(data)
 
     private val possibleParameters = listOf(
+        Device::class,
         Temperature::class,
         Repeat::class,
         Time::class,

@@ -37,14 +37,10 @@ class TVMeasurement : FMeasurement() {
     private val label           = StringParameter("Basic", "Name", null, "TV")
     private val intTimeParam    = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val avgCountParam   = IntegerParameter("Basic", "Averaging Count", null, 1)
-    private val minHVParam      = DoubleParameter("Heater", "Start", "V", 0.0)
-    private val maxHVParam      = DoubleParameter("Heater", "Stop", "V", 10.0)
-    private val numHVParam      = IntegerParameter("Heater", "No. Steps", null, 11)
+    private val heaterVParam    = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
     private val symHVParam      = BooleanParameter("Heater", "Sweep Both Ways", null, false)
     private val heaterHoldParam = DoubleParameter("Heater", "Hold Time", "s", 60.0)
-    private val minSGVParam     = DoubleParameter("Gate", "Start", "V", 0.0)
-    private val maxSGVParam     = DoubleParameter("Gate", "Stop", "V", 10.0)
-    private val numSGVParam     = IntegerParameter("Gate", "No. Steps", null, 11)
+    private val gateParam       = RangeParameter("Gate", "Voltage", "V", 0.0, 10.0, 11, Range.Type.LINEAR, 1)
     private val symSGVParam     = BooleanParameter("Gate", "Sweep Both Ways", null, false)
     private val gateHoldParam   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
 
@@ -56,14 +52,10 @@ class TVMeasurement : FMeasurement() {
 
     val intTime    get() = intTimeParam.value
     val avgCount   get() = avgCountParam.value
-    val minHV      get() = minHVParam.value
-    val maxHV      get() = maxHVParam.value
-    val numHV      get() = numHVParam.value
+    val heaterV    get() = heaterVParam.value
     val symHV      get() = symHVParam.value
     val heaterHold get() = (heaterHoldParam.value * 1000).toInt()
-    val minSGV     get() = minSGVParam.value
-    val maxSGV     get() = maxSGVParam.value
-    val numSGV     get() = numSGVParam.value
+    val gates      get() = gateParam.value
     val symSGV     get() = symSGVParam.value
     val gateHold   get() = (gateHoldParam.value * 1000).toInt()
 
@@ -89,7 +81,7 @@ class TVMeasurement : FMeasurement() {
             errors += "Thermal-Voltage Voltmeter is not configured"
         }
 
-        if (sgSMU == null && (numSGV > 1 || minSGV != 0.0 || maxSGV != 0.0)) {
+        if (sgSMU == null && !(gates.max() != gates.min())) {
             errors += "No gate channel configured."
         }
 
@@ -112,32 +104,29 @@ class TVMeasurement : FMeasurement() {
         gdSMU?.turnOff()
         sgSMU?.turnOff()
 
-        heater.voltage           = minHV
+        heater.voltage           = heaterV.first()
         heater.integrationTime   = intTime
         tvMeter.averageMode      = AMode.MEAN_REPEAT
         tvMeter.averageCount     = avgCount
         tvMeter.integrationTime  = intTime
         gdSMU?.voltage           = 0.0
         gdSMU?.integrationTime   = intTime
-        sgSMU?.voltage           = minSGV
+        sgSMU?.voltage           = gates.first()
         sgSMU?.integrationTime   = intTime
-
-        val gateVoltages   = Range.linear(minSGV, maxSGV, numSGV)
-        val heaterVoltages = if (symHV) Range.linear(minHV, maxHV, numHV).mirror() else Range.linear(minHV, maxHV, numHV)
 
         tvMeter.turnOn()
         gdSMU?.turnOn()
 
         var count = 0.0
 
-        for (gateVoltage in gateVoltages) {
+        for (gateVoltage in gates) {
 
             sgSMU?.voltage = gateVoltage
             sgSMU?.turnOn()
 
             sleep(gateHold)
 
-            for (heaterVoltage in heaterVoltages) {
+            for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
 
                 heater.voltage = heaterVoltage
                 heater.turnOn()

@@ -7,9 +7,7 @@ import jisa.devices.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.gui.Configurator
 import jisa.maths.Range
-import org.oefet.fetch.gui.tabs.Connections
 import java.util.*
 
 class TVCalibration : FMeasurement() {
@@ -20,13 +18,9 @@ class TVCalibration : FMeasurement() {
     val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     val avgCountParam = IntegerParameter("Basic", "Averaging Count", null,1)
     val probeParam    = IntegerParameter("Basic", "Strip Number", null, 0)
-    val minHVParam    = DoubleParameter("Heater", "Start", "V", 0.0)
-    val maxHVParam    = DoubleParameter("Heater", "Stop", "V", 10.0)
-    val numHVParam    = IntegerParameter("Heater", "No. Steps", null, 11)
+    val heaterVParam  = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
     val holdHVParam   = DoubleParameter("Heater", "Hold Time", "s", 60.0)
-    val minSIParam    = DoubleParameter("Resistive Thermometer", "Start", "A", 0.0)
-    val maxSIParam    = DoubleParameter("Resistive Thermometer", "Stop", "A", 100e-6)
-    val numSIParam    = IntegerParameter("Resistive Thermometer", "No. Steps", null, 11)
+    val currParam     = RangeParameter("Resistive Thermometer", "Current", "A", 0.0, 100e-6, 11, Range.Type.LINEAR, 1)
     val holdSIParam   = DoubleParameter("Resistive Thermometer", "Hold Time", "s", 0.5)
 
     val gdSMUConfig = addInstrument("Ground Channel (SPA)", SMU::class.java)
@@ -39,13 +33,9 @@ class TVCalibration : FMeasurement() {
     val intTime  get() = intTimeParam.value
     val avgCount get() = avgCountParam.value
     val probe    get() = probeParam.value
-    val minHV    get() = minHVParam.value
-    val maxHV    get() = maxHVParam.value
-    val numHV    get() = numHVParam.value
+    val heaterV  get() = heaterVParam.value
     val holdHV   get() = (1e3 * holdHVParam.value).toInt()
-    val minSI    get() = minSIParam.value
-    val maxSI    get() = maxSIParam.value
-    val numSI    get() = numSIParam.value
+    val currents get() = currParam.value
     val holdSI   get() = (1e3 * holdSIParam.value).toInt()
 
     override fun loadInstruments() {
@@ -98,9 +88,9 @@ class TVCalibration : FMeasurement() {
         gdSMU?.integrationTime  = intTime
         gdSMU?.voltage          = 0.0
         heater.integrationTime  = intTime
-        heater.voltage          = minHV
+        heater.voltage          = heaterV[0]
         sdSMU.integrationTime   = intTime
-        sdSMU.current           = minSI
+        sdSMU.current           = currents.first()
         sdSMU.averageMode       = AMode.MEAN_REPEAT
         sdSMU.averageCount      = avgCount
 
@@ -124,13 +114,13 @@ class TVCalibration : FMeasurement() {
 
         }
 
-        for (heaterVoltage in Range.linear(minHV, maxHV, numHV)) {
+        for (heaterVoltage in heaterV) {
 
             heater.voltage = heaterVoltage
             heater.turnOn()
             sleep(holdHV)
 
-            for (stripCurrent in Range.linear(minSI, maxSI, numSI)) {
+            for (stripCurrent in currents) {
 
                 sdSMU.current = stripCurrent
                 sdSMU.turnOn()

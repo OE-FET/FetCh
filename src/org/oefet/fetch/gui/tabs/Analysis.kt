@@ -6,8 +6,7 @@ import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.analysis.*
 import org.oefet.fetch.analysis.Analysis
-import org.oefet.fetch.quantities.Device
-import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.quantities.*
 import kotlin.reflect.KClass
 
 object Analysis : BorderDisplay("Analysis") {
@@ -34,17 +33,31 @@ object Analysis : BorderDisplay("Analysis") {
         )
 
         sidebar.add(
-            TemperatureAnalysis,
+            HallAnalysis,
+            "Hall Analysis",
+            "Plot quantities in ways useful for Hall analysis",
+            Icon.MAGNET.blackImage
+        )
+
+        sidebar.add(
+            SingleParameterAnalysis(Temperature(0.0, 0.0)),
             "Temperature Only",
             "Plot everything against temperature with no splitting",
             Icon.THERMOMETER.blackImage
         )
 
         sidebar.add(
-            HallAnlysis,
-            "Hall Analysis",
-            "Plot quantities in ways useful for Hall analysis",
-            Icon.MAGNET.blackImage
+            SingleParameterAnalysis(Time(0.0, 0.0)),
+            "Time Only",
+            "Plot everything against time with no splitting",
+            Icon.CLOCK.blackImage
+        )
+
+        sidebar.add(
+            SingleParameterAnalysis(Repeat(0.0)),
+            "Repeat Only",
+            "Plot everything against repeat number with no splitting",
+            Icon.REPEAT.blackImage
         )
 
         sidebar.select(0)
