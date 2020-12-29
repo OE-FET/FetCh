@@ -14,9 +14,9 @@ import java.lang.Exception
 
 class VSync : FMeasurement() {
 
-    override val type = "Sync"
+    override val type = "VSync"
 
-    private val label   = StringParameter("Basic", "Label", null, "Sync")
+    private val label        = StringParameter("Basic", "Label", null, "Sync")
     private val paramIntTime = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val paramDelTime = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val paramMinVSD  = DoubleParameter("Source-Drain", "Start", "V", 0.0)
@@ -25,12 +25,12 @@ class VSync : FMeasurement() {
     private val paramSymVSD  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
     private val paramOffset  = DoubleParameter("Source-Gate", "Offset", "V", 0.0)
 
-    val gdSMUConfig = addInstrument("Ground Channel (SPA)", SMU::class.java)
-    val sdSMUConfig = addInstrument("Source-Drain Channel", SMU::class.java)
-    val sgSMUConfig = addInstrument("Source-Gate Channel", SMU::class.java)
-    val fpp1Config  = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
-    val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
-    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
+    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class.java)
+    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class.java)
+    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class.java)
+    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
+    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
+    private val tMeterConfig = addInstrument("Thermometer", TMeter::class.java)
 
     val intTime get() = paramIntTime.value
     val delTime get() = (paramDelTime.value * 1000).toInt()
