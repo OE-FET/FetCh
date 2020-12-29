@@ -3,7 +3,6 @@ package org.oefet.fetch
 import jisa.Util
 import jisa.control.Connection
 import jisa.gui.GUI
-import jisa.gui.ListDisplay
 import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.Splash
 import org.oefet.fetch.gui.tabs.Connections
@@ -14,7 +13,7 @@ fun main() {
     MainWindow.select(0)
     Splash.close()
 
-    val display = Connections.connectAllWithList() as ListDisplay<*>
+    val display = Connections.connectAllWithList()
     val numFailed = Connections.connections.count { it.status == Connection.Status.ERROR }
 
     when {
@@ -29,14 +28,11 @@ fun main() {
             MainWindow.select(Connections)
         }
 
-        else                             -> {
-            Util.sleep(1000)
-        }
+        else                             -> Util.sleep(1000)
 
     }
 
     display.close()
-
     MainWindow.show()
 
 }
