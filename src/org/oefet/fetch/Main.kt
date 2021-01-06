@@ -13,7 +13,7 @@ fun main() {
     MainWindow.select(0)
     Splash.close()
 
-    val display = Connections.connectAllWithList()
+    val display   = Connections.connectAllWithList()
     val numFailed = Connections.connections.count { it.status == Connection.Status.ERROR }
 
     when {
@@ -24,7 +24,7 @@ fun main() {
         }
 
         numFailed > 0                    -> {
-            GUI.errorAlert("%d instrument%s failed to connect!".format(numFailed, if (numFailed == 1) "" else "s"))
+            GUI.errorAlert("%d %s failed to connect!".format(numFailed, Util.pluralise("instrument", numFailed)))
             MainWindow.select(Connections)
         }
 
