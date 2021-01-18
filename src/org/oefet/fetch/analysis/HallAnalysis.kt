@@ -4,12 +4,12 @@ import jisa.experiment.Col
 import jisa.experiment.Combination
 import jisa.experiment.ResultList
 import jisa.gui.Plot
-import org.oefet.fetch.quantities.Device
-import org.oefet.fetch.quantities.Gate
-import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.quantities.Temperature
+import jisa.maths.fits.Fitting
 import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.quantities.*
 import java.util.*
+import kotlin.math.ln
+import kotlin.math.pow
 import kotlin.reflect.KClass
 
 object HallAnalysis : Analysis {
@@ -28,7 +28,6 @@ object HallAnalysis : Analysis {
             for ((paramIndex, parameter) in table.parameters.withIndex()) {
 
                 // If the quantity isn't varied or is not meant to be displayed as a number, then skip it
-                if (labels.containsKey(parameter::class)) continue
                 if (table.table.getUniqueValues(paramIndex).size < 2) continue
 
                 val splits     = LinkedList<Int>()
@@ -115,6 +114,42 @@ object HallAnalysis : Analysis {
             }
 
             tables += Analysis.Tabulated(listOf(Temperature(0.0, 0.0), Gate(0.0, 0.0), Device(0.0)), instance, table)
+
+        }
+
+        val halls = tables.find { it.quantity::class == HallCoefficient::class }
+
+        if (halls != null) {
+
+            val t0 = ResultList(Col("Gate", "V"), Col("Device"), Col("T0", "K"), Col("Error", "K"))
+            val r0 = ResultList(Col("Gate", "V"), Col("Device"), Col("RH0", "m^3/C"), Col("Error", "m^3/C"))
+            val n0 = ResultList(Col("Gate", "V"), Col("Device"), Col("Band-Like Carrier Density", "cm^-3"), Col("Error", "cm^-3"))
+
+            for ((device, devData) in halls.table.split(2)) {
+
+                for ((gate, data) in devData.split(1)) {
+
+                    val t025 = data.getColumns(0).map { v -> v.pow(-0.25) }
+                    val lnrh = data.getColumns(3).map { v -> ln(v) }
+                    val rh05 = data.getColumns(3).map { v -> v.pow(-0.5) }
+
+                    val fit1 = Fitting.linearFit(t025, lnrh)
+                    val fit2 = Fitting.linearFit(t025, rh05)
+                    val T0   = (0.5 * fit1.gradient).pow(4)
+                    val R0   = (fit2.intercept + fit2.gradient/(0.5 * fit1.gradient)).pow(-2)
+                    val N0   = ((100.0).pow(-3)) / (1.6e-19 * R0)
+
+                    t0.addData(gate, device, T0, 0.0)
+                    r0.addData(gate, device, R0, 0.0)
+                    n0.addData(gate, device, N0, 0.0)
+
+                }
+
+            }
+
+            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Device(0.0)), T0(0.0, 0.0), t0)
+            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Device(0.0)), UnscreenedHall(0.0, 0.0), r0)
+            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Device(0.0)), BandLikeDensity(0.0, 0.0), n0)
 
         }
 
