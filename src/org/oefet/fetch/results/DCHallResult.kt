@@ -78,11 +78,12 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
                 if (fit != null) {
 
-                    val hall = fit.gradient
-                    val hallE = fit.gradientError
-                    val density = 1e-6 / (1.6e-19 * hall)
-                    val densityE = sqrt((-1e-6 / (1.6e-19 * hall.pow(2))).pow(2) * hallE.pow(2))
+                    val hall       = fit.gradient
+                    val hallE      = fit.gradientError
+                    val density    = 1e-6 / (1.6e-19 * hall)
+                    val densityE   = sqrt((-1e-6 / (1.6e-19 * hall.pow(2))).pow(2) * hallE.pow(2))
                     val parameters = ArrayList<Quantity>(this.parameters)
+
                     parameters += Gate(gate, 0.0)
                     quantities += HallCoefficient(hall, hallE, parameters, possibleParameters)
                     quantities += CarrierDensity(density, densityE, parameters, possibleParameters)
@@ -97,11 +98,12 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
                 if (fit != null) {
 
-                    val hall  = fit.gradient
-                    val hallE = fit.gradientError
-                    val density = 1e-6 / (1.6e-19 * hall)
-                    val densityE = sqrt((-1e-6 / (1.6e-19 * hall.pow(2))).pow(2) * hallE.pow(2))
+                    val hall       = fit.gradient
+                    val hallE      = fit.gradientError
+                    val density    = 1e-6 / (1.6e-19 * hall)
+                    val densityE   = sqrt((-1e-6 / (1.6e-19 * hall.pow(2))).pow(2) * hallE.pow(2))
                     val parameters = ArrayList<Quantity>(this.parameters)
+
                     parameters += Gate(gate, 0.0)
                     quantities += HallCoefficient(hall, hallE, parameters, possibleParameters)
                     quantities += CarrierDensity(density, densityE, parameters, possibleParameters)
@@ -131,7 +133,8 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
                     val condError = conductivity.error
                     val mobility  = quantity.value * condValue * 100.0 * 10000.0
                     val error     = mobility * sqrt((quantity.error / quantity.value).pow(2) + (condError / condValue).pow(2))
-                    extras       += HallMobility(mobility, error, parameters)
+
+                    extras += HallMobility(mobility, error, parameters)
 
                 }
 

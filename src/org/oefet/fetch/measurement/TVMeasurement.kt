@@ -14,7 +14,7 @@ import org.oefet.fetch.gui.tabs.Connections
 import java.util.*
 import kotlin.Exception
 
-class TVMeasurement : FMeasurement() {
+class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
 
     companion object {
 
@@ -32,9 +32,6 @@ class TVMeasurement : FMeasurement() {
 
     }
 
-    override val type = "Thermal Voltage"
-
-    private val label           = StringParameter("Basic", "Name", null, "TV")
     private val intTimeParam    = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val avgCountParam   = IntegerParameter("Basic", "Averaging Count", null, 1)
     private val heaterVParam    = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
@@ -164,10 +161,6 @@ class TVMeasurement : FMeasurement() {
         runRegardless { tvMeter?.turnOff() }
     }
 
-    override fun getLabel() = label.value
-
-    override fun getName()  = "Thermal Voltage Measurement"
-
     override fun getColumns(): Array<Col> {
 
         return arrayOf(
@@ -184,10 +177,6 @@ class TVMeasurement : FMeasurement() {
             Col("Thermal Current", "A")
         )
 
-    }
-
-    override fun setLabel(value: String?) {
-        label.value = value
     }
 
     override fun onInterrupt() {

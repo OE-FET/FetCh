@@ -10,11 +10,8 @@ import jisa.experiment.ResultTable
 import jisa.maths.Range
 import java.util.*
 
-class TVCalibration : FMeasurement() {
+class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 
-    override val type = "Thermal Voltage Calibration"
-
-    val label         = StringParameter("Basic", "Name", null, "TVC")
     val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     val avgCountParam = IntegerParameter("Basic", "Averaging Count", null,1)
     val probeParam    = IntegerParameter("Basic", "Strip Number", null, 0)
@@ -149,14 +146,6 @@ class TVCalibration : FMeasurement() {
         runRegardless { sdSMU?.turnOff() }
     }
 
-    override fun getLabel(): String {
-        return label.value
-    }
-
-    override fun getName(): String {
-        return "Thermal Voltage Calibration Measurement"
-    }
-
     companion object {
         const val SET_HEATER_VOLTAGE = 0
         const val SET_STRIP_CURRENT  = 1
@@ -181,10 +170,6 @@ class TVCalibration : FMeasurement() {
             Col("Strip Current", "A"),
             Col("Temperature", "K")
         )
-    }
-
-    override fun setLabel(value: String?) {
-        label.value = value
     }
 
     override fun onInterrupt() {

@@ -10,11 +10,8 @@ import jisa.gui.Configurator
 import jisa.maths.Range
 import org.oefet.fetch.gui.tabs.Connections
 
-class Conductivity : FMeasurement() {
+class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
-    override val type = "FPP Conductivity"
-
-    private val labelParam   = StringParameter("Basic", "Name", null, "Cond")
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 1.0)
     private val currentParam = RangeParameter("Source-Drain", "Current", "A", -10e-6, +10e-6, 11, Range.Type.LINEAR, 1)
@@ -35,14 +32,6 @@ class Conductivity : FMeasurement() {
     val symI     get() = symIParam.value
     val holdG    get() = holdGParam.value
     val gateV    get() = gateVParam.value
-
-    override fun setLabel(value: String?) {
-        labelParam.value = value
-    }
-
-    override fun getLabel(): String {
-        return labelParam.value
-    }
 
     override fun loadInstruments() {
 
@@ -135,8 +124,6 @@ class Conductivity : FMeasurement() {
         runRegardless { fpp2?.turnOff() }
 
     }
-
-    override fun getName(): String = "Conductivity Measurement"
 
     override fun getColumns(): Array<Col> = arrayOf(
         Col("SD Voltage", "V"),

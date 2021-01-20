@@ -14,11 +14,8 @@ import java.util.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class ACHall : FMeasurement() {
+class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
-    override val type: String = "AC Hall"
-
-    private val label          = StringParameter("Basic", "Name", null, "ACHall")
     private val intTimeParam   = DoubleParameter("Basic", "Integration Time", "s", 100.0)
     private val delTimeParam   = DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
     private val repeatsParam   = IntegerParameter("Basic", "Repeats", null, 600)
@@ -209,10 +206,6 @@ class ACHall : FMeasurement() {
 
     }
 
-    override fun getLabel(): String = label.value
-
-    override fun getName(): String = "AC Hall Measurement"
-
     override fun getColumns(): Array<Col> {
 
         return arrayOf(
@@ -231,10 +224,6 @@ class ACHall : FMeasurement() {
             Col("Temperature", "K")
         )
 
-    }
-
-    override fun setLabel(value: String?) {
-        label.value = value
     }
 
     override fun onInterrupt() {

@@ -2,10 +2,11 @@ package org.oefet.fetch.measurement
 
 import jisa.devices.*
 import jisa.experiment.Measurement
+import kotlin.reflect.KClass
 
-abstract class FMeasurement : Measurement() {
+abstract class FMeasurement(private val name: String, private val label: String, val type: String) : Measurement() {
 
-    abstract val type: String
+    private val labelProperty = StringParameter("Basic", "Name", null, label);
 
     protected var gdSMU: SMU?         = null
     protected var sdSMU: SMU?         = null
@@ -41,6 +42,22 @@ abstract class FMeasurement : Measurement() {
 
         super.start()
 
+    }
+
+    override fun getName(): String {
+        return this.name
+    }
+
+    override fun getLabel(): String {
+        return labelProperty.value
+    }
+
+    override fun setLabel(value: String) {
+        labelProperty.value = value
+    }
+
+    fun <I: Instrument> addInstrument(name: String, type: KClass<I>): Configuration<I> {
+        return addInstrument(name, type.java)
     }
 
 }

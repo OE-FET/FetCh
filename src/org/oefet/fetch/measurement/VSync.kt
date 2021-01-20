@@ -12,11 +12,8 @@ import jisa.maths.Range
 import org.oefet.fetch.gui.tabs.Connections
 import java.lang.Exception
 
-class VSync : FMeasurement() {
+class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
-    override val type = "VSync"
-
-    private val label        = StringParameter("Basic", "Label", null, "Sync")
     private val paramIntTime = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val paramDelTime = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val paramMinVSD  = DoubleParameter("Source-Drain", "Start", "V", 0.0)
@@ -135,10 +132,6 @@ class VSync : FMeasurement() {
 
     }
 
-    override fun getLabel(): String = label.value
-
-    override fun getName(): String = "Synced Voltage Measurement"
-
     override fun getColumns(): Array<Col> {
 
         return arrayOf(
@@ -154,10 +147,6 @@ class VSync : FMeasurement() {
             Col("Ground Current", "A")
         )
 
-    }
-
-    override fun setLabel(value: String?) {
-        label.value = value
     }
 
     override fun onInterrupt() {

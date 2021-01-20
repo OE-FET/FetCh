@@ -11,12 +11,9 @@ import jisa.gui.Configurator
 import jisa.maths.Range
 import org.oefet.fetch.gui.tabs.Connections
 
-class Output : FMeasurement() {
-
-    override val type = "Output"
+class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     // Measurement Parameters
-    private val label = StringParameter("Basic", "Label", null, "Output")
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 61, Range.Type.LINEAR, 1)
@@ -124,14 +121,6 @@ class Output : FMeasurement() {
         runRegardless { fpp2?.turnOff() }
 
     }
-
-    override fun setLabel(value: String?) {
-        label.value = value
-    }
-
-    override fun getLabel(): String = label.value
-
-    override fun getName(): String = "Output Measurement"
 
     override fun getColumns(): Array<Col> {
 

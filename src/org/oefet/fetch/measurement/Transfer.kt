@@ -12,11 +12,8 @@ import jisa.maths.Range
 import org.oefet.fetch.gui.tabs.Connections
 import java.lang.Exception
 
-class Transfer : FMeasurement() {
+class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
 
-    override val type = "Transfer"
-
-    private val label        = StringParameter("Basic", "Label", null, "Transfer")
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 7, Range.Type.LINEAR, 1)
@@ -123,14 +120,6 @@ class Transfer : FMeasurement() {
         runRegardless { fpp2?.turnOff() }
 
     }
-
-    override fun setLabel(value: String?) {
-        label.value = value
-    }
-
-    override fun getLabel(): String = label.value
-
-    override fun getName(): String = "Transfer Measurement"
 
     override fun getColumns(): Array<Col> {
 
