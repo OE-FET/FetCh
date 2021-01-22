@@ -1,6 +1,6 @@
 package org.oefet.fetch.gui.inputs
 
-import jisa.devices.TC
+import jisa.devices.interfaces.TC
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.Configurator

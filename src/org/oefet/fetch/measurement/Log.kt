@@ -2,7 +2,8 @@ package org.oefet.fetch.measurement
 
 import jisa.control.Connection
 import jisa.control.RTask
-import jisa.devices.*
+import jisa.devices.interfaces.*
+import jisa.devices.Configuration
 import jisa.experiment.Col
 import jisa.experiment.ResultStream
 import jisa.experiment.ResultTable

@@ -1,8 +1,8 @@
 package org.oefet.fetch.measurement
 
 import jisa.control.PIDController
-import jisa.devices.DCPower
-import jisa.devices.LockIn
+import jisa.devices.interfaces.DCPower
+import jisa.devices.interfaces.LockIn
 
 class FControl(private val lockIn: LockIn, private val dcPower: DCPower) : PIDController(100,  lockIn::getFrequency, dcPower::setCurrent) {
 

@@ -1,6 +1,7 @@
 package org.oefet.fetch.measurement
 
-import jisa.devices.*
+import jisa.devices.interfaces.*
+import jisa.devices.Configuration
 import jisa.experiment.Measurement
 import kotlin.reflect.KClass
 

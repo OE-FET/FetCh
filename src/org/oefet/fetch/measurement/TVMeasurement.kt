@@ -2,9 +2,9 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.Util.runRegardless
-import jisa.devices.SMU
-import jisa.devices.TMeter
-import jisa.devices.VMeter
+import jisa.devices.interfaces.SMU
+import jisa.devices.interfaces.TMeter
+import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable

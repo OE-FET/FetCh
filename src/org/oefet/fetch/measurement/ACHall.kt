@@ -1,7 +1,8 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util.runRegardless
-import jisa.devices.*
+import jisa.devices.interfaces.*
+import jisa.devices.Configuration
 import jisa.enums.Coupling
 import jisa.enums.Input
 import jisa.experiment.Col

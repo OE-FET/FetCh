@@ -1,9 +1,9 @@
 package org.oefet.fetch.gui.tabs
 
-import jisa.devices.EMController
-import jisa.devices.LevelMeter
-import jisa.devices.TMeter
-import jisa.devices.VMeter
+import jisa.devices.interfaces.EMController
+import jisa.devices.interfaces.LevelMeter
+import jisa.devices.interfaces.TMeter
+import jisa.devices.interfaces.VMeter
 import jisa.enums.Icon
 import jisa.gui.ConnectorGrid
 import org.oefet.fetch.Settings
