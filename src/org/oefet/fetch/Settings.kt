@@ -20,5 +20,6 @@ object Settings : ConfigFile("FetCh") {
     val tempConfig        = subBlock("tempConfig")
     val tempSingleBasic   = subBlock("tempSingleBasic")
     val tempSingleConfig  = subBlock("tempSingleConfig")
+    val dashboard         = subBlock("dashboard")
 
 }

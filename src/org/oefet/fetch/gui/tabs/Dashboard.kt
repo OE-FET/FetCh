@@ -4,6 +4,7 @@ import jisa.enums.Icon
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.gui.*
+import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.measurement.Log
 import kotlin.collections.ArrayList
@@ -88,10 +89,12 @@ object Dashboard : Grid("Dashboard", 3) {
 
             }
 
-            plots.add(plot)
-            shown.add(true)
+            val show = !Settings.dashboard.hasValue(plot.title) || Settings.dashboard.booleanValue(plot.title).get()
 
-            add(plot)
+            plots.add(plot)
+            shown.add(show)
+
+            if (show) add(plot)
 
         }
 
@@ -125,15 +128,21 @@ object Dashboard : Grid("Dashboard", 3) {
         if (grid.showAsConfirmation()) {
 
             clear()
+            Settings.dashboard.clear()
 
             for ((i, field) in ticks.withIndex()) {
+
                 shown[i] = field.value
+
+                Settings.dashboard.booleanValue(plots[i].title).set(field.value)
 
                 if (field.value) {
                     add(plots[i])
                 }
 
             }
+
+            Settings.dashboard.save()
 
         }
 
