@@ -9,19 +9,19 @@ abstract class FMeasurement(private val name: String, private val label: String,
 
     private val labelProperty = StringParameter("Basic", "Name", null, label);
 
-    protected var gdSMU: SMU?         = null
-    protected var sdSMU: SMU?         = null
-    protected var sgSMU: SMU?         = null
-    protected var lockIn: DPLockIn?   = null
-    protected var preAmp: VPreAmp?    = null
-    protected var dcPower: DCPower?   = null
-    protected var tMeter: TMeter?     = null
+    protected var gdSMU:    SMU?      = null
+    protected var sdSMU:    SMU?      = null
+    protected var sgSMU:    SMU?      = null
+    protected var lockIn:   DPLockIn? = null
+    protected var preAmp:   VPreAmp?  = null
+    protected var dcPower:  DCPower?  = null
+    protected var tMeter:   TMeter?   = null
     protected var fControl: FControl? = null
     protected var tControl: TC?       = null
-    protected var fpp1: VMeter?       = null
-    protected var fpp2: VMeter?       = null
-    protected var tvMeter: VMeter?    = null
-    protected var heater: SMU?        = null
+    protected var fpp1:     VMeter?   = null
+    protected var fpp2:     VMeter?   = null
+    protected var tvMeter:  VMeter?   = null
+    protected var heater:   SMU?      = null
 
     /**
      * Checks that everything required for this measurement is present. Returns all missing instrument errors as
