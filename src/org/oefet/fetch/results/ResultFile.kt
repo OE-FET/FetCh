@@ -25,6 +25,7 @@ interface ResultFile {
     var temperature:  Double
     var repeat:       Double
     var stress:       Double
+    var field:        Double
 
     fun calculateHybrids(quantities: List<Quantity>) : List<Quantity>
 
@@ -57,6 +58,7 @@ interface ResultFile {
         temperature   = data.getAttribute("T")?.removeSuffix("K")?.toDouble() ?: Double.NaN
         repeat        = data.getAttribute("N")?.toDouble() ?: 0.0
         stress        = data.getAttribute("S")?.removeSuffix("s")?.toDouble() ?: 0.0
+        field         = data.getAttribute("B")?.removeSuffix("T")?.toDouble() ?: 0.0
 
         val intTime = data.getAttribute("Integration Time")?.removeSuffix("s")?.toDouble() ?: Double.NaN
         val delTime = data.getAttribute("Delay Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
@@ -73,6 +75,7 @@ interface ResultFile {
         parameters += Permittivity(permittivity, 0.0)
         parameters += Repeat(repeat)
         parameters += Time(stress, 0.0)
+        parameters += BField(field, 0.0)
 
         parameters += if (temperature.isFinite()) {
             Temperature(temperature, 0.0)

@@ -34,6 +34,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
     override var temperature:  Double = Double.NaN
     override var repeat:       Double = 0.0
     override var stress:       Double = 0.0
+    override var field:        Double = 0.0
 
     override val plot : Plot =  DCHallPlot(data)
 

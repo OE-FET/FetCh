@@ -41,6 +41,7 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
     override var temperature:  Double = Double.NaN
     override var repeat:       Double = 0.0
     override var stress:       Double = 0.0
+    override var field:        Double = 0.0
 
     override val plot : Plot
 
@@ -72,6 +73,10 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
         val rmsField     = data.getMean(RMS_FIELD)
         val voltages     = data.getColumns(X_VOLTAGE, Y_VOLTAGE).transpose()
         val currents     = data.getColumns(SD_CURRENT)
+
+        field = rmsField
+        parameters.removeIf { it is BField }
+        parameters += BField(field, 0.0)
 
         parameters += Frequency(data.getMean(FREQUENCY), 0.0, emptyList())
 

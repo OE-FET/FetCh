@@ -31,6 +31,7 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
     override var temperature:  Double = Double.NaN
     override var repeat:       Double = 0.0
     override var stress:       Double = 0.0
+    override var field:        Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,

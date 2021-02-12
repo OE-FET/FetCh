@@ -10,7 +10,7 @@ import jisa.gui.Tabs
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
 
-class TemperatureChange : Tabs("Temperature Change"), ActionInput {
+class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
     val basic       = Fields("Temperature Set-Points")
     val config      = Configurator<TC>("Temperature Controller", TC::class.java)
