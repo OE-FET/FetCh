@@ -39,13 +39,13 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
     override fun ask(queue: ActionQueue) {
 
-        config.loadFromConfig(Settings.tempSingleConfig)
+        config.loadFromConfig(Settings.tempConfig)
         basic.loadFromConfig(Settings.tempSingleBasic)
 
         if (showAsConfirmation()) {
 
             basic.writeToConfig(Settings.tempSingleBasic)
-            config.writeToConfig(Settings.tempSingleConfig)
+            config.writeToConfig(Settings.tempConfig)
 
             val temperature = temp.value
 
