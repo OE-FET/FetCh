@@ -101,19 +101,20 @@ object HallAnalysis : Analysis {
             val filtered     = quantities.filter { it::class == quantityClass }
             val instance     = filtered.first()
 
-            val table = ResultList(Col("Temperature", "K"), Col("Gate", "V"), Col("Device"), Col(instance.name, instance.unit), Col("${instance.name} Error", instance.unit))
+            val table = ResultList(Col("Temperature", "K"), Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col(instance.name, instance.unit), Col("${instance.name} Error", instance.unit))
 
             for (value in filtered) {
 
                 val temperature = value.parameters.find { it is Temperature } ?: continue
+                val frequency   = value.parameters.find { it is Frequency }
                 val gate        = value.parameters.find { it is Gate }
                 val device      = value.parameters.find { it is Device }
 
-                table.addData(temperature.value, gate?.value ?: 0.0, device?.value ?: 0.0, value.value, value.error)
+                table.addData(temperature.value, gate?.value ?: 0.0, frequency?.value ?: 0.0, device?.value ?: 0.0, value.value, value.error)
 
             }
 
-            tables += Analysis.Tabulated(listOf(Temperature(0.0, 0.0), Gate(0.0, 0.0), Device(0.0)), instance, table)
+            tables += Analysis.Tabulated(listOf(Temperature(0.0, 0.0), Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), instance, table)
 
         }
 
@@ -121,35 +122,39 @@ object HallAnalysis : Analysis {
 
         if (halls != null) {
 
-            val t0 = ResultList(Col("Gate", "V"), Col("Device"), Col("T0", "K"), Col("Error", "K"))
-            val r0 = ResultList(Col("Gate", "V"), Col("Device"), Col("RH0", "m^3/C"), Col("Error", "m^3/C"))
-            val n0 = ResultList(Col("Gate", "V"), Col("Device"), Col("Band-Like Carrier Density", "cm^-3"), Col("Error", "cm^-3"))
+            val t0 = ResultList(Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col("T0", "K"), Col("Error", "K"))
+            val r0 = ResultList(Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col("RH0", "m^3/C"), Col("Error", "m^3/C"))
+            val n0 = ResultList(Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col("Band-Like Carrier Density", "cm^-3"), Col("Error", "cm^-3"))
 
-            for ((device, devData) in halls.table.split(2)) {
+            for ((device, devData) in halls.table.split(3)) {
 
-                for ((gate, data) in devData.split(1)) {
+                for ((gate, gateData) in devData.split(1)) {
 
-                    val t025 = data.getColumns(0).map { v -> v.pow(-0.25) }
-                    val lnrh = data.getColumns(3).map { v -> ln(v) }
-                    val rh05 = data.getColumns(3).map { v -> v.pow(-0.5) }
+                    for ((frequency, data) in gateData.split(2)) {
 
-                    val fit1 = Fitting.linearFit(t025, lnrh)
-                    val fit2 = Fitting.linearFit(t025, rh05)
-                    val T0   = (0.5 * fit1.gradient).pow(4)
-                    val R0   = (fit2.intercept + fit2.gradient/(0.5 * fit1.gradient)).pow(-2)
-                    val N0   = ((100.0).pow(-3)) / (1.6e-19 * R0)
+                        val t025 = data.getColumns(0).map { v -> v.pow(-0.25) }
+                        val lnrh = data.getColumns(4).map { v -> ln(v) }
+                        val rh05 = data.getColumns(4).map { v -> v.pow(-0.5) }
 
-                    t0.addData(gate, device, T0, 0.0)
-                    r0.addData(gate, device, R0, 0.0)
-                    n0.addData(gate, device, N0, 0.0)
+                        val fit1 = Fitting.linearFit(t025, lnrh) ?: continue
+                        val fit2 = Fitting.linearFit(t025, rh05) ?: continue
+                        val T0 = (0.5 * fit1.gradient).pow(4)
+                        val R0 = (fit2.intercept + fit2.gradient / (0.5 * fit1.gradient)).pow(-2)
+                        val N0 = ((100.0).pow(-3)) / (1.6e-19 * R0)
+
+                        t0.addData(gate, frequency, device, T0, 0.0)
+                        r0.addData(gate, frequency, device, R0, 0.0)
+                        n0.addData(gate, frequency, device, N0, 0.0)
+
+                    }
 
                 }
 
             }
 
-            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Device(0.0)), T0(0.0, 0.0), t0)
-            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Device(0.0)), UnscreenedHall(0.0, 0.0), r0)
-            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Device(0.0)), BandLikeDensity(0.0, 0.0), n0)
+            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), T0(0.0, 0.0), t0)
+            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), UnscreenedHall(0.0, 0.0), r0)
+            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), BandLikeDensity(0.0, 0.0), n0)
 
         }
 

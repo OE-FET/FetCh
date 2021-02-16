@@ -22,7 +22,6 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix? = null, faraday: Real
             .setName("Vector Subtracted")
             .polyFit(1)
             .watch(data, SD_CURRENT, HALL_VOLTAGE, HALL_ERROR)
-            .split(ACHall.FREQUENCY, "VS (f = %s Hz)")
 
         if (optimised != null) {
 
@@ -30,7 +29,6 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix? = null, faraday: Real
                 .setName("Phase Optimised")
                 .polyFit(1)
                 .addPoints(data.getColumns(SD_CURRENT), optimised, data.getColumns(HALL_ERROR))
-                .split(ACHall.FREQUENCY, "PO (f = %s Hz)")
 
         }
 
@@ -41,7 +39,6 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix? = null, faraday: Real
                 .setMarkerVisible(false)
                 .setLineDash(DASHED)
                 .addPoints(data.getColumns(SD_CURRENT), faraday)
-                .split(ACHall.FREQUENCY, "VF (f = %s Hz)")
 
         }
 

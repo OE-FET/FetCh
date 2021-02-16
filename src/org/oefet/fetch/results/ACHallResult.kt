@@ -82,6 +82,7 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
         var minVolts: RealMatrix? = null
         var minParam              = Double.POSITIVE_INFINITY
+        var minTheta              = 0.0
 
         // Find the rotation that minimises the minimisation parameter |m_y/m_x|
         for (theta in Range.linear(0, PI, 101)) {
@@ -94,9 +95,12 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
             if (param < minParam) {
                 minParam = param
                 minVolts = if (reFit.gradient > 0) rotated else rotated * -1.0
+                minTheta = theta
             }
 
         }
+
+        parameters.add(HallPhase(minTheta, 0.0, parameters, possibleParameters))
 
         // Calculate error weightings
         val hallErrors = data.getColumns(X_ERROR, Y_ERROR).rowQuadratures
