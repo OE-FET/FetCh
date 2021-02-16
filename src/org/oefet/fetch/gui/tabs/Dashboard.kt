@@ -1,5 +1,8 @@
 package org.oefet.fetch.gui.tabs
 
+import jisa.control.Connection
+import jisa.devices.interfaces.Instrument
+import jisa.devices.level.ILM200
 import jisa.enums.Icon
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
@@ -86,6 +89,15 @@ object Dashboard : Grid("Dashboard", 3) {
                     .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
 
                 fullPlot.show()
+
+            }
+
+            if (log.getName(i).contains("ILM200")) {
+
+                plot.addToolbarMenuButton("Sample Rate").apply {
+                    addItem("Fast") {(Connection.getConnectionsByTarget(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, true)}
+                    addItem("Slow") {(Connection.getConnectionsByTarget(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, false)}
+                }
 
             }
 
