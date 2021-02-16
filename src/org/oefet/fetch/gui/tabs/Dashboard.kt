@@ -95,8 +95,8 @@ object Dashboard : Grid("Dashboard", 3) {
             if (log.getName(i).contains("ILM200")) {
 
                 plot.addToolbarMenuButton("Sample Rate").apply {
-                    addItem("Fast") {(Connection.getConnectionsByTarget(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, true)}
-                    addItem("Slow") {(Connection.getConnectionsByTarget(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, false)}
+                    addItem("Fast") {(Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, true)}
+                    addItem("Slow") {(Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, false)}
                 }
 
             }
