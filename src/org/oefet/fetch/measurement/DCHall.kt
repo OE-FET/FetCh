@@ -20,6 +20,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 1.0 / 50.0)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
+    private val repTimeParam = DoubleParameter("Basic", "Repeat Time", "s", 0.0)
     private val fieldParam   = RangeParameter("Magnet", "Field", "T", -1.0, +1.0, 11, Range.Type.LINEAR, 1)
     private val currentParam = RangeParameter("Source-Drain", "Current", "A", -50e-6, +50e-6, 11, Range.Type.LINEAR, 1)
     private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
@@ -27,6 +28,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     // Getters to quickly retrieve parameter values
     private val intTime  get() = intTimeParam.value
     private val delTime  get() = (1e3 * delTimeParam.value).toInt()
+    private val repTime  get() = (1e3 * repTimeParam.value).toInt()
     private val repeats  get() = repeatsParam.value
     private val fields   get() = fieldParam.value
     private val currents get() = currentParam.value
@@ -39,6 +41,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class)
     private val hvm1Config   = addInstrument("Hall Voltmeter 1", VMeter::class)
     private val hvm2Config   = addInstrument("Hall Voltmeter 2", VMeter::class)
+    private val fpp1Config   = addInstrument("Four-Point Probe 1", VMeter::class)
+    private val fpp2Config   = addInstrument("Four-Point Probe 2", VMeter::class)
     private val tMeterConfig = addInstrument("Thermometer", TMeter::class)
 
     private var hvm1:   VMeter?       = null
@@ -55,6 +59,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         sgSMU  = sgSMUConfig.get()
         hvm1   = hvm1Config.get()
         hvm2   = hvm2Config.get()
+        fpp1   = fpp1Config.get()
+        fpp2   = fpp2Config.get()
         tMeter = tMeterConfig.get()
         magnet = magnetConfig.get()
 
@@ -149,11 +155,14 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     val hvm2Values = Array(repeats) { 0.0 }
 
                     repeat(repeats) { n ->
+                        sleep(repTime)
                         hvm1Values[n] = hvm1?.voltage ?: Double.NaN
                         hvm2Values[n] = hvm2?.voltage ?: Double.NaN
                     }
 
                     results.addData(
+                        current,
+                        gate,
                         sdSMU.voltage,                       // Source-Drain Voltage
                         current,                             // Source-Drain Current
                         gate,                                // Source-Gate Voltage
@@ -163,6 +172,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                         hvm1Values.stdDeviation(),           // Hall voltage 1 error (std. deviation)
                         hvm2Values.average(),                // Hall voltage 2 value (mean)
                         hvm2Values.stdDeviation(),           // Hall voltage 2 error (std. deviation)
+                        fpp1?.voltage ?: Double.NaN,         // FPP1
+                        fpp2?.voltage ?: Double.NaN,         // FPP2
                         tMeter?.temperature ?: Double.NaN    // Temperature
                     )
 
@@ -201,6 +212,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     override fun getColumns(): Array<Col> {
 
         return arrayOf(
+            Col("Set SD Current", "A"),
+            Col("Set SG Voltage", "V"),
             Col("SD Voltage", "V"),
             Col("SD Current", "A"),
             Col("SG Voltage", "V"),
@@ -210,7 +223,9 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
             Col("Hall Voltage 1 Error", "V"),
             Col("Hall Voltage 2", "V"),
             Col("Hall Voltage 2 Error", "V"),
-            Col("Temperature", "K")
+            Col("Temperature", "K"),
+            Col("Four-Point Probe 1", "V"),
+            Col("Four-Point Probe 2", "V")
         )
 
     }
@@ -235,16 +250,20 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     companion object {
 
-        const val SD_VOLTAGE   = 0
-        const val SD_CURRENT   = 1
-        const val SG_VOLTAGE   = 2
-        const val SG_CURRENT   = 3
-        const val FIELD        = 4
-        const val HALL_1       = 5
-        const val HALL_1_ERROR = 6
-        const val HALL_2       = 7
-        const val HALL_2_ERROR = 8
-        const val TEMPERATURE  = 9
+        const val SET_SD_CURRENT = 0
+        const val SET_SG_VOLTAGE = 1
+        const val SD_VOLTAGE     = 2
+        const val SD_CURRENT     = 3
+        const val SG_VOLTAGE     = 4
+        const val SG_CURRENT     = 5
+        const val FIELD          = 6
+        const val HALL_1         = 7
+        const val HALL_1_ERROR   = 8
+        const val HALL_2         = 9
+        const val HALL_2_ERROR   = 10
+        const val FPP_1          = 11
+        const val FPP_2          = 12
+        const val TEMPERATURE    = 13
 
     }
 

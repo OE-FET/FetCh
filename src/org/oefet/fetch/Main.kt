@@ -1,6 +1,7 @@
 package org.oefet.fetch
 
 import jisa.Util
+import jisa.addresses.TCPIPSocketAddress
 import jisa.control.Connection
 import jisa.gui.GUI
 import org.oefet.fetch.gui.MainWindow
@@ -8,6 +9,8 @@ import org.oefet.fetch.gui.Splash
 import org.oefet.fetch.gui.tabs.Connections
 
 fun main() {
+
+    println((TCPIPSocketAddress("192.168.0.2", 5025)).toString())
 
     Splash.show()
     MainWindow.select(0)

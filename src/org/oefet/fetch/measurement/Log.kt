@@ -34,8 +34,8 @@ object Log {
                 is MCSMU -> {
 
                     for (smu in inst.channels) {
-                        columns.add(Col("${inst.javaClass.simpleName} ${smu.channelName} Voltage", "V"))
-                        columns.add(Col("${inst.javaClass.simpleName} ${smu.channelName} Current", "A"))
+                        columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) ${smu.channelName} Voltage", "V"))
+                        columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) ${smu.channelName} Current", "A"))
                         logTasks.add { smu.voltage }
                         logTasks.add { smu.current }
                     }
@@ -44,8 +44,8 @@ object Log {
 
                 is SMU -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
-                    columns.add(Col("${inst.javaClass.simpleName} Current", "A"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Voltage", "V"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Current", "A"))
                     logTasks.add { inst.voltage }
                     logTasks.add { inst.current }
 
@@ -53,8 +53,8 @@ object Log {
 
                 is DCPower -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
-                    columns.add(Col("${inst.javaClass.simpleName} Current", "A"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Voltage", "V"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Current", "A"))
                     logTasks.add { inst.voltage }
                     logTasks.add { inst.current }
 
@@ -62,7 +62,7 @@ object Log {
 
                 is VMeter -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Voltage", "V"))
                     logTasks.add { inst.voltage }
 
                 }
@@ -70,12 +70,12 @@ object Log {
                 is MSMOTC -> {
 
                     for (tMeter in inst.sensors) {
-                        columns.add(Col("${inst.javaClass.simpleName} ${tMeter.sensorName} Temperature", "K"))
+                        columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) ${tMeter.sensorName} Temperature", "K"))
                         logTasks.add { tMeter.temperature }
                     }
 
                     for (tc in inst.outputs) {
-                        columns.add(Col("${inst.javaClass.simpleName} ${tc.outputName} Heater Power", "%"))
+                        columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) ${tc.outputName} Heater Power", "%"))
                         logTasks.add { tc.heaterPower }
                     }
 
@@ -84,19 +84,19 @@ object Log {
                 is MSTC -> {
 
                     for (tMeter in inst.sensors) {
-                        columns.add(Col("${inst.javaClass.simpleName} ${tMeter.sensorName} Temperature", "K"))
+                        columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) ${tMeter.sensorName} Temperature", "K"))
                         logTasks.add { tMeter.temperature }
                     }
 
-                    columns.add(Col("${inst.javaClass.simpleName} Heater Power", "%"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Heater Power", "%"))
                     logTasks.add { inst.heaterPower }
 
                 }
 
                 is TC -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} Temperature", "K"))
-                    columns.add(Col("${inst.javaClass.simpleName} Heater Power", "%"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Temperature", "K"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Heater Power", "%"))
                     logTasks.add { inst.temperature }
                     logTasks.add { inst.heaterPower }
 
@@ -104,16 +104,16 @@ object Log {
 
                 is TMeter -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} Temperature", "K"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Temperature", "K"))
                     logTasks.add { inst.temperature }
 
                 }
 
                 is DPLockIn -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} X Voltage", "V"))
-                    columns.add(Col("${inst.javaClass.simpleName} Y Voltage", "V"))
-                    columns.add(Col("${inst.javaClass.simpleName} Frequency", "Hz"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) X Voltage", "V"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Y Voltage", "V"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Frequency", "Hz"))
                     logTasks.add { inst.lockedX }
                     logTasks.add { inst.lockedY }
                     logTasks.add { inst.frequency }
@@ -122,8 +122,8 @@ object Log {
 
                 is LockIn -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} Voltage", "V"))
-                    columns.add(Col("${inst.javaClass.simpleName} Frequency", "Hz"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Voltage", "V"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Frequency", "Hz"))
                     logTasks.add { inst.lockedAmplitude }
                     logTasks.add { inst.frequency }
 
@@ -131,8 +131,8 @@ object Log {
 
                 is EMController -> {
 
-                    columns.add(Col("${inst.javaClass.simpleName} Current"))
-                    columns.add(Col("${inst.javaClass.simpleName} Field"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Current"))
+                    columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) Field"))
                     logTasks.add { inst.current }
                     logTasks.add { inst.field }
 
@@ -142,7 +142,7 @@ object Log {
 
                     for (meter in inst.channels) {
 
-                        columns.add(Col("${inst.javaClass.simpleName} ${meter.getChannelName(0)} Level"))
+                        columns.add(Col("${connection.name} (${inst.javaClass.simpleName}) ${meter.getChannelName(0)} Level"))
                         logTasks.add { meter.level }
 
                     }
