@@ -1,6 +1,9 @@
 package org.oefet.fetch.quantities
 
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 interface Quantity {
@@ -20,7 +23,7 @@ interface Quantity {
 
         for (type in toCheck) {
 
-            val thisParam  = this.parameters.find { it::class == type }
+            val thisParam = this.parameters.find { it::class == type }
             val otherParam = other.parameters.find { it::class == type }
 
             if (thisParam == null && otherParam == null) {
@@ -37,28 +40,65 @@ interface Quantity {
 
     }
 
-    companion object {
 
-        fun parseValue(value: String): Quantity? {
-
-            val parts = value.split(" ")
-
-            if (parts.size < 2) return null
-
-            return when (parts[1]) {
-
-                "K"   -> Temperature(parts[0].toDouble(), 0.0)
-                "Hz"  -> Frequency(parts[0].toDouble(), 0.0)
-                "s"   -> Time(parts[0].toDouble(), 0.0)
-                "T"   -> RMSField(parts[0].toDouble(), 0.0)
-                "rep" -> Repeat(parts[0].toDouble())
-                else  -> null
-
-            }
-
-        }
-
+    operator fun plus(other: Quantity): SimpleQuantity {
+        return SimpleQuantity(value + other.value, sqrt(error.pow(2) + other.error.pow(2)))
     }
+
+    operator fun plus(other: Number) : SimpleQuantity {
+        return SimpleQuantity(value + other.toDouble(), error)
+    }
+
+    operator fun minus(other: Quantity): SimpleQuantity {
+        return SimpleQuantity(value - other.value, sqrt(error.pow(2) + other.error.pow(2)))
+    }
+
+    operator fun minus(other: Number) : SimpleQuantity {
+        return SimpleQuantity(value - other.toDouble(), error)
+    }
+
+    operator fun times(other: Quantity): SimpleQuantity {
+        return SimpleQuantity(
+            value * other.value,
+            abs(value * other.value) * sqrt((error / value).pow(2) + (other.value / other.error).pow(2))
+        )
+    }
+
+    operator fun times(other: Number) : SimpleQuantity {
+        return SimpleQuantity(value * other.toDouble(), error * other.toDouble())
+    }
+
+    operator fun div(other: Quantity): SimpleQuantity {
+        return SimpleQuantity(
+            value / other.value,
+            abs(value * other.value) * sqrt((error / value).pow(2) + (other.value / other.error).pow(2))
+        )
+    }
+
+    operator fun div(other: Number) : SimpleQuantity {
+        return SimpleQuantity(value / other.toDouble(), error / other.toDouble())
+    }
+
+    fun pow(power: Int): SimpleQuantity {
+        return SimpleQuantity(value.pow(power), abs(value.pow(power) * power * (error / value)))
+    }
+
+    fun pow(power: Double): SimpleQuantity {
+        return SimpleQuantity(value.pow(power), abs(value.pow(power) * power * (error / value)))
+    }
+
+}
+
+class SimpleQuantity(override val value: Double, override val error: Double) : Quantity {
+
+    constructor(quantity: Quantity) : this(quantity.value, quantity.error)
+
+    override val name = "Simple Quantity"
+    override val symbol = "x"
+    override val unit = "-"
+    override val parameters: List<Quantity> = emptyList()
+    override val possibleParameters: List<KClass<out Quantity>> = emptyList()
+    override val extra: Boolean = false
 
 }
 

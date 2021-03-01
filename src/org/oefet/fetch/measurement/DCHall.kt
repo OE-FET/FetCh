@@ -97,6 +97,12 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     }
 
+    override fun newResults(path: String?): ResultTable {
+        val results =  super.newResults(path)
+        results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
+        return results
+    }
+
     /**
      * The main bulk of the measurement control code
      */
@@ -116,7 +122,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         sgSMU?.turnOff()
         hvm1?.turnOff()
         hvm2?.turnOff()
-        magnet?.turnOff()
+        fpp1?.turnOff()
+        fpp2?.turnOff()
 
         // Set the integration time on everything
         gdSMU?.integrationTime = intTime
@@ -124,6 +131,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         sgSMU?.integrationTime = intTime
         hvm1?.integrationTime  = intTime
         hvm2?.integrationTime  = intTime
+        fpp1?.integrationTime  = intTime
+        fpp2?.integrationTime  = intTime
 
         // Set the initial values of voltage and current
         gdSMU?.voltage = 0.0
@@ -136,6 +145,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         sgSMU?.turnOn()
         hvm1?.turnOn()
         hvm2?.turnOn()
+        fpp1?.turnOn()
+        fpp2?.turnOn()
 
         for (gate in gates) {
 
@@ -202,6 +213,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         runRegardless { sgSMU?.turnOff() }
         runRegardless { hvm1?.turnOff() }
         runRegardless { hvm2?.turnOff() }
+        runRegardless { fpp1?.turnOff() }
+        runRegardless { fpp2?.turnOff() }
         runRegardless { magnet?.turnOff() }
 
     }
@@ -223,9 +236,9 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
             Col("Hall Voltage 1 Error", "V"),
             Col("Hall Voltage 2", "V"),
             Col("Hall Voltage 2 Error", "V"),
-            Col("Temperature", "K"),
             Col("Four-Point Probe 1", "V"),
-            Col("Four-Point Probe 2", "V")
+            Col("Four-Point Probe 2", "V"),
+            Col("Temperature", "K")
         )
 
     }

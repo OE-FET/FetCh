@@ -1,8 +1,10 @@
 package org.oefet.fetch.gui.elements
 
 import jisa.experiment.Combination
+import jisa.experiment.Result
 import jisa.experiment.ResultTable
 import jisa.gui.Series
+import org.oefet.fetch.SD_CURRENT
 import org.oefet.fetch.measurement.DCHall.Companion.FIELD
 import org.oefet.fetch.measurement.DCHall.Companion.HALL_1
 import org.oefet.fetch.measurement.DCHall.Companion.HALL_1_ERROR
@@ -10,50 +12,80 @@ import org.oefet.fetch.measurement.DCHall.Companion.HALL_2
 import org.oefet.fetch.measurement.DCHall.Companion.HALL_2_ERROR
 import org.oefet.fetch.measurement.DCHall.Companion.SET_SD_CURRENT
 import org.oefet.fetch.measurement.DCHall.Companion.SET_SG_VOLTAGE
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Voltage [V]") {
 
     init {
 
         isMouseEnabled = true
-        pointOrdering = Sort.ORDER_ADDED
+        pointOrdering  = Sort.ORDER_ADDED
 
-        val polyFit = createSeries()
-            .setName("Hall Voltage 1")
-            .setLineVisible(true)
-            .setMarkerVisible(true)
-            .watch(data, { it[FIELD] }, { it[HALL_1] }, { it[HALL_1_ERROR] })
-            .split({ Combination(it[SET_SD_CURRENT], it[SET_SG_VOLTAGE]) }, {
+        val noField = (data.getUniqueValues(FIELD).size == 0 && data.getUniqueValues(SET_SD_CURRENT).size > 0) || data.getAttribute("Field Sweep") == "false"
+
+        val xValue: (Result) -> Double = if (noField) {
+            xLabel = "Source-Drain Current [A]"
+            { it[SD_CURRENT] }
+        } else {
+            xLabel = "Field [T]"
+            { it[FIELD] }
+        }
+
+        val yValue: (Result) -> Double = {
+
+            if (it[HALL_1].isFinite() && it[HALL_2].isFinite()) {
+                it[HALL_2] - it[HALL_1]
+            } else if (it[HALL_1].isFinite()) {
+                it[HALL_1]
+            } else {
+                it[HALL_2]
+            }
+
+        }
+
+        val eValue: (Result) -> Double = {
+
+            if (it[HALL_1].isFinite() && it[HALL_2].isFinite()) {
+                sqrt(it[HALL_1_ERROR].pow(2) + it[HALL_2_ERROR].pow(2))
+            } else if (it[HALL_1].isFinite()) {
+                it[HALL_1_ERROR]
+            } else {
+                it[HALL_2_ERROR]
+            }
+
+        }
+
+        val splitter: (Result) -> Combination = if(noField) {
+            { Combination(it[SET_SG_VOLTAGE]) }
+        } else {
+            { Combination(it[SET_SD_CURRENT], it[SET_SG_VOLTAGE]) }
+        }
+
+        val splitNamer: (Result) -> String = if (noField) {
+
+            { "SG = %+.02e V".format(it[SET_SG_VOLTAGE]) }
+
+        } else {
+
+            {
 
                 if (it[SET_SG_VOLTAGE] != 0.0) {
-                    "1: SD = %+.02e A, SG = %+.02e V".format(it[SET_SD_CURRENT], it[SET_SG_VOLTAGE])
+                    "SD = %+.02e A, SG = %+.02e V".format(it[SET_SD_CURRENT], it[SET_SG_VOLTAGE])
                 } else {
-                    "1: SD = %+.02e A".format(it[SET_SD_CURRENT])
+                    "SD = %+.02e A".format(it[SET_SD_CURRENT])
                 }
 
-            })
-            .setMarkerShape(Series.Shape.CIRCLE)
-            .polyFit(1)
+            }
+
+        }
 
         createSeries()
+            .setName("Hall Voltage")
             .setLineVisible(true)
             .setMarkerVisible(true)
-            .watch(data, { it[FIELD] }, { it[HALL_2] }, { it[HALL_2_ERROR] })
-            .split(
-                { Combination(it[SET_SD_CURRENT], it[SET_SG_VOLTAGE]) },
-                {
-
-                    if (it[SET_SG_VOLTAGE] != 0.0) {
-                        "2: SD = %+.02e A, SG = %+.02e V".format(it[SET_SD_CURRENT], it[SET_SG_VOLTAGE])
-                    } else {
-                        "2: SD = %+.02e A".format(it[SET_SD_CURRENT])
-                    }
-
-                })
-            .setMarkerShape(Series.Shape.SQUARE)
-            .polyFit(1)
-
-        legendColumns = 2;
+            .watch(data, xValue, yValue, eValue)
+            .split(splitter, splitNamer).polyFit(1)
 
     }
 
