@@ -99,6 +99,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             action.setAfter {
                 it.data.finalise()
                 FileLoad.addData(it.data)
+                System.gc()
             }
 
         }

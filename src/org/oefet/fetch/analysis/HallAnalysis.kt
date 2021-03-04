@@ -94,14 +94,21 @@ object HallAnalysis : Analysis {
     private fun tabulate(quantities: List<Quantity>): List<Analysis.Tabulated> {
 
         val tables      = LinkedList<Analysis.Tabulated>()
-        val quantitySet = quantities.map { it::class }.toSet()
+        val quantitySet = quantities.map { it::class }.filter{ it != MConductivity::class }.toSet()
 
         for (quantityClass in quantitySet) {
 
             val filtered     = quantities.filter { it::class == quantityClass }
             val instance     = filtered.first()
 
-            val table = ResultList(Col("Temperature", "K"), Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col(instance.name, instance.unit), Col("${instance.name} Error", instance.unit))
+            val table = ResultList(
+                Col("Temperature", "K"),
+                Col("Gate", "V"),
+                Col("Frequency", "Hz"),
+                Col("Device"),
+                Col(instance.name, instance.unit),
+                Col("${instance.name} Error", instance.unit)
+            )
 
             for (value in filtered) {
 
@@ -117,6 +124,36 @@ object HallAnalysis : Analysis {
             tables += Analysis.Tabulated(listOf(Temperature(0.0, 0.0), Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), instance, table)
 
         }
+
+        val mConds = quantities.filter { it is MConductivity }
+        val table  = ResultList(
+            Col("Field", "T"),
+            Col("Temperature", "K"),
+            Col("Gate", "V"),
+            Col("Device"),
+            Col("Magneto-Conductivity", "S/cm"),
+            Col("Error", "S/cm")
+        )
+
+        for (value in mConds) {
+
+            val field       = value.parameters.find { it is BField } ?: continue
+            val temperature = value.parameters.find { it is Temperature }
+            val gate        = value.parameters.find { it is Gate }
+            val device      = value.parameters.find { it is Device }
+
+            table.addData(
+                field.value,
+                temperature?.value ?: 0.0,
+                gate?.value ?: 0.0,
+                device?.value ?: 0.0,
+                value.value,
+                value.error
+            )
+
+        }
+
+        tables += Analysis.Tabulated(listOf(BField(0.0, 0.0), Temperature(0.0, 0.0), Gate(0.0, 0.0), Device(0.0)), MConductivity(0.0,0.0), table)
 
         val halls = tables.find { it.quantity::class == HallCoefficient::class }
 

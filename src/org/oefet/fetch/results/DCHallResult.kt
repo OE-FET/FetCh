@@ -154,8 +154,10 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
                     val error      = condFit.gradientError * separation / (width * thickness) / 100.0
                     val parameters = ArrayList<Quantity>(parameters)
 
+                    parameters.removeIf { it is BField }
+
                     parameters    += BField(field, 0.0)
-                    quantities    += Conductivity(value, error, parameters, possibleParameters)
+                    quantities    += MConductivity(value, error, parameters, possibleParameters)
 
                 }
 
