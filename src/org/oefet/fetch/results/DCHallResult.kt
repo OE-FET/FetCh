@@ -62,6 +62,9 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
         for ((gate, data) in data.split(SG_VOLTAGE)) {
 
+            val parameters = ArrayList<Quantity>(parameters)
+            parameters += Gate(gate, 0.0)
+
             if (data.numRows < 2) {
                 continue;
             }
@@ -71,40 +74,61 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
             val fpp1 = data.find { !it[FPP_1].isFinite()  } == null
             val fpp2 = data.find { !it[FPP_2].isFinite()  } == null
 
-            val gradients = ResultList("Current", "Gradient", "Error")
+            if (data.getUniqueValues(FIELD).size > 1 && data.getUniqueValues(SET_SD_CURRENT).size > 1) {
 
-            for ((current, currData) in data.split(SET_SD_CURRENT)) {
+                val gradients = ResultList("Current", "Gradient", "Error")
+
+                for ((current, currData) in data.split(SET_SD_CURRENT)) {
+
+                    val hallVoltage = if (hvm1 && hvm2) {
+                        currData.getColumns(HALL_2) - currData.getColumns(HALL_1)
+                    } else if (hvm1) {
+                        currData.getColumns(HALL_1)
+                    } else {
+                        currData.getColumns(HALL_2)
+                    }
+
+                    val gradFit = Fitting.linearFit(currData.getColumns(FIELD), hallVoltage)
+
+                    if (gradFit != null) {
+                        gradients.addData(current, gradFit.gradient, gradFit.gradientError)
+                    }
+
+                }
+
+                val currFit = gradients.linearFit(0, 1)
+
+                if (currFit != null) {
+
+                    val hall    = currFit.gradient * thickness
+                    val hallE   = currFit.gradientError * thickness
+                    val hallQ   = HallCoefficient(hall, hallE, parameters, possibleParameters)
+                    val density = hallQ.pow(-1) * (100.0).pow(-3)  / 1.6e-19
+
+                    quantities += hallQ
+                    quantities += CarrierDensity(density.value, density.error, parameters, possibleParameters)
+
+                }
+
+            } else {
 
                 val hallVoltage = if (hvm1 && hvm2) {
-                    currData.getColumns(HALL_2) - currData.getColumns(HALL_1)
+                    data.getColumns(HALL_2) - data.getColumns(HALL_1)
                 } else if (hvm1) {
-                    currData.getColumns(HALL_1)
+                    data.getColumns(HALL_1)
                 } else {
-                    currData.getColumns(HALL_2)
+                    data.getColumns(HALL_2)
                 }
 
-                val gradFit = Fitting.linearFit(currData.getColumns(FIELD), hallVoltage)
+                val xValues = data.getColumns(SD_CURRENT).elementMultiply(data.getColumns(FIELD)) / thickness
+                val fit     = Fitting.linearFit(xValues, hallVoltage)
+                val hall    = fit.gradient
+                val hallE   = fit.gradientError
+                val hallQ   = HallCoefficient(hall, hallE, parameters, possibleParameters)
+                val density = hallQ.pow(-1) * (100.0).pow(-3)  / 1.6e-19
 
-                if (gradFit != null) {
-                    gradients.addData(current, gradFit.gradient, gradFit.gradientError)
-                }
-
-            }
-
-            val currFit = gradients.linearFit(0, 1)
-
-            if (currFit != null) {
-
-                val parameters = ArrayList<Quantity>(parameters)
-                parameters    += Gate(gate, 0.0)
-
-                val hall       = currFit.gradient * thickness
-                val hallE      = currFit.gradientError * thickness
-                val hallQ      = HallCoefficient(hall, hallE, parameters, possibleParameters)
-                val density    = hallQ.pow(-1) / 1.6e-19
-
-                quantities    += hallQ
-                quantities    += CarrierDensity(density.value, density.error, parameters, possibleParameters)
+                quantities += hallQ
+                quantities += CarrierDensity(density.value, density.error, parameters, possibleParameters)
 
             }
 
@@ -130,9 +154,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
                     val error      = condFit.gradientError * separation / (width * thickness) / 100.0
                     val parameters = ArrayList<Quantity>(parameters)
 
-                    parameters    += Gate(gate, 0.0)
                     parameters    += BField(field, 0.0)
-
                     quantities    += Conductivity(value, error, parameters, possibleParameters)
 
                 }
