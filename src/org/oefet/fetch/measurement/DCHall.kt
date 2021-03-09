@@ -8,15 +8,29 @@ import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.gui.Configurator
 import jisa.maths.Range
-import org.oefet.fetch.gui.tabs.Connections
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+/**
+ * Measurement class for DC Hall measurements. Running the measurement generally goes like this:
+ *
+ * 1.   FetCh GUI asks the measurement for all "Parameters" and "Instruments" it has configured, so that it can draw
+ *      the correct configuration window - these are defined at the top of this class and stored as private variables.
+ *      e.g. DoubleParameter(sectionName, parameterName, units, defaultValue)
+ * 2.   When it is time to run the measurement the loadInstruments() method is run first to load the instruments as
+ *      as graphically configured by the user in the GUI.
+ * 3.   Then checkForErrors() is run - if it returns anything other than an empty list of errors, the measurement will
+ *      just return an error and not run any further.
+ * 4.   A new ResultTable is generated based-off the columns returned by getColumns().
+ * 5.   The measurement code in run() is called, being handed the new ResultTable generated in step 4.
+ * 6.   The code in run() can either complete successfully, in error or be interrupted - if interrupted, the
+ *      onInterrupt() method is called.
+ * 7.   Regardless of how run() ended, the onFinish() method is then always called afterwards.
+ */
 class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
-    // Measurement parameters to ask user for
+    // Measurement parameters to ask user for when configuring measurement
     private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 1.0 / 50.0)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
@@ -24,15 +38,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val fieldParam   = RangeParameter("Magnet", "Field", "T", -1.0, +1.0, 11, Range.Type.LINEAR, 1)
     private val currentParam = RangeParameter("Source-Drain", "Current", "A", -50e-6, +50e-6, 11, Range.Type.LINEAR, 1)
     private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
-
-    // Getters to quickly retrieve parameter values
-    private val intTime  get() = intTimeParam.value
-    private val delTime  get() = (1e3 * delTimeParam.value).toInt()
-    private val repTime  get() = (1e3 * repTimeParam.value).toInt()
-    private val repeats  get() = repeatsParam.value
-    private val fields   get() = fieldParam.value
-    private val currents get() = currentParam.value
-    private val gates    get() = gateParam.value
 
     // Instrument configurations to ask user for
     private val magnetConfig = addInstrument("Magnet Controller", EMController::class)
@@ -45,9 +50,41 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val fpp2Config   = addInstrument("Four-Point Probe 2", VMeter::class)
     private val tMeterConfig = addInstrument("Thermometer", TMeter::class)
 
+    // Getters to quickly retrieve parameter values - nice-to-have but not necessary (just makes the code look cleaner)
+    private val intTime  get() = intTimeParam.value
+    private val delTime  get() = (1e3 * delTimeParam.value).toInt() // Convert to milliseconds
+    private val repTime  get() = (1e3 * repTimeParam.value).toInt() // Convert to milliseconds
+    private val repeats  get() = repeatsParam.value
+    private val fields   get() = fieldParam.value
+    private val currents get() = currentParam.value
+    private val gates    get() = gateParam.value
+
+    // Class variables/properties to hold onto hall voltmeters and em controller objects
     private var hvm1:   VMeter?       = null
     private var hvm2:   VMeter?       = null
     private var magnet: EMController? = null
+
+    /**
+     * Constants to refer to columns in this measurement's result table
+     */
+    companion object {
+
+        const val SET_SD_CURRENT = 0
+        const val SET_SG_VOLTAGE = 1
+        const val SD_VOLTAGE     = 2
+        const val SD_CURRENT     = 3
+        const val SG_VOLTAGE     = 4
+        const val SG_CURRENT     = 5
+        const val FIELD          = 6
+        const val HALL_1         = 7
+        const val HALL_1_ERROR   = 8
+        const val HALL_2         = 9
+        const val HALL_2_ERROR   = 10
+        const val FPP_1          = 11
+        const val FPP_2          = 12
+        const val TEMPERATURE    = 13
+
+    }
 
     /**
      * Loads/applies all the needed instrument configurations just before the measurement is run
@@ -67,7 +104,10 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     }
 
     /**
-     * Checks to see if anything is amiss before run(...) is called.
+     * Checks to see if anything is amiss before run(...) is called. If this returns anything other than an empty list
+     * the measurement will just return an error and not run. In this case, we are checking to make sure the needed
+     * instruments for the configured measurement are present (e.g. is there a source-gate channel if a gate sweep is
+     * configured - for instance).
      */
     override fun checkForErrors(): List<String> {
 
@@ -97,14 +137,34 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     }
 
-    override fun newResults(path: String?): ResultTable {
-        val results =  super.newResults(path)
-        results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
-        return results
+    /**
+     * Defines the structure of the result table for this measurement - i.e. it returns the columns that the results
+     * table should have.
+     */
+    override fun getColumns(): Array<Col> {
+
+        return arrayOf(
+            Col("Set SD Current", "A"),
+            Col("Set SG Voltage", "V"),
+            Col("SD Voltage", "V"),
+            Col("SD Current", "A"),
+            Col("SG Voltage", "V"),
+            Col("SG Current", "A"),
+            Col("Field Strength", "T"),
+            Col("Hall Voltage 1", "V"),
+            Col("Hall Voltage 1 Error", "V"),
+            Col("Hall Voltage 2", "V"),
+            Col("Hall Voltage 2 Error", "V"),
+            Col("Four-Point Probe 1", "V"),
+            Col("Four-Point Probe 2", "V"),
+            Col("Temperature", "K")
+        )
+
     }
 
     /**
-     * The main bulk of the measurement control code
+     * The main bulk of the measurement control code - this is where the measurement happens. Is passed the ResultTable -
+     * generated by using the columns returned by getColumns() above - as an argument.
      */
     override fun run(results: ResultTable) {
 
@@ -197,17 +257,21 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     }
 
     /**
-     * Code to run if the measurement is stopped before completion
+     * Code to run if the measurement is stopped before completion - this happens when the user presses "stop"
      */
     override fun onInterrupt() {
         Util.errLog.println("DC Hall Measurement Interrupted.")
     }
 
     /**
-     * Code that always runs after the measurement has finished
+     * Code that always runs after the measurement has finished - this will always run regardless of whether the
+     * measurement finished successfully, was interrupted or failed with an error. Generally used to make sure everything
+     * gets switched off etc.
      */
     override fun onFinish() {
 
+        // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
+        // failing would prevent the rest from running.
         runRegardless { sdSMU?.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { sgSMU?.turnOff() }
@@ -220,29 +284,19 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     }
 
     /**
-     * Defines the structure of the result table for this measurement
+     * Custom modification so that when a new result file is created, it records whether this measurement will be
+     * sweeping field or not - this is used by the plot to see whether it should plot against field or current. Normally
+     * overriding this is not needed.
      */
-    override fun getColumns(): Array<Col> {
-
-        return arrayOf(
-            Col("Set SD Current", "A"),
-            Col("Set SG Voltage", "V"),
-            Col("SD Voltage", "V"),
-            Col("SD Current", "A"),
-            Col("SG Voltage", "V"),
-            Col("SG Current", "A"),
-            Col("Field Strength", "T"),
-            Col("Hall Voltage 1", "V"),
-            Col("Hall Voltage 1 Error", "V"),
-            Col("Hall Voltage 2", "V"),
-            Col("Hall Voltage 2 Error", "V"),
-            Col("Four-Point Probe 1", "V"),
-            Col("Four-Point Probe 2", "V"),
-            Col("Temperature", "K")
-        )
-
+    override fun newResults(path: String?): ResultTable {
+        val results =  super.newResults(path)
+        results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
+        return results
     }
 
+    /**
+     * Custom extension to arrays of doubles for calculating standard deviation.
+     */
     private fun Array<out Double>.stdDeviation(): Double {
 
         if (size < 2) {
@@ -255,28 +309,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         for (value in this) sum += (value - mean).pow(2)
 
         return sqrt(sum / (size - 1))
-
-    }
-
-    /**
-     * Constants to refer to columns in this measurement's result table
-     */
-    companion object {
-
-        const val SET_SD_CURRENT = 0
-        const val SET_SG_VOLTAGE = 1
-        const val SD_VOLTAGE     = 2
-        const val SD_CURRENT     = 3
-        const val SG_VOLTAGE     = 4
-        const val SG_CURRENT     = 5
-        const val FIELD          = 6
-        const val HALL_1         = 7
-        const val HALL_1_ERROR   = 8
-        const val HALL_2         = 9
-        const val HALL_2_ERROR   = 10
-        const val FPP_1          = 11
-        const val FPP_2          = 12
-        const val TEMPERATURE    = 13
 
     }
 

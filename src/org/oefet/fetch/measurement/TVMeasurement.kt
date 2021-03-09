@@ -197,8 +197,8 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
 
                     }
 
-                    heater.turnOff()
-                    sleep(heaterHold)
+                    sgSMU?.turnOff()
+                    sleep(gateHold)
 
                 }
 
