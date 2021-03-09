@@ -30,10 +30,14 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
         const val THERMAL_VOLTAGE = 9
         const val THERMAL_CURRENT = 10
 
+        const val ORDER_GATE_HEATER = 0
+        const val ORDER_HEATER_GATE = 1
+
     }
 
     private val intTimeParam    = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val avgCountParam   = IntegerParameter("Basic", "Averaging Count", null, 1)
+    private val orderParam      = ChoiceParameter("Basic", "Sweep Order", 0, "Gate → Heater", "Heater → Gate")
     private val heaterVParam    = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
     private val symHVParam      = BooleanParameter("Heater", "Sweep Both Ways", null, false)
     private val heaterHoldParam = DoubleParameter("Heater", "Hold Time", "s", 60.0)
@@ -55,6 +59,7 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     val gates      get() = gateParam.value
     val symSGV     get() = symSGVParam.value
     val gateHold   get() = (gateHoldParam.value * 1000).toInt()
+    val order      get() = orderParam.value
 
     override fun loadInstruments() {
 
@@ -92,6 +97,11 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
         results.setAttribute("Averaging Count", avgCount.toString())
         results.setAttribute("Heater Hold Time", "$heaterHold ms")
         results.setAttribute("Gate Hold Time", "$gateHold ms")
+        results.setAttribute("Order", when (order) {
+            ORDER_HEATER_GATE -> "Heater:Gate"
+            ORDER_GATE_HEATER -> "Gate:Heater"
+            else              -> "Unknown"
+        })
 
         val heater  = this.heater!!
         val tvMeter = this.tvMeter!!
@@ -116,39 +126,87 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
 
         var count = 0.0
 
-        for (gateVoltage in gates) {
+        when (order) {
 
-            sgSMU?.voltage = gateVoltage
-            sgSMU?.turnOn()
+            ORDER_GATE_HEATER -> {
 
-            sleep(gateHold)
+                for (gateVoltage in gates) {
 
-            for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
+                    sgSMU?.voltage = gateVoltage
+                    sgSMU?.turnOn()
 
-                heater.voltage = heaterVoltage
-                heater.turnOn()
+                    sleep(gateHold)
 
-                sleep(heaterHold)
+                    for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
 
-                results.addData(
-                    count ++,
-                    gateVoltage,
-                    heaterVoltage,
-                    tMeter?.temperature ?: Double.NaN,
-                    sgSMU?.voltage ?: Double.NaN,
-                    sgSMU?.current ?: Double.NaN,
-                    heater.voltage,
-                    heater.current,
-                    tvMeter.voltage,
-                    if (tvMeter is SMU) tvMeter.current else Double.NaN
-                )
+                        heater.voltage = heaterVoltage
+                        heater.turnOn()
+
+                        sleep(heaterHold)
+
+                        results.addData(
+                            count ++,
+                            gateVoltage,
+                            heaterVoltage,
+                            tMeter?.temperature ?: Double.NaN,
+                            sgSMU?.voltage ?: Double.NaN,
+                            sgSMU?.current ?: Double.NaN,
+                            heater.voltage,
+                            heater.current,
+                            tvMeter.voltage,
+                            if (tvMeter is SMU) tvMeter.current else Double.NaN
+                        )
+
+                    }
+
+                    heater.turnOff()
+                    sleep(heaterHold)
+
+                }
 
             }
 
-            heater.turnOff()
-            sleep(heaterHold)
+            ORDER_HEATER_GATE -> {
+
+                for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
+
+                    heater.voltage = heaterVoltage
+                    heater.turnOn()
+
+                    sleep(heaterHold)
+
+                    for (gateVoltage in gates) {
+
+                        sgSMU?.voltage = gateVoltage
+                        sgSMU?.turnOn()
+
+                        sleep(gateHold)
+
+                        results.addData(
+                            count ++,
+                            gateVoltage,
+                            heaterVoltage,
+                            tMeter?.temperature ?: Double.NaN,
+                            sgSMU?.voltage ?: Double.NaN,
+                            sgSMU?.current ?: Double.NaN,
+                            heater.voltage,
+                            heater.current,
+                            tvMeter.voltage,
+                            if (tvMeter is SMU) tvMeter.current else Double.NaN
+                        )
+
+                    }
+
+                    heater.turnOff()
+                    sleep(heaterHold)
+
+                }
+
+            }
 
         }
+
+
 
         sgSMU?.turnOff()
 

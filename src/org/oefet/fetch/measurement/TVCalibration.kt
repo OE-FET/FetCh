@@ -14,7 +14,7 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
 
     val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     val avgCountParam = IntegerParameter("Basic", "Averaging Count", null,1)
-    val probeParam    = IntegerParameter("Basic", "Strip Number", null, 0)
+    val probeParam    = ChoiceParameter("Basic", "Strip", 0, "Left", "Right")
     val heaterVParam  = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
     val holdHVParam   = DoubleParameter("Heater", "Hold Time", "s", 60.0)
     val currParam     = RangeParameter("Resistive Thermometer", "Current", "A", 0.0, 100e-6, 11, Range.Type.LINEAR, 1)
