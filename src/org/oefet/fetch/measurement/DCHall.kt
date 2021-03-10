@@ -222,31 +222,32 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     sdSMU.current = current
                     sleep(delTime)
 
+                    // Create arrays to hold repeat values
                     val hvm1Values = Array(repeats) { 0.0 }
                     val hvm2Values = Array(repeats) { 0.0 }
 
                     // Take repeat measurements of Hall voltages
-                    repeat(repeats) { n ->
-                        sleep(repTime)
+                    for (n in 0 until repeats) {
                         hvm1Values[n] = hvm1?.voltage ?: Double.NaN
                         hvm2Values[n] = hvm2?.voltage ?: Double.NaN
+                        sleep(repTime)
                     }
 
                     results.addData(
-                        current,
-                        gate,
+                        current,                             // Source-Drain Current (Set Value)
+                        gate,                                // Source-Gate Voltage (Set Value)
                         sdSMU.voltage,                       // Source-Drain Voltage
-                        current,                             // Source-Drain Current
-                        gate,                                // Source-Gate Voltage
-                        sgSMU?.current ?: Double.NaN,        // Source-Gate Current - NaN if not being used
+                        sdSMU.current,                       // Source-Drain Current (Measured Value)
+                        sgSMU?.voltage ?: Double.NaN,        // Source-Gate Voltage (Measured Value) - NaN if not used
+                        sgSMU?.current ?: Double.NaN,        // Source-Gate Current - NaN if not used
                         magnet?.field ?: fields.first(),     // Magnetic field
                         hvm1Values.average(),                // Hall voltage 1 value (mean)
                         hvm1Values.stdDeviation(),           // Hall voltage 1 error (std. deviation)
                         hvm2Values.average(),                // Hall voltage 2 value (mean)
                         hvm2Values.stdDeviation(),           // Hall voltage 2 error (std. deviation)
-                        fpp1?.voltage ?: Double.NaN,         // FPP1 - NaN if not being used
-                        fpp2?.voltage ?: Double.NaN,         // FPP2 - NaN if not being used
-                        tMeter?.temperature ?: Double.NaN    // Temperature - NaN if not being used
+                        fpp1?.voltage ?: Double.NaN,         // FPP1 - NaN if not used
+                        fpp2?.voltage ?: Double.NaN,         // FPP2 - NaN if not used
+                        tMeter?.temperature ?: Double.NaN    // Temperature - NaN if not used
                     )
 
                 }

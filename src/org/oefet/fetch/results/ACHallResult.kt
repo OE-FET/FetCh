@@ -178,7 +178,7 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
                 val r0 = (incp2 + (grad2 / (grad1 * 0.5))).pow(-2)
                 val n0 = (r0 * 1.6e-19).pow(-1) * (100.0).pow(-3)
 
-                extras += T0(t0.value, t0.error, params, pParams)
+                extras += MottHoppingT0(t0.value, t0.error, params, pParams)
                 extras += UnscreenedHall(r0.value, r0.error, params, pParams)
                 extras += BandLikeDensity(n0.value, n0.error, params, pParams)
 

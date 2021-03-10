@@ -15,18 +15,40 @@ import kotlin.reflect.jvm.reflect
 
 object Measurements {
 
+    /**
+     * This is where each type of measurement is defined - specifying which classes are responsible for their running,
+     * processing of results and plotting of data - in the following format:
+     *
+     * Config("Label", ::Measurement, ::ResultFile, ::Plot)
+     *
+     * For instance:
+     *
+     * Config("Output", ::Output, ::OutputResult, ::OutputPlot)
+     *
+     * Breaking this down:
+     *
+     * - "Output" specifies that csv files of this measurement type are labelled with the text "Output" in their attributes line to identify them
+     * - ::Output specifies that to run a new measurement of this type, an Output object should be created
+     * - ::OutputResult specifies that results of this type of measurement are handled by OutputResult objects
+     * - ::OutputPlot specifies that to display data from this type of measurement an OutputPlot object should be created
+     */
     val types = listOf(
         Config("Output",                      ::Output,        ::OutputResult,   ::OutputPlot),
         Config("Transfer",                    ::Transfer,      ::TransferResult, ::TransferPlot),
         Config("Sync",                        ::VSync,         ::TransferResult, ::SyncPlot),
         Config("FPP Conductivity",            ::Conductivity,  ::CondResult,     ::FPPPlot),
-        Config("AC Hall",                     ::ACHall,        ::ACHallResult,   { ACHallPlot(it) }),
+        Config("AC Hall",                     ::ACHall,        ::ACHallResult,   ::ACHallPlot),
         Config("DC Hall",                     ::DCHall,        ::DCHallResult,   ::DCHallPlot),
         Config("Thermal Voltage",             ::TVMeasurement, ::TVResult,       ::TVPlot),
         Config("Thermal Voltage Calibration", ::TVCalibration, ::TVCResult,      ::TVCPlot)
     )
 
-    class Config(val type: String, val measurement: () -> FMeasurement, val result: (ResultTable, List<Quantity>) -> ResultFile, val plot: (ResultTable) -> Plot) {
+    class Config(
+        val type: String,
+        val measurement: () -> FMeasurement,
+        val result: (ResultTable, List<Quantity>) -> ResultFile,
+        val plot: (ResultTable) -> Plot
+    ) {
 
         private val example = measurement()
 
@@ -64,6 +86,9 @@ object Measurements {
         return types.find { it.mClass == measurement::class }?.createPlot(measurement.results)
     }
 
+    /**
+     * Converts files from the old HallSpinner application for use in FetCh
+     */
     private fun convertFile(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile? {
 
         when (data.getName(0)) {

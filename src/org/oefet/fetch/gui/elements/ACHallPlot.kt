@@ -11,7 +11,9 @@ import org.oefet.fetch.measurement.ACHall.Companion.SD_CURRENT
 import org.oefet.fetch.measurement.ACHall.Companion.X_VOLTAGE
 import org.oefet.fetch.measurement.ACHall.Companion.Y_VOLTAGE
 
-class ACHallPlot(data: ResultTable, optimised: RealMatrix? = null, faraday: RealMatrix? = null) : FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]") {
+class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?) : FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]") {
+
+    constructor(data: ResultTable) : this(data, null, null)
 
     init {
 
