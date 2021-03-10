@@ -36,7 +36,7 @@ object Analysis : BorderDisplay("Analysis") {
             HallAnalysis,
             "Hall Analysis",
             "Plot quantities in ways useful for Hall analysis",
-            Icon.MAGNET.blackImage
+            Icon.HALL.blackImage
         )
 
         sidebar.add(
@@ -58,6 +58,13 @@ object Analysis : BorderDisplay("Analysis") {
             "Repeat Only",
             "Plot everything against repeat number with no splitting",
             Icon.REPEAT.blackImage
+        )
+
+        sidebar.add(
+            SingleParameterAnalysis(BField(0.0, 0.0)),
+            "Magnetic Field Only",
+            "Plot everything against magnetic field with no splitting",
+            Icon.MAGNET.blackImage
         )
 
         sidebar.select(0)
@@ -163,11 +170,11 @@ object Analysis : BorderDisplay("Analysis") {
 
         if (path == null) {
 
-            val saveInput = Fields("Save Parameters")
+            val saveInput  = Fields("Save Parameters")
             val plotFormat = saveInput.addChoice("Format", "svg", "png", "tex")
-            val plotWidth = saveInput.addIntegerField("Plot Width", 600)
+            val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
             val plotHeight = saveInput.addIntegerField("Plot Height", 500)
-            val directory = saveInput.addDirectorySelect("Directory")
+            val directory  = saveInput.addDirectorySelect("Directory")
 
             if (!Grid("Save Data", 1, saveInput).showAsConfirmation()) return
 

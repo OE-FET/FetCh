@@ -19,10 +19,7 @@ import org.oefet.fetch.measurement.ACHall.Companion.Y_VOLTAGE
 import org.oefet.fetch.quantities.*
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
+import kotlin.math.*
 
 class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
@@ -138,19 +135,54 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     }
 
-    override fun calculateHybrids(quantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
 
         // Find all conductivities that are compatible with this Hall measurement
-        val extras = LinkedList<Quantity>()
-        val conductivities = quantities.filter { it is Conductivity && it.isCompatibleWith(hallQuantity) }
+        val extras         = LinkedList<Quantity>()
+        val conductivities = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hallQuantity) }
 
         for (conductivity in conductivities) {
 
             val condValue = conductivity.value
             val condError = conductivity.error
-            val mobility = hallValue * condValue * 100.0 * 10000.0
-            val error = mobility * sqrt((hallError / hallValue).pow(2) + (condError / condValue).pow(2))
-            extras += HallMobility(mobility, error, parameters)
+            val mobility  = hallValue * condValue * 100.0 * 10000.0
+            val error     = mobility * sqrt((hallError / hallValue).pow(2) + (condError / condValue).pow(2))
+            extras       += HallMobility(mobility, error, parameters)
+
+        }
+
+        val excluded = listOf(Temperature::class, Frequency::class)
+
+        if (otherQuantities.find { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) } == null) {
+
+            val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hallQuantity, excluded) && it.hasParameter(Temperature::class) }
+            val lnrh  = halls.map { ln(it.value) }
+            val rh05  = halls.map { it.value.pow(-0.5) }
+            val t025  = halls.map { it.getParameter(Temperature::class)?.value?.pow(-0.25) ?: 0.0 }
+
+            val maxC  = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }.maxBy { it.value }
+            val fit1  = Fitting.linearFit(t025, lnrh)
+            val fit2  = Fitting.linearFit(t025, rh05)
+
+            if (fit1 != null && fit2 != null && maxC != null) {
+
+                val grad1   = SimpleQuantity(fit1.gradient, fit1.gradientError)
+                val grad2   = SimpleQuantity(fit2.gradient, fit2.gradientError)
+                val incp2   = SimpleQuantity(fit2.intercept, fit2.interceptError)
+                val params  = parameters.filter { it !is Temperature }.toMutableList()
+                val pParams = possibleParameters.filter { it != Temperature::class }
+
+                params += maxC
+
+                val t0 = (grad1 * 0.5).pow(4)
+                val r0 = (incp2 + (grad2 / (grad1 * 0.5))).pow(-2)
+                val n0 = (r0 * 1.6e-19).pow(-1) * (100.0).pow(-3)
+
+                extras += T0(t0.value, t0.error, params, pParams)
+                extras += UnscreenedHall(r0.value, r0.error, params, pParams)
+                extras += BandLikeDensity(n0.value, n0.error, params, pParams)
+
+            }
 
         }
 

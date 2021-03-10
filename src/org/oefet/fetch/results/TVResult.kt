@@ -60,17 +60,17 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
     }
 
-    override fun calculateHybrids(quantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
 
-        val calibrationLeft = quantities.filter {
+        val calibrationLeft = otherQuantities.filter {
             it is LeftStripResistance
-            && it.isCompatibleWith(quantities.first())
+            && it.isCompatibleWith(otherQuantities.first())
             && it.parameters.find { p -> p is Drain }?.value ?: 1.0 == 0.0
         }
 
-        val calibrationRight = quantities.filter {
+        val calibrationRight = otherQuantities.filter {
             it is RightStripResistance
-            && it.isCompatibleWith(quantities.first())
+            && it.isCompatibleWith(otherQuantities.first())
             && it.parameters.find { p -> p is Drain }?.value ?: 1.0 == 0.0
         }
 
@@ -100,15 +100,15 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         val temperature = parameters.find { it is Temperature }?.value
 
-        val powerLeft = quantities.filter {
+        val powerLeft = otherQuantities.filter {
             it is LeftStripResistance
-            && it.isCompatibleWith(quantities.first())
+            && it.isCompatibleWith(otherQuantities.first())
             && it.parameters.find { p -> p is Temperature }?.value == temperature
         }
 
-        val powerRight = quantities.filter {
+        val powerRight = otherQuantities.filter {
             it is RightStripResistance
-            && it.isCompatibleWith(quantities.first())
+            && it.isCompatibleWith(otherQuantities.first())
             && it.parameters.find { p -> p is Temperature }?.value == temperature
         }
 

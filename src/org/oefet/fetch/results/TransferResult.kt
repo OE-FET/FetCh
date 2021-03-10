@@ -168,6 +168,6 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
     }
 
-    override fun calculateHybrids(quantities: List<Quantity>): List<Quantity> = emptyList()
+    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> = emptyList()
 
 }

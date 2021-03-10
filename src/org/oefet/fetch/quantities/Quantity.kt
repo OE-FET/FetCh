@@ -17,9 +17,12 @@ interface Quantity {
     val possibleParameters: List<KClass<out Quantity>>
     val extra: Boolean
 
-    fun isCompatibleWith(other: Quantity): Boolean {
+    fun isCompatibleWith(other: Quantity, excluded: List<KClass<out Quantity>> = emptyList()): Boolean {
 
-        val toCheck = LinkedList(possibleParameters).apply { retainAll(other.possibleParameters) }
+        val toCheck = LinkedList(possibleParameters).apply {
+            retainAll(other.possibleParameters)
+            removeAll(excluded)
+        }
 
         for (type in toCheck) {
 
@@ -40,6 +43,13 @@ interface Quantity {
 
     }
 
+    fun hasParameter(type: KClass<out Quantity>): Boolean {
+        return getParameter(type) != null
+    }
+
+    fun getParameter(type: KClass<out Quantity>) : Quantity? {
+        return parameters.find { it::class == type }
+    }
 
     operator fun plus(other: Quantity): SimpleQuantity {
         return SimpleQuantity(value + other.value, sqrt(error.pow(2) + other.error.pow(2)))
@@ -60,7 +70,7 @@ interface Quantity {
     operator fun times(other: Quantity): SimpleQuantity {
         return SimpleQuantity(
             value * other.value,
-            abs(value * other.value) * sqrt((error / value).pow(2) + (other.value / other.error).pow(2))
+            abs(value * other.value) * sqrt((error / value).pow(2) + (other.error / other.value).pow(2))
         )
     }
 
@@ -71,7 +81,7 @@ interface Quantity {
     operator fun div(other: Quantity): SimpleQuantity {
         return SimpleQuantity(
             value / other.value,
-            abs(value * other.value) * sqrt((error / value).pow(2) + (other.value / other.error).pow(2))
+            abs(value * other.value) * sqrt((error / value).pow(2) + (other.error / other.value).pow(2))
         )
     }
 

@@ -27,7 +27,7 @@ interface ResultFile {
     var stress:       Double
     var field:        Double
 
-    fun calculateHybrids(quantities: List<Quantity>) : List<Quantity>
+    fun calculateHybrids(otherQuantities: List<Quantity>) : List<Quantity>
 
     fun getParameterString(): String {
 

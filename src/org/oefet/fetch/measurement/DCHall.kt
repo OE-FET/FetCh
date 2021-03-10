@@ -172,6 +172,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
         results.setAttribute("Averaging Count", repeats.toDouble())
+        results.setAttribute("Averaging Delay", "$repTime ms")
 
         // Source-Drain channel MUST be present (cannot be null)
         val sdSMU = sdSMU!!
@@ -221,10 +222,10 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     sdSMU.current = current
                     sleep(delTime)
 
-                    // Take repeat measurements of Hall voltages
                     val hvm1Values = Array(repeats) { 0.0 }
                     val hvm2Values = Array(repeats) { 0.0 }
 
+                    // Take repeat measurements of Hall voltages
                     repeat(repeats) { n ->
                         sleep(repTime)
                         hvm1Values[n] = hvm1?.voltage ?: Double.NaN
@@ -237,15 +238,15 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                         sdSMU.voltage,                       // Source-Drain Voltage
                         current,                             // Source-Drain Current
                         gate,                                // Source-Gate Voltage
-                        sgSMU?.current ?: Double.NaN,        // Source-Gate Current
+                        sgSMU?.current ?: Double.NaN,        // Source-Gate Current - NaN if not being used
                         magnet?.field ?: fields.first(),     // Magnetic field
                         hvm1Values.average(),                // Hall voltage 1 value (mean)
                         hvm1Values.stdDeviation(),           // Hall voltage 1 error (std. deviation)
                         hvm2Values.average(),                // Hall voltage 2 value (mean)
                         hvm2Values.stdDeviation(),           // Hall voltage 2 error (std. deviation)
-                        fpp1?.voltage ?: Double.NaN,         // FPP1
-                        fpp2?.voltage ?: Double.NaN,         // FPP2
-                        tMeter?.temperature ?: Double.NaN    // Temperature
+                        fpp1?.voltage ?: Double.NaN,         // FPP1 - NaN if not being used
+                        fpp2?.voltage ?: Double.NaN,         // FPP2 - NaN if not being used
+                        tMeter?.temperature ?: Double.NaN    // Temperature - NaN if not being used
                     )
 
                 }

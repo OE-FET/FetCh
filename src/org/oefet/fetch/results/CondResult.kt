@@ -68,7 +68,7 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
 
     }
 
-    override fun calculateHybrids(quantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
         return emptyList()
     }
 

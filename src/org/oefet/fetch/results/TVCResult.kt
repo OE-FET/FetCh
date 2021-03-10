@@ -67,7 +67,7 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
 
     }
 
-    override fun calculateHybrids(quantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
         return emptyList()
     }
 

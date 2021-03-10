@@ -4,15 +4,13 @@ import jisa.experiment.Col
 import jisa.experiment.Combination
 import jisa.experiment.ResultList
 import jisa.gui.Plot
-import jisa.maths.fits.Fitting
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.*
 import java.util.*
-import kotlin.math.ln
-import kotlin.math.pow
 import kotlin.reflect.KClass
 
 object HallAnalysis : Analysis {
+
     override fun analyse(quantities: List<Quantity>, labels: Map<KClass<out Quantity>, Map<Double, String>>): Analysis.Output {
 
         val processed = tabulate(quantities)
@@ -28,6 +26,7 @@ object HallAnalysis : Analysis {
             for ((paramIndex, parameter) in table.parameters.withIndex()) {
 
                 // If the quantity isn't varied or is not meant to be displayed as a number, then skip it
+                if (labels.containsKey(parameter::class)) continue
                 if (table.table.getUniqueValues(paramIndex).size < 2) continue
 
                 val splits     = LinkedList<Int>()
@@ -103,8 +102,8 @@ object HallAnalysis : Analysis {
 
             val table = ResultList(
                 Col("Temperature", "K"),
+                Col("Conductivity", "S/cm"),
                 Col("Gate", "V"),
-                Col("Frequency", "Hz"),
                 Col("Device"),
                 Col(instance.name, instance.unit),
                 Col("${instance.name} Error", instance.unit)
@@ -112,86 +111,67 @@ object HallAnalysis : Analysis {
 
             for (value in filtered) {
 
-                val temperature = value.parameters.find { it is Temperature } ?: continue
-                val frequency   = value.parameters.find { it is Frequency }
+                val temperature  = value.parameters.find { it is Temperature }
+                val conductivity = value.parameters.find { it is Conductivity }
+                val gate         = value.parameters.find { it is Gate }
+                val device       = value.parameters.find { it is Device }
+
+                table.addData(
+                    temperature?.value  ?: Double.NaN,
+                    conductivity?.value ?: Double.NaN,
+                    gate?.value         ?: 0.0,
+                    device?.value       ?: Double.NaN,
+                    value.value,
+                    value.error
+                )
+
+            }
+
+            tables += Analysis.Tabulated(listOf(
+                Temperature(0.0, 0.0),
+                Conductivity(0.0, 0.0),
+                Gate(0.0, 0.0),
+                Device(0.0)
+            ), instance, table)
+
+        }
+
+        val magnetoConductivities = quantities.filter { it is MConductivity }
+
+        if (magnetoConductivities.isNotEmpty()) {
+
+            val table = ResultList(
+                Col("Field", "T"),
+                Col("Temperature", "K"),
+                Col("Gate", "V"),
+                Col("Device"),
+                Col("Magneto-Conductivity", "S/cm"),
+                Col("Error", "S/cm")
+            )
+
+            for (value in magnetoConductivities) {
+
+                val field       = value.parameters.find { it is BField } ?: continue
+                val temperature = value.parameters.find { it is Temperature }
                 val gate        = value.parameters.find { it is Gate }
                 val device      = value.parameters.find { it is Device }
 
-                table.addData(temperature.value, gate?.value ?: 0.0, frequency?.value ?: 0.0, device?.value ?: 0.0, value.value, value.error)
+                table.addData(
+                    field.value,
+                    temperature?.value ?: Double.NaN,
+                    gate?.value        ?: 0.0,
+                    device?.value      ?: Double.NaN,
+                    value.value,
+                    value.error
+                )
 
             }
 
-            tables += Analysis.Tabulated(listOf(Temperature(0.0, 0.0), Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), instance, table)
-
-        }
-
-        val mConds = quantities.filter { it is MConductivity }
-        val table  = ResultList(
-            Col("Field", "T"),
-            Col("Temperature", "K"),
-            Col("Gate", "V"),
-            Col("Device"),
-            Col("Magneto-Conductivity", "S/cm"),
-            Col("Error", "S/cm")
-        )
-
-        for (value in mConds) {
-
-            val field       = value.parameters.find { it is BField } ?: continue
-            val temperature = value.parameters.find { it is Temperature }
-            val gate        = value.parameters.find { it is Gate }
-            val device      = value.parameters.find { it is Device }
-
-            table.addData(
-                field.value,
-                temperature?.value ?: 0.0,
-                gate?.value ?: 0.0,
-                device?.value ?: 0.0,
-                value.value,
-                value.error
+            tables += Analysis.Tabulated(
+                listOf(BField(0.0, 0.0), Temperature(0.0, 0.0), Gate(0.0, 0.0), Device(0.0)),
+                MConductivity(0.0, 0.0),
+                table
             )
-
-        }
-
-        tables += Analysis.Tabulated(listOf(BField(0.0, 0.0), Temperature(0.0, 0.0), Gate(0.0, 0.0), Device(0.0)), MConductivity(0.0,0.0), table)
-
-        val halls = tables.find { it.quantity::class == HallCoefficient::class }
-
-        if (halls != null) {
-
-            val t0 = ResultList(Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col("T0", "K"), Col("Error", "K"))
-            val r0 = ResultList(Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col("RH0", "m^3/C"), Col("Error", "m^3/C"))
-            val n0 = ResultList(Col("Gate", "V"), Col("Frequency", "Hz"), Col("Device"), Col("Band-Like Carrier Density", "cm^-3"), Col("Error", "cm^-3"))
-
-            for ((device, devData) in halls.table.split(3)) {
-
-                for ((gate, gateData) in devData.split(1)) {
-
-                    for ((frequency, data) in gateData.split(2)) {
-
-                        val t025 = data.getColumns(0).map { v -> v.pow(-0.25) }
-                        val lnrh = data.getColumns(4).map { v -> ln(v) }
-                        val rh05 = data.getColumns(4).map { v -> v.pow(-0.5) }
-
-                        val fit1 = Fitting.linearFit(t025, lnrh) ?: continue
-                        val fit2 = Fitting.linearFit(t025, rh05) ?: continue
-                        val T0 = (0.5 * fit1.gradient).pow(4)
-                        val R0 = (fit2.intercept + fit2.gradient / (0.5 * fit1.gradient)).pow(-2)
-                        val N0 = ((100.0).pow(-3)) / (1.6e-19 * R0)
-
-                        t0.addData(gate, frequency, device, T0, 0.0)
-                        r0.addData(gate, frequency, device, R0, 0.0)
-                        n0.addData(gate, frequency, device, N0, 0.0)
-
-                    }
-
-                }
-
-            }
-
-            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), T0(0.0, 0.0), t0)
-            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), UnscreenedHall(0.0, 0.0), r0)
-            tables += Analysis.Tabulated(listOf(Gate(0.0, 0.0), Frequency(0.0, 0.0), Device(0.0)), BandLikeDensity(0.0, 0.0), n0)
 
         }
 
