@@ -12,7 +12,6 @@ import java.util.*
 
 class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 
-    val intTimeParam  = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     val avgCountParam = IntegerParameter("Basic", "Averaging Count", null,1)
     val probeParam    = ChoiceParameter("Basic", "Strip", 0, "Left", "Right")
     val heaterVParam  = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
@@ -27,7 +26,6 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
     val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
     private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
-    val intTime  get() = intTimeParam.value
     val avgCount get() = avgCountParam.value
     val probe    get() = probeParam.value
     val heaterV  get() = heaterVParam.value
@@ -68,25 +66,22 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
 
     override fun run(results: ResultTable) {
 
-        results.setAttribute("Integration Time", "$intTime s")
+//        val tMeter = this.tMeter!!
+        val heater = this.heater!!
+        val sdSMU  = this.sdSMU!!
+
+        results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Averaging Count", avgCount.toString())
         results.setAttribute("Probe Number", probe.toString())
         results.setAttribute("Heater Hold Time", "$holdHV ms")
         results.setAttribute("Delay Time", "$holdSI ms")
 
-//        val tMeter = this.tMeter!!
-        val heater = this.heater!!
-        val sdSMU  = this.sdSMU!!
-
         gdSMU?.turnOff()
         heater.turnOff()
         sdSMU.turnOff()
 
-        gdSMU?.integrationTime  = intTime
         gdSMU?.voltage          = 0.0
-        heater.integrationTime  = intTime
         heater.voltage          = heaterV[0]
-        sdSMU.integrationTime   = intTime
         sdSMU.current           = currents.first()
         sdSMU.averageMode       = AMode.MEAN_REPEAT
         sdSMU.averageCount      = avgCount

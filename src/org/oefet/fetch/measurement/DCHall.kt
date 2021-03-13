@@ -31,7 +31,6 @@ import kotlin.math.sqrt
 class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     // Measurement parameters to ask user for when configuring measurement
-    private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 1.0 / 50.0)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
     private val repTimeParam = DoubleParameter("Basic", "Repeat Time", "s", 0.0)
@@ -51,7 +50,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val tMeterConfig = addInstrument("Thermometer", TMeter::class)
 
     // Getters to quickly retrieve parameter values - nice-to-have but not necessary (just makes the code look cleaner)
-    private val intTime  get() = intTimeParam.value
     private val delTime  get() = (1e3 * delTimeParam.value).toInt() // Convert to milliseconds
     private val repTime  get() = (1e3 * repTimeParam.value).toInt() // Convert to milliseconds
     private val repeats  get() = repeatsParam.value
@@ -168,14 +166,14 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun run(results: ResultTable) {
 
+        // Source-Drain channel MUST be present (cannot be null)
+        val sdSMU = sdSMU!!
+
         // Save measurement parameters to result file
-        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Integration Time", "${hvm1?.integrationTime ?: hvm2?.integrationTime ?: "0.0"} s")
         results.setAttribute("Delay Time", "$delTime ms")
         results.setAttribute("Averaging Count", repeats.toDouble())
         results.setAttribute("Averaging Delay", "$repTime ms")
-
-        // Source-Drain channel MUST be present (cannot be null)
-        val sdSMU = sdSMU!!
 
         // Make sure everything starts in a safe off-state
         gdSMU?.turnOff()
@@ -185,15 +183,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         hvm2?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
-
-        // Set the integration time on everything
-        gdSMU?.integrationTime = intTime
-        sdSMU.integrationTime  = intTime
-        sgSMU?.integrationTime = intTime
-        hvm1?.integrationTime  = intTime
-        hvm2?.integrationTime  = intTime
-        fpp1?.integrationTime  = intTime
-        fpp2?.integrationTime  = intTime
 
         // Set the initial values of voltage and current
         gdSMU?.voltage = 0.0

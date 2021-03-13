@@ -14,7 +14,6 @@ import java.lang.Exception
 
 class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
-    private val paramIntTime = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val paramDelTime = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val paramMinVSD  = DoubleParameter("Source-Drain", "Start", "V", 0.0)
     private val paramMaxVSD  = DoubleParameter("Source-Drain", "Stop", "V", 60.0)
@@ -29,7 +28,6 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
     private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
     private val tMeterConfig = addInstrument("Thermometer", TMeter::class.java)
 
-    val intTime get() = paramIntTime.value
     val delTime get() = (paramDelTime.value * 1000).toInt()
     val minVSD  get() = paramMinVSD .value
     val maxVSD  get() = paramMaxVSD .value
@@ -61,11 +59,11 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
     override fun run(results: ResultTable) {
 
-        results.setAttribute("Integration Time", "$intTime s")
-        results.setAttribute("Delay Time", "$delTime ms")
-
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!
+
+        results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
+        results.setAttribute("Delay Time", "$delTime ms")
 
         val voltages = if (symVSD) {
             Range.linear(minVSD, maxVSD, numVSD).mirror()
@@ -83,12 +81,6 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         sdSMU.voltage = minVSD
         sgSMU.voltage = minVSD + offset
         gdSMU?.voltage = 0.0
-
-        // Configure integration times
-        sdSMU.integrationTime = intTime
-        sgSMU.integrationTime = intTime
-        fpp1?.integrationTime = intTime
-        fpp2?.integrationTime = intTime
 
         sdSMU.turnOn()
         sgSMU.turnOn()
