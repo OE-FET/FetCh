@@ -161,7 +161,7 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
                         sleep(heaterHold)
 
                         // Take repeat measurements of thermal voltage
-                        val tvVoltage = Repeat.sync(avgCount, avgDelay) { tvMeter.voltage }
+                        val tvVoltage = Repeat.run(avgCount, avgDelay) { tvMeter.voltage }
 
                         results.addData(
                             count ++,
@@ -203,7 +203,7 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
                         sleep(gateHold)
 
                         // Take repeat measurements of thermal voltage
-                        val tvVoltage = Repeat.sync(avgCount, avgDelay) { tvMeter.voltage }
+                        val tvVoltage = Repeat.run(avgCount, avgDelay) { tvMeter.voltage }
 
                         results.addData(
                             count ++,

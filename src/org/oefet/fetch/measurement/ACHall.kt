@@ -1,6 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util.runRegardless
+import jisa.control.Repeat
 import jisa.devices.interfaces.*
 import jisa.devices.Configuration
 import jisa.enums.Coupling
@@ -151,22 +152,16 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
                     sleep(delTime)
 
-                    val xValues = Array(repeats) { 0.0 }
-                    val yValues = Array(repeats) { 0.0 }
+                    val xValues = Repeat(repeats, 1000) { lockIn.lockedX / totGain }
+                    val yValues = Repeat(repeats, 1000) { lockIn.lockedY / totGain }
 
-                    repeat(repeats) { n ->
+                    Repeat.runTogether(xValues, yValues)
 
-                        sleep(1000)
-                        xValues[n] = lockIn.lockedX / totGain
-                        yValues[n] = lockIn.lockedY / totGain
-
-                    }
-
-                    val x = xValues.average()
-                    val y = yValues.average()
+                    val x = xValues.mean
+                    val y = yValues.mean
                     val r = sqrt(x.pow(2) + y.pow(2))
-                    val eX = xValues.stdDeviation()
-                    val eY = yValues.stdDeviation()
+                    val eX = xValues.standardDeviation
+                    val eY = yValues.standardDeviation
 
                     if (startX == null) startX = x
                     if (startY == null) startY = y
