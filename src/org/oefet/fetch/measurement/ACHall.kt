@@ -226,6 +226,10 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     }
 
+    override fun onError() {
+
+    }
+
     companion object {
 
         const val SD_VOLTAGE = 0

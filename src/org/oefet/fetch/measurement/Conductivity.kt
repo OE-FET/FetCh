@@ -131,6 +131,10 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
 
     override fun onInterrupt() {}
 
+    override fun onError() {
+
+    }
+
     companion object {
         const val SD_VOLTAGE = 0
         const val SD_CURRENT = 1
