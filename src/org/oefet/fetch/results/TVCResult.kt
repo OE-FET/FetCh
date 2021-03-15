@@ -52,8 +52,11 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
             val fit                = data.linearFit(STRIP_CURRENT, STRIP_VOLTAGE)
             val parameters         = parameters.toMutableList()
             val possibleParameters = possibleParameters.toMutableList()
-            parameters            += Drain(heaterVoltage, 0.0)
             parameters            += Power(power, 0.0)
+
+            if (heaterVoltage == 0.0) {
+                parameters += Drain(0.0, 0.0)
+            }
 
             val resistance = if (probeNumber == 0) {
                 LeftStripResistance(fit.gradient, fit.gradientError, parameters, possibleParameters)
