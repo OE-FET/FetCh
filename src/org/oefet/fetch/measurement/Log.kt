@@ -37,8 +37,8 @@ object Log {
                     for (smu in inst.channels) {
                         columns.add(Col("$name ${smu.channelName} Voltage", "V"))
                         columns.add(Col("$name ${smu.channelName} Current", "A"))
-                        logTasks.add { smu.voltage }
-                        logTasks.add { smu.current }
+                        logTasks.add { smu.getVoltage(2e-3) }
+                        logTasks.add { smu.getCurrent(2e-3) }
                     }
 
                 }
@@ -47,8 +47,8 @@ object Log {
 
                     columns.add(Col("$name Voltage", "V"))
                     columns.add(Col("$name Current", "A"))
-                    logTasks.add { inst.voltage }
-                    logTasks.add { inst.current }
+                    logTasks.add { inst.getVoltage(2e-3) }
+                    logTasks.add { inst.getCurrent(2e-3) }
 
                 }
 
@@ -64,7 +64,7 @@ object Log {
                 is VMeter       -> {
 
                     columns.add(Col("$name Voltage", "V"))
-                    logTasks.add { inst.voltage }
+                    logTasks.add { inst.getVoltage(2e-3) }
 
                 }
 

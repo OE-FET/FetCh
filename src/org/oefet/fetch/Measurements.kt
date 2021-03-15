@@ -33,18 +33,17 @@ object Measurements {
      * - ::OutputPlot specifies that to display data from this type of measurement an OutputPlot object should be created
      */
     val types = listOf(
-        Config("Output",                      ::Output,        ::OutputResult,   ::OutputPlot),
-        Config("Transfer",                    ::Transfer,      ::TransferResult, ::TransferPlot),
-        Config("Sync",                        ::VSync,         ::TransferResult, ::SyncPlot),
-        Config("FPP Conductivity",            ::Conductivity,  ::CondResult,     ::FPPPlot),
-        Config("AC Hall",                     ::ACHall,        ::ACHallResult,   ::ACHallPlot),
-        Config("DC Hall",                     ::DCHall,        ::DCHallResult,   ::DCHallPlot),
-        Config("Thermal Voltage",             ::TVMeasurement, ::TVResult,       ::TVPlot),
-        Config("Thermal Voltage Calibration", ::TVCalibration, ::TVCResult,      ::TVCPlot)
+        Config(::Output,        ::OutputResult,   ::OutputPlot),
+        Config(::Transfer,      ::TransferResult, ::TransferPlot),
+        Config(::VSync,         ::TransferResult, ::SyncPlot),
+        Config(::Conductivity,  ::CondResult,     ::FPPPlot),
+        Config(::ACHall,        ::ACHallResult,   ::ACHallPlot),
+        Config(::DCHall,        ::DCHallResult,   ::DCHallPlot),
+        Config(::TVMeasurement, ::TVResult,       ::TVPlot),
+        Config(::TVCalibration, ::TVCResult,      ::TVCPlot)
     )
 
     class Config(
-        val type: String,
         val measurement: () -> FMeasurement,
         val result: (ResultTable, List<Quantity>) -> ResultFile,
         val plot: (ResultTable) -> Plot
@@ -52,6 +51,7 @@ object Measurements {
 
         private val example = measurement()
 
+        val type   = example.type
         val name   = example.name
         val mClass = example::class
         val rClass = result.reflect()?.returnType?.jvmErasure

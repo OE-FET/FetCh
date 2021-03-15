@@ -2,6 +2,7 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.Util.runRegardless
+import jisa.control.Repeat
 import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
@@ -31,7 +32,6 @@ import kotlin.math.sqrt
 class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     // Measurement parameters to ask user for when configuring measurement
-    private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 1.0 / 50.0)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
     private val repTimeParam = DoubleParameter("Basic", "Repeat Time", "s", 0.0)
@@ -51,7 +51,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val tMeterConfig = addInstrument("Thermometer", TMeter::class)
 
     // Getters to quickly retrieve parameter values - nice-to-have but not necessary (just makes the code look cleaner)
-    private val intTime  get() = intTimeParam.value
     private val delTime  get() = (1e3 * delTimeParam.value).toInt() // Convert to milliseconds
     private val repTime  get() = (1e3 * repTimeParam.value).toInt() // Convert to milliseconds
     private val repeats  get() = repeatsParam.value
@@ -81,8 +80,10 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         const val HALL_2         = 9
         const val HALL_2_ERROR   = 10
         const val FPP_1          = 11
-        const val FPP_2          = 12
-        const val TEMPERATURE    = 13
+        const val FPP_1_ERROR    = 12
+        const val FPP_2          = 13
+        const val FPP_2_ERROR    = 14
+        const val TEMPERATURE    = 15
 
     }
 
@@ -156,7 +157,9 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
             Col("Hall Voltage 2", "V"),
             Col("Hall Voltage 2 Error", "V"),
             Col("Four-Point Probe 1", "V"),
+            Col("Four-Point Probe 1 Error", "V"),
             Col("Four-Point Probe 2", "V"),
+            Col("Four-Point Probe 2 Error", "V"),
             Col("Temperature", "K")
         )
 
@@ -168,14 +171,14 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun run(results: ResultTable) {
 
+        // Source-Drain channel MUST be present (cannot be null)
+        val sdSMU = sdSMU!!
+
         // Save measurement parameters to result file
-        results.setAttribute("Integration Time", "$intTime s")
+        results.setAttribute("Integration Time", "${hvm1?.integrationTime ?: hvm2?.integrationTime ?: "0.0"} s")
         results.setAttribute("Delay Time", "$delTime ms")
         results.setAttribute("Averaging Count", repeats.toDouble())
         results.setAttribute("Averaging Delay", "$repTime ms")
-
-        // Source-Drain channel MUST be present (cannot be null)
-        val sdSMU = sdSMU!!
 
         // Make sure everything starts in a safe off-state
         gdSMU?.turnOff()
@@ -185,15 +188,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         hvm2?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
-
-        // Set the integration time on everything
-        gdSMU?.integrationTime = intTime
-        sdSMU.integrationTime  = intTime
-        sgSMU?.integrationTime = intTime
-        hvm1?.integrationTime  = intTime
-        hvm2?.integrationTime  = intTime
-        fpp1?.integrationTime  = intTime
-        fpp2?.integrationTime  = intTime
 
         // Set the initial values of voltage and current
         gdSMU?.voltage = 0.0
@@ -223,15 +217,12 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     sleep(delTime)
 
                     // Create arrays to hold repeat values
-                    val hvm1Values = Array(repeats) { 0.0 }
-                    val hvm2Values = Array(repeats) { 0.0 }
+                    val hvm1Values = Repeat(repeats, repTime) { hvm1?.voltage ?: Double.NaN }
+                    val hvm2Values = Repeat(repeats, repTime) { hvm2?.voltage ?: Double.NaN }
+                    val fpp1Values = Repeat(repeats, repTime) { fpp1?.voltage ?: Double.NaN }
+                    val fpp2Values = Repeat(repeats, repTime) { fpp2?.voltage ?: Double.NaN }
 
-                    // Take repeat measurements of Hall voltages
-                    for (n in 0 until repeats) {
-                        hvm1Values[n] = hvm1?.voltage ?: Double.NaN
-                        hvm2Values[n] = hvm2?.voltage ?: Double.NaN
-                        sleep(repTime)
-                    }
+                    Repeat.runTogether(hvm1Values, hvm2Values, fpp1Values, fpp2Values)
 
                     results.addData(
                         current,                             // Source-Drain Current (Set Value)
@@ -241,12 +232,14 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                         sgSMU?.voltage ?: Double.NaN,        // Source-Gate Voltage (Measured Value) - NaN if not used
                         sgSMU?.current ?: Double.NaN,        // Source-Gate Current - NaN if not used
                         magnet?.field ?: fields.first(),     // Magnetic field
-                        hvm1Values.average(),                // Hall voltage 1 value (mean)
-                        hvm1Values.stdDeviation(),           // Hall voltage 1 error (std. deviation)
-                        hvm2Values.average(),                // Hall voltage 2 value (mean)
-                        hvm2Values.stdDeviation(),           // Hall voltage 2 error (std. deviation)
-                        fpp1?.voltage ?: Double.NaN,         // FPP1 - NaN if not used
-                        fpp2?.voltage ?: Double.NaN,         // FPP2 - NaN if not used
+                        hvm1Values.mean,                     // Hall voltage 1 value (mean)
+                        hvm1Values.standardDeviation,        // Hall voltage 1 error (std. deviation)
+                        hvm2Values.mean,                     // Hall voltage 2 value (mean)
+                        hvm2Values.standardDeviation,        // Hall voltage 2 error (std. deviation)
+                        fpp1Values.mean,                     // FPP1
+                        fpp1Values.standardDeviation,        // FPP1 Error
+                        fpp2Values.mean,                     // FPP2
+                        fpp2Values.standardDeviation,        // FPP2 Error
                         tMeter?.temperature ?: Double.NaN    // Temperature - NaN if not used
                     )
 
@@ -263,6 +256,10 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun onInterrupt() {
         Util.errLog.println("DC Hall Measurement Interrupted.")
+    }
+
+    override fun onError() {
+
     }
 
     /**

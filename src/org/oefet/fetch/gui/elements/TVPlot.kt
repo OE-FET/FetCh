@@ -7,6 +7,7 @@ import org.oefet.fetch.measurement.TVCalibration
 import org.oefet.fetch.measurement.TVMeasurement
 import org.oefet.fetch.measurement.TVMeasurement.Companion.HEATER_POWER
 import org.oefet.fetch.measurement.TVMeasurement.Companion.THERMAL_VOLTAGE
+import org.oefet.fetch.measurement.TVMeasurement.Companion.THERMAL_VOLTAGE_ERROR
 
 class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Heater Power [W]", "Thermal Voltage [V]") {
 
@@ -15,13 +16,27 @@ class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Heater Power [W]
         isMouseEnabled = true
         pointOrdering  = Sort.ORDER_ADDED
 
-        createSeries()
-            .setLineVisible(false)
-            .watch(data, HEATER_POWER, THERMAL_VOLTAGE)
-            .split(TVMeasurement.SET_GATE, "SG = %s V")
-            .setMarkerVisible(true)
-            .setLineVisible(true)
-            .polyFit(1)
+        if (data.getName(THERMAL_VOLTAGE_ERROR) == "Thermal Voltage Error") {
+
+            createSeries()
+                .setLineVisible(false)
+                .watch(data, HEATER_POWER, THERMAL_VOLTAGE, THERMAL_VOLTAGE_ERROR)
+                .split(TVMeasurement.SET_GATE, "SG = %s V")
+                .setMarkerVisible(true)
+                .setLineVisible(true)
+                .polyFit(1)
+
+        } else {
+
+            createSeries()
+                .setLineVisible(false)
+                .watch(data, HEATER_POWER, THERMAL_VOLTAGE)
+                .split(TVMeasurement.SET_GATE, "SG = %s V")
+                .setMarkerVisible(true)
+                .setLineVisible(true)
+                .polyFit(1)
+
+        }
 
     }
 

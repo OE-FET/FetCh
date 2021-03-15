@@ -3,11 +3,13 @@ package org.oefet.fetch.measurement
 import jisa.devices.interfaces.*
 import jisa.devices.Configuration
 import jisa.experiment.Measurement
+import java.util.*
 import kotlin.reflect.KClass
 
 abstract class FMeasurement(private val name: String, private val label: String, val type: String) : Measurement() {
 
-    private val labelProperty = StringParameter("Basic", "Name", null, label);
+    private val labelProperty     = StringParameter("Basic", "Name", null, label)
+    private val instrumentSetters = LinkedList<() -> Unit>()
 
     protected var gdSMU:    SMU?      = null
     protected var sdSMU:    SMU?      = null
@@ -29,7 +31,9 @@ abstract class FMeasurement(private val name: String, private val label: String,
      */
     abstract fun checkForErrors() : List<String>
 
-    abstract fun loadInstruments()
+    open fun loadInstruments() {
+        instrumentSetters.forEach { it() }
+    }
 
     override fun start() {
 
@@ -57,8 +61,20 @@ abstract class FMeasurement(private val name: String, private val label: String,
         labelProperty.value = value
     }
 
-    fun <I: Instrument> addInstrument(name: String, type: KClass<I>): Configuration<I> {
-        return addInstrument(name, type.java)
+    fun <I: Instrument> addInstrument(name: String, type: KClass<I>, setter: (I?) -> Unit = {}): Configuration<I> {
+        val config = addInstrument(name, type.java)
+        instrumentSetters.add { setter(config.get()) }
+        return config
+    }
+
+    fun runRegardless (toRun: () -> Unit) {
+
+        try {
+            toRun()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+
     }
 
 }

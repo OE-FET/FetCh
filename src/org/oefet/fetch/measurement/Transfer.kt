@@ -14,35 +14,21 @@ import java.lang.Exception
 
 class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
 
-    private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 7, Range.Type.LINEAR, 1)
     private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 61, Range.Type.LINEAR, 1)
     private val symVSGParam  = BooleanParameter("Source-Gate", "Sweep Both Ways", null, true)
 
-    val gdSMUConfig = addInstrument("Ground Channel (SPA)", SMU::class.java)
-    val sdSMUConfig = addInstrument("Source-Drain Channel", SMU::class.java)
-    val sgSMUConfig = addInstrument("Source-Gate Channel", SMU::class.java)
-    val fpp1Config  = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
-    val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
-    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
+    private val gdSMUConfig   = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val sdSMUConfig   = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val sgSMUConfig   = addInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
+    private val fpp1Config    = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
+    private val fpp2Config    = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
+    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class) { tMeter = it }
 
-
-    val intTime get()    = intTimeParam.value
     val delTime get()    = (1e3 * delTimeParam.value).toInt()
     val sdVoltages get() = sdvParam.value
     val sgVoltages get() = if (symVSGParam.value) sgvParam.value.mirror() else sgvParam.value
-
-    override fun loadInstruments() {
-
-        gdSMU    = gdSMUConfig.get()
-        sdSMU    = sdSMUConfig.get()
-        sgSMU    = sgSMUConfig.get()
-        fpp1     = fpp1Config.get()
-        fpp2     = fpp2Config.get()
-        tMeter   = tMeterConfig.get()
-
-    }
 
     override fun checkForErrors() : List<String> {
 
@@ -57,11 +43,11 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
 
     override fun run(results: ResultTable) {
 
-        results.setAttribute("Integration Time", "$intTime s")
-        results.setAttribute("Delay Time", "$delTime ms")
-
         val sdSMU = this.sdSMU!!
         val sgSMU = this.sgSMU!!
+
+        results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
+        results.setAttribute("Delay Time", "$delTime ms")
 
         sdSMU.turnOff()
         sgSMU.turnOff()
@@ -73,12 +59,6 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
         sdSMU.voltage = sdVoltages.first()
         sgSMU.voltage = sgVoltages.first()
         gdSMU?.voltage = 0.0
-
-        // Configure integration times
-        sdSMU.integrationTime = intTime
-        sgSMU.integrationTime = intTime
-        fpp1?.integrationTime = intTime
-        fpp2?.integrationTime = intTime
 
         sdSMU.turnOn()
         sgSMU.turnOn()
@@ -141,6 +121,10 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
     override fun onInterrupt() {
 
         Util.errLog.println("Transfer measurement interrupted.")
+
+    }
+
+    override fun onError() {
 
     }
 

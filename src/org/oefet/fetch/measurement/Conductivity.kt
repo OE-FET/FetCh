@@ -12,7 +12,6 @@ import org.oefet.fetch.gui.tabs.Connections
 
 class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
-    private val intTimeParam = DoubleParameter("Basic", "Integration Time", "s", 20e-3)
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 1.0)
     private val currentParam = RangeParameter("Source-Drain", "Current", "A", -10e-6, +10e-6, 11, Range.Type.LINEAR, 1)
     private val symIParam    = BooleanParameter("Source-Drain", "Sweep Both Ways", null, false)
@@ -26,7 +25,6 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
     private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
 
-    val intTime  get() = intTimeParam.value
     val delTime  get() = (1e3 * delTimeParam.value).toInt()
     val currents get() = currentParam.value
     val symI     get() = symIParam.value
@@ -62,12 +60,12 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
 
     override fun run(results: ResultTable) {
 
-        results.setAttribute("Integration Time", "$intTime s")
-        results.setAttribute("Delay Time", "$delTime ms")
-
         // Assert that source-drain must be connected
         val sdSMU = sdSMU!!
         val sgSMU = if (holdG) sgSMU else null
+
+        results.setAttribute("Integration Time", "${fpp1?.integrationTime ?: fpp2?.integrationTime ?: sdSMU.integrationTime} s")
+        results.setAttribute("Delay Time", "$delTime ms")
 
         // Turn everything off before starting
         gdSMU?.turnOff()
@@ -75,12 +73,6 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
         sgSMU?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
-
-        gdSMU?.integrationTime = intTime
-        sdSMU.integrationTime  = intTime
-        sgSMU?.integrationTime = intTime
-        fpp1?.integrationTime  = intTime
-        fpp2?.integrationTime  = intTime
 
         // Configure all channel voltages/currents
         gdSMU?.voltage = 0.0
@@ -138,6 +130,10 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     )
 
     override fun onInterrupt() {}
+
+    override fun onError() {
+
+    }
 
     companion object {
         const val SD_VOLTAGE = 0
