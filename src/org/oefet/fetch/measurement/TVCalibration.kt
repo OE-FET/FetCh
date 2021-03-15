@@ -171,4 +171,8 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
 
     }
 
+    override fun onError() {
+
+    }
+
 }

@@ -137,4 +137,8 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     }
 
+    override fun onError() {
+
+    }
+
 }

@@ -19,27 +19,16 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
     private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 61, Range.Type.LINEAR, 1)
     private val symVSGParam  = BooleanParameter("Source-Gate", "Sweep Both Ways", null, true)
 
-    private val gdSMUConfig   = addInstrument("Ground Channel (SPA)", SMU::class.java)
-    private val sdSMUConfig   = addInstrument("Source-Drain Channel", SMU::class.java)
-    private val sgSMUConfig   = addInstrument("Source-Gate Channel", SMU::class.java)
-    private val fpp1Config    = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
-    private val fpp2Config    = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
-    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
+    private val gdSMUConfig   = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val sdSMUConfig   = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val sgSMUConfig   = addInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
+    private val fpp1Config    = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
+    private val fpp2Config    = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
+    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class) { tMeter = it }
 
     val delTime get()    = (1e3 * delTimeParam.value).toInt()
     val sdVoltages get() = sdvParam.value
     val sgVoltages get() = if (symVSGParam.value) sgvParam.value.mirror() else sgvParam.value
-
-    override fun loadInstruments() {
-
-        gdSMU    = gdSMUConfig.get()
-        sdSMU    = sdSMUConfig.get()
-        sgSMU    = sgSMUConfig.get()
-        fpp1     = fpp1Config.get()
-        fpp2     = fpp2Config.get()
-        tMeter   = tMeterConfig.get()
-
-    }
 
     override fun checkForErrors() : List<String> {
 
@@ -132,6 +121,10 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
     override fun onInterrupt() {
 
         Util.errLog.println("Transfer measurement interrupted.")
+
+    }
+
+    override fun onError() {
 
     }
 

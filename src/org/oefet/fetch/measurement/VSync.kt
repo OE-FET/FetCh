@@ -147,4 +147,8 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
     }
 
+    override fun onError() {
+
+    }
+
 }

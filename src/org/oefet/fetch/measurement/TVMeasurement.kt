@@ -262,4 +262,8 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
         Util.errLog.println("TV Measurement Interrupted")
     }
 
+    override fun onError() {
+
+    }
+
 }

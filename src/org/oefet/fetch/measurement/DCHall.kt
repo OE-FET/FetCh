@@ -258,6 +258,10 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         Util.errLog.println("DC Hall Measurement Interrupted.")
     }
 
+    override fun onError() {
+
+    }
+
     /**
      * Code that always runs after the measurement has finished - this will always run regardless of whether the
      * measurement finished successfully, was interrupted or failed with an error. Generally used to make sure everything
