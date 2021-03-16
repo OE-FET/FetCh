@@ -12,18 +12,10 @@ import kotlin.math.sqrt
 
 class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
-    val MEAS_NO               = data.findColumn(TVMeasurement.MEAS_NO)
     val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
-    val SET_HEATER            = data.findColumn(TVMeasurement.SET_HEATER)
     val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
-    val GATE_VOLTAGE          = data.findColumn(TVMeasurement.GATE_VOLTAGE)
-    val GATE_CURRENT          = data.findColumn(TVMeasurement.GATE_CURRENT)
-    val HEATER_VOLTAGE        = data.findColumn(TVMeasurement.HEATER_VOLTAGE)
-    val HEATER_CURRENT        = data.findColumn(TVMeasurement.HEATER_CURRENT)
     val HEATER_POWER          = data.findColumn(TVMeasurement.HEATER_POWER)
     val THERMAL_VOLTAGE       = data.findColumn(TVMeasurement.THERMAL_VOLTAGE)
-    val THERMAL_VOLTAGE_ERROR = data.findColumn(TVMeasurement.THERMAL_VOLTAGE_ERROR)
-    val THERMAL_CURRENT       = data.findColumn(TVMeasurement.THERMAL_CURRENT)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
@@ -74,13 +66,13 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         val calibrationLeft = otherQuantities.filter {
             it is LeftStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
         }
 
         val calibrationRight = otherQuantities.filter {
             it is RightStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
         }
 
@@ -112,13 +104,13 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         val powerLeft = otherQuantities.filter {
             it is LeftStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
         }
 
         val powerRight = otherQuantities.filter {
             it is RightStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
         }
 
