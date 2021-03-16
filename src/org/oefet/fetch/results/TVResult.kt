@@ -12,18 +12,10 @@ import kotlin.math.sqrt
 
 class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
-    val MEAS_NO               = data.findColumn(TVMeasurement.MEAS_NO)
     val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
-    val SET_HEATER            = data.findColumn(TVMeasurement.SET_HEATER)
     val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
-    val GATE_VOLTAGE          = data.findColumn(TVMeasurement.GATE_VOLTAGE)
-    val GATE_CURRENT          = data.findColumn(TVMeasurement.GATE_CURRENT)
-    val HEATER_VOLTAGE        = data.findColumn(TVMeasurement.HEATER_VOLTAGE)
-    val HEATER_CURRENT        = data.findColumn(TVMeasurement.HEATER_CURRENT)
     val HEATER_POWER          = data.findColumn(TVMeasurement.HEATER_POWER)
     val THERMAL_VOLTAGE       = data.findColumn(TVMeasurement.THERMAL_VOLTAGE)
-    val THERMAL_VOLTAGE_ERROR = data.findColumn(TVMeasurement.THERMAL_VOLTAGE_ERROR)
-    val THERMAL_CURRENT       = data.findColumn(TVMeasurement.THERMAL_CURRENT)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
