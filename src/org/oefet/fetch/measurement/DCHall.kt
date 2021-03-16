@@ -68,22 +68,22 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     companion object {
 
-        const val SET_SD_CURRENT = 0
-        const val SET_SG_VOLTAGE = 1
-        const val SD_VOLTAGE     = 2
-        const val SD_CURRENT     = 3
-        const val SG_VOLTAGE     = 4
-        const val SG_CURRENT     = 5
-        const val FIELD          = 6
-        const val HALL_1         = 7
-        const val HALL_1_ERROR   = 8
-        const val HALL_2         = 9
-        const val HALL_2_ERROR   = 10
-        const val FPP_1          = 11
-        const val FPP_1_ERROR    = 12
-        const val FPP_2          = 13
-        const val FPP_2_ERROR    = 14
-        const val TEMPERATURE    = 15
+        val SET_SD_CURRENT = Col("Set SD Current", "A")
+        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
+        val SD_VOLTAGE     = Col("SD Voltage", "V")
+        val SD_CURRENT     = Col("SD Current", "A")
+        val SG_VOLTAGE     = Col("SG Voltage", "V")
+        val SG_CURRENT     = Col("SG Current", "A")
+        val FIELD          = Col("Field Strength", "T")
+        val HALL_1         = Col("Hall Voltage 1", "V")
+        val HALL_1_ERROR   = Col("Hall Voltage 1 Error", "V")
+        val HALL_2         = Col("Hall Voltage 2", "V")
+        val HALL_2_ERROR   = Col("Hall Voltage 2 Error", "V")
+        val FPP_1          = Col("Four-Point Probe 1", "V")
+        val FPP_1_ERROR    = Col("Four-Point Probe 1 Error", "V")
+        val FPP_2          = Col("Four-Point Probe 2", "V")
+        val FPP_2_ERROR    = Col("Four-Point Probe 2 Error", "V")
+        val TEMPERATURE    = Col("Temperature", "K")
 
     }
 
@@ -145,22 +145,22 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     override fun getColumns(): Array<Col> {
 
         return arrayOf(
-            Col("Set SD Current", "A"),
-            Col("Set SG Voltage", "V"),
-            Col("SD Voltage", "V"),
-            Col("SD Current", "A"),
-            Col("SG Voltage", "V"),
-            Col("SG Current", "A"),
-            Col("Field Strength", "T"),
-            Col("Hall Voltage 1", "V"),
-            Col("Hall Voltage 1 Error", "V"),
-            Col("Hall Voltage 2", "V"),
-            Col("Hall Voltage 2 Error", "V"),
-            Col("Four-Point Probe 1", "V"),
-            Col("Four-Point Probe 1 Error", "V"),
-            Col("Four-Point Probe 2", "V"),
-            Col("Four-Point Probe 2 Error", "V"),
-            Col("Temperature", "K")
+            SET_SD_CURRENT,
+            SET_SG_VOLTAGE,
+            SD_VOLTAGE,
+            SD_CURRENT,
+            SG_VOLTAGE,
+            SG_CURRENT,
+            FIELD,
+            HALL_1,
+            HALL_1_ERROR,
+            HALL_2,
+            HALL_2_ERROR,
+            FPP_1,
+            FPP_1_ERROR,
+            FPP_2,
+            FPP_2_ERROR,
+            TEMPERATURE
         )
 
     }

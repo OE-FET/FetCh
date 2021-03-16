@@ -5,6 +5,7 @@ import jisa.experiment.Result
 import jisa.experiment.ResultTable
 import jisa.gui.Series
 import org.oefet.fetch.SD_CURRENT
+import org.oefet.fetch.measurement.DCHall
 import org.oefet.fetch.measurement.DCHall.Companion.FIELD
 import org.oefet.fetch.measurement.DCHall.Companion.HALL_1
 import org.oefet.fetch.measurement.DCHall.Companion.HALL_1_ERROR
@@ -17,6 +18,14 @@ import kotlin.math.sqrt
 
 class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Voltage [V]") {
 
+    val FIELD          = data.findColumn(DCHall.FIELD)
+    val HALL_1         = data.findColumn(DCHall.HALL_1)
+    val HALL_1_ERROR   = data.findColumn(DCHall.HALL_1_ERROR)
+    val HALL_2         = data.findColumn(DCHall.HALL_2)
+    val HALL_2_ERROR   = data.findColumn(DCHall.HALL_2_ERROR)
+    val SET_SD_CURRENT = data.findColumn(DCHall.SET_SD_CURRENT)
+    val SET_SG_VOLTAGE = data.findColumn(DCHall.SET_SG_VOLTAGE)
+
     init {
 
         isMouseEnabled = true
@@ -26,7 +35,7 @@ class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Vo
 
         val xValue: (Result) -> Double = if (noField) {
             xLabel = "Source-Drain Current [A]"
-            { it[SD_CURRENT] }
+            { it[SET_SD_CURRENT] }
         } else {
             xLabel = "Field [T]"
             { it[FIELD] }

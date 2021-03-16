@@ -6,15 +6,8 @@ import jisa.gui.Plot
 import jisa.maths.fits.Fitting
 import org.oefet.fetch.gui.elements.DCHallPlot
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.measurement.DCHall.Companion.FIELD
-import org.oefet.fetch.measurement.DCHall.Companion.FPP_1
-import org.oefet.fetch.measurement.DCHall.Companion.FPP_2
-import org.oefet.fetch.measurement.DCHall.Companion.HALL_1
-import org.oefet.fetch.measurement.DCHall.Companion.HALL_2
-import org.oefet.fetch.measurement.DCHall.Companion.SD_CURRENT
-import org.oefet.fetch.measurement.DCHall.Companion.SET_SD_CURRENT
+import org.oefet.fetch.measurement.DCHall
 import org.oefet.fetch.measurement.DCHall.Companion.SG_VOLTAGE
-import org.oefet.fetch.measurement.DCHall.Companion.TEMPERATURE
 import org.oefet.fetch.quantities.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -56,6 +49,15 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
         Permittivity::class
     )
 
+    val SET_SD_CURRENT = data.findColumn(DCHall.SET_SD_CURRENT)
+    val SD_CURRENT     = data.findColumn(DCHall.SD_CURRENT)
+    val SD_VOLTAGE     = data.findColumn(SG_VOLTAGE)
+    val FIELD          = data.findColumn(DCHall.FIELD)
+    val HALL_1         = data.findColumn(DCHall.HALL_1)
+    val HALL_2         = data.findColumn(DCHall.HALL_2)
+    val FPP_1          = data.findColumn(DCHall.FPP_1)
+    val FPP_2          = data.findColumn(DCHall.FPP_2)
+    val TEMPERATURE    = data.findColumn(DCHall.TEMPERATURE)
     /**
      * This is run on construction.
      */
@@ -64,7 +66,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
         parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         // Split data-up into separate tables based on gate voltage
-        for ((gate, data) in data.split(SG_VOLTAGE)) {
+        for ((gate, data) in data.split(SD_VOLTAGE)) {
 
             val parameters = ArrayList<Quantity>(parameters)
             parameters    += Gate(gate, 0.0)
