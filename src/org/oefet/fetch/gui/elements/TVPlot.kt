@@ -8,25 +8,18 @@ import org.oefet.fetch.measurement.TVMeasurement
 
 class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Heater Power [W]", "Thermal Voltage [V]") {
 
-    val MEAS_NO               = data.findColumn(TVMeasurement.MEAS_NO)
     val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
-    val SET_HEATER            = data.findColumn(TVMeasurement.SET_HEATER)
     val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
-    val GATE_VOLTAGE          = data.findColumn(TVMeasurement.GATE_VOLTAGE)
-    val GATE_CURRENT          = data.findColumn(TVMeasurement.GATE_CURRENT)
-    val HEATER_VOLTAGE        = data.findColumn(TVMeasurement.HEATER_VOLTAGE)
-    val HEATER_CURRENT        = data.findColumn(TVMeasurement.HEATER_CURRENT)
     val HEATER_POWER          = data.findColumn(TVMeasurement.HEATER_POWER)
     val THERMAL_VOLTAGE       = data.findColumn(TVMeasurement.THERMAL_VOLTAGE)
     val THERMAL_VOLTAGE_ERROR = data.findColumn(TVMeasurement.THERMAL_VOLTAGE_ERROR)
-    val THERMAL_CURRENT       = data.findColumn(TVMeasurement.THERMAL_CURRENT)
 
     init {
 
         isMouseEnabled = true
         pointOrdering  = Sort.ORDER_ADDED
 
-        if (data.getName(THERMAL_VOLTAGE_ERROR) == "Thermal Voltage Error") {
+        if (THERMAL_VOLTAGE_ERROR != -1) {
 
             createSeries()
                 .setLineVisible(false)
@@ -54,11 +47,8 @@ class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Heater Power [W]
 
 class TVCPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration", "Heater Power [W]", "Spot Strip Resistance [Ohm]") {
 
-    val SET_HEATER_VOLTAGE  = data.findColumn(TVCalibration.SET_HEATER_VOLTAGE)
     val SET_STRIP_CURRENT   = data.findColumn(TVCalibration.SET_STRIP_CURRENT)
     val GROUND_CURRENT      = data.findColumn(TVCalibration.GROUND_CURRENT)
-    val HEATER_VOLTAGE      = data.findColumn(TVCalibration.HEATER_VOLTAGE)
-    val HEATER_CURRENT      = data.findColumn(TVCalibration.HEATER_CURRENT)
     val HEATER_POWER        = data.findColumn(TVCalibration.HEATER_POWER)
     val STRIP_VOLTAGE       = data.findColumn(TVCalibration.STRIP_VOLTAGE)
     val STRIP_VOLTAGE_ERROR = data.findColumn(TVCalibration.STRIP_VOLTAGE_ERROR)
@@ -71,12 +61,25 @@ class TVCPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration", "Hea
         pointOrdering   = Sort.ORDER_ADDED
         isLegendVisible = false
 
-        createSeries()
-            .setLineVisible(true)
-            .watch(data, { it[HEATER_POWER] }, { it[STRIP_VOLTAGE] / it[STRIP_CURRENT] }, { it[STRIP_VOLTAGE_ERROR] / it[STRIP_CURRENT] })
-            .filter { it[SET_STRIP_CURRENT] > 0.0 }
-            .setColour(Colour.CORNFLOWERBLUE)
-            .polyFit(1)
+        if (STRIP_VOLTAGE_ERROR != -1) {
+
+            createSeries()
+                .setLineVisible(true)
+                .watch(data, { it[HEATER_POWER] }, { it[STRIP_VOLTAGE] / it[STRIP_CURRENT] }, { it[STRIP_VOLTAGE_ERROR] / it[STRIP_CURRENT] })
+                .filter { it[SET_STRIP_CURRENT] > 0.0 }
+                .setColour(Colour.CORNFLOWERBLUE)
+                .polyFit(1)
+
+        } else {
+
+            createSeries()
+                .setLineVisible(true)
+                .watch(data, { it[HEATER_POWER] }, { it[STRIP_VOLTAGE] / it[STRIP_CURRENT] })
+                .filter { it[SET_STRIP_CURRENT] > 0.0 }
+                .setColour(Colour.CORNFLOWERBLUE)
+                .polyFit(1)
+
+        }
 
     }
 
