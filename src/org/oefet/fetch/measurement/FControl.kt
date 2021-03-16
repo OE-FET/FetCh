@@ -12,9 +12,9 @@ class FControl(private val lockIn: LockIn, private val dcPower: DCPower) : PIDCo
 
     override fun start() {
 
-        lockIn.setRefMode(LockIn.RefMode.INTERNAL)
+        lockIn.refMode = LockIn.RefMode.INTERNAL
         lockIn.setOscFrequency(0.01)
-        lockIn.setRefMode(LockIn.RefMode.EXTERNAL)
+        lockIn.refMode = LockIn.RefMode.EXTERNAL
 
         dcPower.turnOff()
         dcPower.voltage = 10.0

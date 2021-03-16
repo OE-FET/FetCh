@@ -73,7 +73,7 @@ class Stress : Tabs("Stress"), SweepInput {
         sd.loadFromConfig(Settings.holdSDConf)
         sg.loadFromConfig(Settings.holdSGConf)
 
-        params.clear();
+        params.clear()
         params.addAll(Grid(1, basic, interval), FetChQueue("Interval Actions", subQueue))
 
         subQueue.clear()

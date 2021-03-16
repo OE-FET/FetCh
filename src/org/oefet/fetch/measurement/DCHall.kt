@@ -203,6 +203,12 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         fpp1?.turnOn()
         fpp2?.turnOn()
 
+        // Prepare repeat measurements
+        val hvm1Values = Repeat.prepare(repeats, repTime) { hvm1?.voltage ?: Double.NaN }
+        val hvm2Values = Repeat.prepare(repeats, repTime) { hvm2?.voltage ?: Double.NaN }
+        val fpp1Values = Repeat.prepare(repeats, repTime) { fpp1?.voltage ?: Double.NaN }
+        val fpp2Values = Repeat.prepare(repeats, repTime) { fpp2?.voltage ?: Double.NaN }
+
         for (gate in gates) {
 
             gdSMU?.voltage = gate
@@ -216,12 +222,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     sdSMU.current = current
                     sleep(delTime)
 
-                    // Create arrays to hold repeat values
-                    val hvm1Values = Repeat(repeats, repTime) { hvm1?.voltage ?: Double.NaN }
-                    val hvm2Values = Repeat(repeats, repTime) { hvm2?.voltage ?: Double.NaN }
-                    val fpp1Values = Repeat(repeats, repTime) { fpp1?.voltage ?: Double.NaN }
-                    val fpp2Values = Repeat(repeats, repTime) { fpp2?.voltage ?: Double.NaN }
-
+                    // Run all four repeat measurements side-by-side
                     Repeat.runTogether(hvm1Values, hvm2Values, fpp1Values, fpp2Values)
 
                     results.addData(

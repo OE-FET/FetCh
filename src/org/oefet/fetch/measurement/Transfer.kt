@@ -30,6 +30,19 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
     val sdVoltages get() = sdvParam.value
     val sgVoltages get() = if (symVSGParam.value) sgvParam.value.mirror() else sgvParam.value
 
+    companion object {
+        val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
+        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
+        val SD_VOLTAGE     = Col("SD Voltage", "V")
+        val SD_CURRENT     = Col("SD Current", "A")
+        val SG_VOLTAGE     = Col("SG Voltage", "V")
+        val SG_CURRENT     = Col("SG Current", "A")
+        val FPP_1          = Col("Four Point Probe 1", "V")
+        val FPP_2          = Col("Four Point Probe 2", "V")
+        val TEMPERATURE    = Col("Temperature", "K")
+        val GROUND_CURRENT = Col("Ground Current", "A")
+    }
+
     override fun checkForErrors() : List<String> {
 
         val errors = ArrayList<String>()
@@ -38,6 +51,23 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
         if (sgSMU == null) errors += "SG channel not configured"
 
         return errors
+
+    }
+
+    override fun getColumns(): Array<Col> {
+
+        return arrayOf(
+            Output.SET_SD_VOLTAGE,
+            Output.SET_SG_VOLTAGE,
+            Output.SD_VOLTAGE,
+            Output.SD_CURRENT,
+            Output.SG_VOLTAGE,
+            Output.SG_CURRENT,
+            Output.FPP_1,
+            Output.FPP_2,
+            Output.TEMPERATURE,
+            Output.GROUND_CURRENT
+        )
 
     }
 
@@ -98,23 +128,6 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
         runRegardless { gdSMU?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
-
-    }
-
-    override fun getColumns(): Array<Col> {
-
-        return arrayOf(
-            Col("Set SD Voltage", "V"),
-            Col("Set SG Voltage", "V"),
-            Col("SD Voltage", "V"),
-            Col("SD Current", "A"),
-            Col("SG Voltage", "V"),
-            Col("SG Current", "A"),
-            Col("Four Point Probe 1", "V"),
-            Col("Four Point Probe 2", "V"),
-            Col("Temperature", "K"),
-            Col("Ground Current", "A")
-        )
 
     }
 

@@ -24,16 +24,16 @@ object Dashboard : Grid("Dashboard", 3) {
 
         addToolbarButton("Start Logging") {
 
-            val path = GUI.saveFileSelect();
+            val path = GUI.saveFileSelect()
 
             if (path != null) {
-                Log.start(path);
+                Log.start(path)
             }
 
         }
 
         addToolbarButton("Stop Logging") {
-            Log.stop();
+            Log.stop()
         }
 
 
@@ -85,8 +85,7 @@ object Dashboard : Grid("Dashboard", 3) {
                 fullPlot.createSeries()
                     .watch(log, 0, i)
                     .setMarkerVisible(false)
-                    .setLineVisible(true)
-                    .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
+                    .setLineVisible(true).colour = Series.defaultColours[(i-1) % Series.defaultColours.size]
 
                 fullPlot.show()
 
@@ -182,8 +181,7 @@ object Dashboard : Grid("Dashboard", 3) {
                 .setAutoReduction(3000, 5000)
                 .watch(log, 0, i)
                 .setMarkerVisible(false)
-                .setLineVisible(true)
-                .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
+                .setLineVisible(true).colour = Series.defaultColours[(i-1) % Series.defaultColours.size]
 
             grid.add(plot)
 

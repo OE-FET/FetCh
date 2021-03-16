@@ -73,7 +73,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
             // Don't bother with this gate voltage if there's fewer than 2 data-points in it
             if (data.numRows < 2) {
-                continue;
+                continue
             }
 
             // Check which channels were used (if it contains a non-finite value, assume it weren't used)

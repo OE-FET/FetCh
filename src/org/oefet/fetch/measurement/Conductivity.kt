@@ -18,12 +18,12 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     private val holdGParam   = BooleanParameter("Source-Gate", "Active", null, false)
     private val gateVParam   = DoubleParameter("Source-Gate", "Voltage", "V", 50.0)
 
-    val gdSMUConfig = addInstrument("Ground Channel (SPA)", SMU::class.java)
-    val sdSMUConfig = addInstrument("Source-Drain Channel", SMU::class.java)
-    val sgSMUConfig = addInstrument("Source-Gate Channel", SMU::class.java)
-    val fpp1Config  = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
-    val fpp2Config  = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
-    private val tMeterConfig  = addInstrument("Thermometer", TMeter::class.java)
+    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
+    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
+    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
+    private val tMeterConfig = addInstrument("Thermometer", TMeter::class) { tMeter = it }
 
     val delTime  get() = (1e3 * delTimeParam.value).toInt()
     val currents get() = currentParam.value
@@ -31,15 +31,32 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     val holdG    get() = holdGParam.value
     val gateV    get() = gateVParam.value
 
-    override fun loadInstruments() {
+    companion object {
+        val SD_VOLTAGE     = Col("SD Voltage", "V")
+        val SD_CURRENT     = Col("SD Current", "A")
+        val SG_VOLTAGE     = Col("SG Voltage", "V")
+        val SG_CURRENT     = Col("SG Current", "A")
+        val FPP1_VOLTAGE   = Col("FPP 1 Voltage", "V")
+        val FPP2_VOLTAGE   = Col("FPP 2 Voltage", "V")
+        val FPP_VOLTAGE    = Col("FPP Voltage", "V") { (it[FPP1_VOLTAGE] - it[FPP2_VOLTAGE]) }
+        val TEMPERATURE    = Col("Temperature", "K")
+        val GROUND_CURRENT = Col("Ground Current", "A")
+    }
 
-        gdSMU    = gdSMUConfig.get()
-        sdSMU    = sdSMUConfig.get()
-        sgSMU    = sgSMUConfig.get()
-        fpp1     = fpp1Config.get()
-        fpp2     = fpp2Config.get()
-        tMeter   = tMeterConfig.get()
+    override fun getColumns(): Array<Col> {
 
+        return arrayOf(
+            SD_VOLTAGE,
+            SD_CURRENT,
+            SG_VOLTAGE,
+            SG_CURRENT,
+            FPP1_VOLTAGE,
+            FPP2_VOLTAGE,
+            FPP_VOLTAGE,
+            TEMPERATURE,
+            GROUND_CURRENT
+        )
+        
     }
 
     override fun checkForErrors(): List<String> {
@@ -117,34 +134,10 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
 
     }
 
-    override fun getColumns(): Array<Col> = arrayOf(
-        Col("SD Voltage", "V"),
-        Col("SD Current", "A"),
-        Col("SG Voltage", "V"),
-        Col("SG Current", "A"),
-        Col("FPP 1 Voltage", "V"),
-        Col("FPP 2 Voltage", "V"),
-        Col("FPP Voltage", "V") { (it[FPP1_VOLTAGE] - it[FPP2_VOLTAGE]) },
-        Col("Temperature", "K"),
-        Col("Ground Current", "A")
-    )
-
     override fun onInterrupt() {}
 
     override fun onError() {
 
-    }
-
-    companion object {
-        const val SD_VOLTAGE = 0
-        const val SD_CURRENT = 1
-        const val SG_VOLTAGE = 2
-        const val SG_CURRENT = 3
-        const val FPP1_VOLTAGE = 4
-        const val FPP2_VOLTAGE = 5
-        const val FPP_VOLTAGE = 6
-        const val TEMPERATURE = 7
-        const val GROUND_CURRENT = 8
     }
 
 }

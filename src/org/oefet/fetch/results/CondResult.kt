@@ -3,12 +3,21 @@ package org.oefet.fetch.results
 import jisa.enums.Icon
 import jisa.experiment.ResultTable
 import jisa.maths.fits.Fitting
-import org.oefet.fetch.quantities.*
 import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.measurement.Conductivity
-import org.oefet.fetch.measurement.Conductivity.Companion.TEMPERATURE
+import org.oefet.fetch.quantities.*
 
 class CondResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+
+    val SD_VOLTAGE     = data.findColumn(Conductivity.SD_VOLTAGE)
+    val SD_CURRENT     = data.findColumn(Conductivity.SD_CURRENT)
+    val SG_VOLTAGE     = data.findColumn(Conductivity.SG_VOLTAGE)
+    val SG_CURRENT     = data.findColumn(Conductivity.SG_CURRENT)
+    val FPP1_VOLTAGE   = data.findColumn(Conductivity.FPP1_VOLTAGE)
+    val FPP2_VOLTAGE   = data.findColumn(Conductivity.FPP2_VOLTAGE)
+    val FPP_VOLTAGE    = data.findColumn(Conductivity.FPP_VOLTAGE)
+    val TEMPERATURE    = data.findColumn(Conductivity.TEMPERATURE)
+    val GROUND_CURRENT = data.findColumn(Conductivity.GROUND_CURRENT)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
@@ -52,8 +61,8 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
         )
 
         val fit = Fitting.linearFit(
-            data.getColumns(Conductivity.FPP_VOLTAGE),
-            data.getColumns(Conductivity.SD_CURRENT)
+            data.getColumns(FPP_VOLTAGE),
+            data.getColumns(SD_CURRENT)
         )
 
         val value = fit.gradient * separation / (width * thickness) / 100.0

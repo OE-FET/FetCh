@@ -14,7 +14,7 @@ object Log {
 
     private val logTasks: MutableList<() -> Double> = ArrayList()
     private val logger: RTask = RTask(2500) { it -> log(log!!, it) }
-    private var log: ResultTable? = null;
+    private var log: ResultTable? = null
 
     fun start(path: String) {
 

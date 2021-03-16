@@ -20,7 +20,7 @@ class Repeat : Grid("Repeat", 2), SweepInput {
 
     override fun ask(queue: ActionQueue) {
 
-        clear();
+        clear()
         addAll(basic, FetChQueue("Interval Actions", subQueue))
 
         subQueue.clear()

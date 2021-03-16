@@ -3,16 +3,7 @@ package org.oefet.fetch.gui.elements
 import jisa.experiment.Combination
 import jisa.experiment.Result
 import jisa.experiment.ResultTable
-import jisa.gui.Series
-import org.oefet.fetch.SD_CURRENT
 import org.oefet.fetch.measurement.DCHall
-import org.oefet.fetch.measurement.DCHall.Companion.FIELD
-import org.oefet.fetch.measurement.DCHall.Companion.HALL_1
-import org.oefet.fetch.measurement.DCHall.Companion.HALL_1_ERROR
-import org.oefet.fetch.measurement.DCHall.Companion.HALL_2
-import org.oefet.fetch.measurement.DCHall.Companion.HALL_2_ERROR
-import org.oefet.fetch.measurement.DCHall.Companion.SET_SD_CURRENT
-import org.oefet.fetch.measurement.DCHall.Companion.SET_SG_VOLTAGE
 import kotlin.math.pow
 import kotlin.math.sqrt
 

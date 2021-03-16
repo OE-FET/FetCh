@@ -28,13 +28,14 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     private val spinParam      = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
     private val currentParam   = RangeParameter("Source-Drain", "Current", "A", -50e-6, 50e-6, 5, Range.Type.LINEAR, 1)
     private val gateParam      = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
-    private val gdSMUConfig    = addInstrument("Ground Channel (SPA)", SMU::class.java)
-    private val sdSMUConfig    = addInstrument("Source-Drain Channel", SMU::class.java)
-    private val sgSMUConfig    = addInstrument("Source-Gate Channel", SMU::class.java)
-    private val dcPowerConfig  = addInstrument("Motor Power Supply", DCPower::class.java)
-    private val lockInConfig   = addInstrument("Lock-In Amplifier", DPLockIn::class.java)
-    private val preAmpConfig   = addInstrument("Voltage Pre-Amplifier", VPreAmp::class.java)
-    private val tMeterConfig   = addInstrument("Thermometer", TMeter::class.java)
+
+    private val gdSMUConfig    = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val sdSMUConfig    = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val sgSMUConfig    = addInstrument("Source-Gate Channel", SMU::class)  { sgSMU = it }
+    private val dcPowerConfig  = addInstrument("Motor Power Supply", DCPower::class) { dcPower = it }
+    private val lockInConfig   = addInstrument("Lock-In Amplifier", DPLockIn::class) { lockIn = it }
+    private val preAmpConfig   = addInstrument("Voltage Pre-Amplifier", VPreAmp::class) { preAmp = it }
+    private val tMeterConfig   = addInstrument("Thermometer", TMeter::class) { tMeter = it }
 
     val intTime     get() = intTimeParam.value
     val delTime     get() = (1e3 * delTimeParam.value).toInt()
@@ -48,32 +49,33 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     val gates       get() = gateParam.value
     val totGain     get() = paGain * exGain
 
-    private fun Array<out Double>.stdDeviation(): Double {
+    companion object {
 
-        if (size < 2) {
-            return 0.0
-        }
-
-        val mean = average()
-        var sum = 0.0
-
-        for (value in this) sum += (value - mean).pow(2)
-
-        return sqrt(sum / (size - 1))
+        val SD_VOLTAGE   = Col("SD Voltage", "V")
+        val SD_CURRENT   = Col("SD Current", "A")
+        val SG_VOLTAGE   = Col("SG Voltage", "V")
+        val SG_CURRENT   = Col("SG Current", "A")
+        val RMS_FIELD    = Col("RMS Field Strength", "T")
+        val FREQUENCY    = Col("Field Frequency", "Hz")
+        val X_VOLTAGE    = Col("X Voltage", "V")
+        val X_ERROR      = Col("X Error", "V")
+        val Y_VOLTAGE    = Col("Y Voltage", "V")
+        val Y_ERROR      = Col("Y Error", "V")
+        val HALL_VOLTAGE = Col("Hall Voltage", "V")
+        val HALL_ERROR   = Col("Hall Voltage Error", "V")
+        val TEMPERATURE  = Col("Temperature", "K")
 
     }
 
     override fun loadInstruments() {
 
-        gdSMU    = gdSMUConfig.instrument
-        sdSMU    = sdSMUConfig.instrument
-        sgSMU    = sgSMUConfig.instrument
-        dcPower  = dcPowerConfig.instrument
-        lockIn   = lockInConfig.instrument
-        preAmp   = preAmpConfig.instrument
-        tMeter   = tMeterConfig.instrument
-        fControl = if (lockIn != null && dcPower != null) FControl(lockIn!!, dcPower!!) else null
+        super.loadInstruments()
 
+        fControl = if (lockIn != null && dcPower != null) {
+            FControl(lockIn!!, dcPower!!)
+        } else {
+            null
+        }
 
     }
 
@@ -81,11 +83,25 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
         val errors = LinkedList<String>()
 
-        if (sdSMU == null)                                                 errors += "No SD channel configured"
-        if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0))  errors += "No SG channel configured"
-        if (lockIn == null)                                                errors += "No lock-in configured"
-        if (preAmp == null)                                                errors += "No pre-amp configured"
-        if (fControl == null)                                              errors += "No frequency control available"
+        if (sdSMU == null) {
+            errors += "No SD channel configured"
+        }
+
+        if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0)) {
+            errors += "No SG channel configured"
+        }
+
+        if (lockIn == null) {
+            errors += "No lock-in configured"
+        }
+
+        if (preAmp == null) {
+            errors += "No pre-amp configured"
+        }
+
+        if (fControl == null) {
+            errors += "No frequency control available"
+        }
 
         return errors
 
@@ -100,9 +116,9 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         results.setAttribute("Extra Pre-Amp Gain", exGain)
 
         // Assert that all required instruments must be connected
-        val sdSMU = sdSMU!!
-        val lockIn = lockIn!!
-        val preAmp = preAmp!!
+        val sdSMU    = sdSMU!!
+        val lockIn   = lockIn!!
+        val preAmp   = preAmp!!
         val fControl = fControl!!
 
         sdSMU.turnOff()
@@ -110,9 +126,9 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         gdSMU?.turnOff()
 
         // Configure the pre-amp
-        preAmp.coupling = Coupling.AC;
-        preAmp.input    = Input.DIFF;
-        preAmp.gain     = paGain;
+        preAmp.coupling = Coupling.AC
+        preAmp.input    = Input.DIFF
+        preAmp.gain     = paGain
 
         // Initialise the SMUs
         sdSMU.current  = currents.first()
@@ -129,13 +145,16 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         gdSMU?.turnOn()
         fControl.start()
 
+        val xValues = Repeat.prepare(repeats, 1000) { lockIn.lockedX / totGain }
+        val yValues = Repeat.prepare(repeats, 1000) { lockIn.lockedY / totGain }
+
         for (frequency in frequencies) {
 
             fControl.target = frequency
 
             sleep(spin/10)
 
-            lockIn.autoRange();
+            lockIn.autoRange()
 
             sleep(spin)
 
@@ -151,9 +170,6 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
                     sdSMU.current = current
 
                     sleep(delTime)
-
-                    val xValues = Repeat(repeats, 1000) { lockIn.lockedX / totGain }
-                    val yValues = Repeat(repeats, 1000) { lockIn.lockedY / totGain }
 
                     Repeat.runTogether(xValues, yValues)
 
@@ -205,19 +221,19 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     override fun getColumns(): Array<Col> {
 
         return arrayOf(
-            Col("SD Voltage", "V"),
-            Col("SD Current", "A"),
-            Col("SG Voltage", "V"),
-            Col("SG Current", "A"),
-            Col("RMS Field Strength", "T"),
-            Col("Field Frequency", "Hz"),
-            Col("X Voltage", "V"),
-            Col("X Error", "V"),
-            Col("Y Voltage", "V"),
-            Col("Y Error", "V"),
-            Col("Hall Voltage", "V"),
-            Col("Hall Voltage Error", "V"),
-            Col("Temperature", "K")
+            SD_VOLTAGE,
+            SD_CURRENT,
+            SG_VOLTAGE,
+            SG_CURRENT,
+            RMS_FIELD,
+            FREQUENCY,
+            X_VOLTAGE,
+            X_ERROR,
+            Y_VOLTAGE,
+            Y_ERROR,
+            HALL_VOLTAGE,
+            HALL_ERROR,
+            TEMPERATURE
         )
 
     }
@@ -227,24 +243,6 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     }
 
     override fun onError() {
-
-    }
-
-    companion object {
-
-        const val SD_VOLTAGE = 0
-        const val SD_CURRENT = 1
-        const val SG_VOLTAGE = 2
-        const val SG_CURRENT = 3
-        const val RMS_FIELD = 4
-        const val FREQUENCY = 5
-        const val X_VOLTAGE = 6
-        const val X_ERROR = 7
-        const val Y_VOLTAGE = 8
-        const val Y_ERROR = 9
-        const val HALL_VOLTAGE = 10
-        const val HALL_ERROR = 11
-        const val TEMPERATURE = 12
 
     }
 
