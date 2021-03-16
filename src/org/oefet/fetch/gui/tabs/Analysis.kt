@@ -19,7 +19,7 @@ object Analysis : BorderDisplay("Analysis") {
         addItem("Plots and Tables...") { save() }
     }
 
-    var output: Analysis.Output? = null;
+    var output: Analysis.Output? = null
 
     init {
 

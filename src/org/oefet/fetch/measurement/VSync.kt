@@ -21,28 +21,47 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
     private val paramSymVSD  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
     private val paramOffset  = DoubleParameter("Source-Gate", "Offset", "V", 0.0)
 
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class.java)
-    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class.java)
-    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class.java)
-    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class.java)
-    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class.java)
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class.java)
+    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
+    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
+    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
+    private val tMeterConfig = addInstrument("Thermometer", TMeter::class) { tMeter = it }
 
     val delTime get() = (paramDelTime.value * 1000).toInt()
-    val minVSD  get() = paramMinVSD .value
-    val maxVSD  get() = paramMaxVSD .value
-    val numVSD  get() = paramNumVSD .value
-    val symVSD  get() = paramSymVSD .value
-    val offset  get() = paramOffset .value
+    val minVSD  get() = paramMinVSD.value
+    val maxVSD  get() = paramMaxVSD.value
+    val numVSD  get() = paramNumVSD.value
+    val symVSD  get() = paramSymVSD.value
+    val offset  get() = paramOffset.value
 
-    override fun loadInstruments() {
+    companion object {
+        val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
+        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
+        val SD_VOLTAGE     = Col("SD Voltage", "V")
+        val SD_CURRENT     = Col("SD Current", "A")
+        val SG_VOLTAGE     = Col("SG Voltage", "V")
+        val SG_CURRENT     = Col("SG Current", "A")
+        val FPP_1          = Col("Four Point Probe 1", "V")
+        val FPP_2          = Col("Four Point Probe 2", "V")
+        val TEMPERATURE    = Col("Temperature", "K")
+        val GROUND_CURRENT = Col("Ground Current", "A")
+    }
 
-        gdSMU    = gdSMUConfig.get()
-        sdSMU    = sdSMUConfig.get()
-        sgSMU    = sgSMUConfig.get()
-        fpp1     = fpp1Config.get()
-        fpp2     = fpp2Config.get()
-        tMeter   = tMeterConfig.get()
+    override fun getColumns(): Array<Col> {
+
+        return arrayOf(
+            SET_SD_VOLTAGE,
+            SET_SG_VOLTAGE,
+            SD_VOLTAGE,
+            SD_CURRENT,
+            SG_VOLTAGE,
+            SG_CURRENT,
+            FPP_1,
+            FPP_2,
+            TEMPERATURE,
+            GROUND_CURRENT
+        )
 
     }
 
@@ -121,23 +140,6 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         runRegardless { gdSMU?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
-
-    }
-
-    override fun getColumns(): Array<Col> {
-
-        return arrayOf(
-            Col("Set SD Voltage", "V"),
-            Col("Set SG Voltage", "V"),
-            Col("SD Voltage", "V"),
-            Col("SD Current", "A"),
-            Col("SG Voltage", "V"),
-            Col("SG Current", "A"),
-            Col("Four Point Probe 1", "V"),
-            Col("Four Point Probe 2", "V"),
-            Col("Temperature", "K"),
-            Col("Ground Current", "A")
-        )
 
     }
 

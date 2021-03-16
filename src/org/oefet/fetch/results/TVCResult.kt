@@ -4,13 +4,20 @@ import jisa.experiment.ResultTable
 import org.oefet.fetch.quantities.*
 import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.measurement.TVCalibration.Companion.HEATER_POWER
-import org.oefet.fetch.measurement.TVCalibration.Companion.SET_HEATER_VOLTAGE
-import org.oefet.fetch.measurement.TVCalibration.Companion.STRIP_CURRENT
-import org.oefet.fetch.measurement.TVCalibration.Companion.STRIP_VOLTAGE
-import org.oefet.fetch.measurement.TVCalibration.Companion.TEMPERATURE
+import org.oefet.fetch.measurement.TVCalibration
 
 class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+
+    val SET_HEATER_VOLTAGE  = data.findColumn(TVCalibration.SET_HEATER_VOLTAGE)
+    val SET_STRIP_CURRENT   = data.findColumn(TVCalibration.SET_STRIP_CURRENT)
+    val GROUND_CURRENT      = data.findColumn(TVCalibration.GROUND_CURRENT)
+    val HEATER_VOLTAGE      = data.findColumn(TVCalibration.HEATER_VOLTAGE)
+    val HEATER_CURRENT      = data.findColumn(TVCalibration.HEATER_CURRENT)
+    val HEATER_POWER        = data.findColumn(TVCalibration.HEATER_POWER)
+    val STRIP_VOLTAGE       = data.findColumn(TVCalibration.STRIP_VOLTAGE)
+    val STRIP_VOLTAGE_ERROR = data.findColumn(TVCalibration.STRIP_VOLTAGE_ERROR)
+    val STRIP_CURRENT       = data.findColumn(TVCalibration.STRIP_CURRENT)
+    val TEMPERATURE         = data.findColumn(TVCalibration.TEMPERATURE)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()

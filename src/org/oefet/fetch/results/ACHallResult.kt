@@ -7,21 +7,23 @@ import jisa.maths.Range
 import jisa.maths.fits.Fitting
 import jisa.maths.matrices.RealMatrix
 import org.oefet.fetch.gui.elements.ACHallPlot
-import org.oefet.fetch.measurement.ACHall.Companion.FREQUENCY
-import org.oefet.fetch.measurement.ACHall.Companion.HALL_VOLTAGE
-import org.oefet.fetch.measurement.ACHall.Companion.RMS_FIELD
-import org.oefet.fetch.measurement.ACHall.Companion.SD_CURRENT
-import org.oefet.fetch.measurement.ACHall.Companion.TEMPERATURE
-import org.oefet.fetch.measurement.ACHall.Companion.X_ERROR
-import org.oefet.fetch.measurement.ACHall.Companion.X_VOLTAGE
-import org.oefet.fetch.measurement.ACHall.Companion.Y_ERROR
-import org.oefet.fetch.measurement.ACHall.Companion.Y_VOLTAGE
+import org.oefet.fetch.measurement.ACHall
 import org.oefet.fetch.quantities.*
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.*
 
 class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+
+    val FREQUENCY    = data.findColumn(ACHall.FREQUENCY)
+    val HALL_VOLTAGE = data.findColumn(ACHall.HALL_VOLTAGE)
+    val RMS_FIELD    = data.findColumn(ACHall.RMS_FIELD)
+    val SD_CURRENT   = data.findColumn(ACHall.SD_CURRENT)
+    val TEMPERATURE  = data.findColumn(ACHall.TEMPERATURE)
+    val X_ERROR      = data.findColumn(ACHall.X_ERROR)
+    val X_VOLTAGE    = data.findColumn(ACHall.X_VOLTAGE)
+    val Y_ERROR      = data.findColumn(ACHall.Y_ERROR)
+    val Y_VOLTAGE    = data.findColumn(ACHall.Y_VOLTAGE)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
