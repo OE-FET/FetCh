@@ -74,13 +74,13 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         val calibrationLeft = otherQuantities.filter {
             it is LeftStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
         }
 
         val calibrationRight = otherQuantities.filter {
             it is RightStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
         }
 
@@ -112,13 +112,13 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         val powerLeft = otherQuantities.filter {
             it is LeftStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
         }
 
         val powerRight = otherQuantities.filter {
             it is RightStripResistance
-            && it.isCompatibleWith(otherQuantities.first())
+            && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
         }
 
