@@ -7,17 +7,28 @@ import org.oefet.fetch.*
 import org.oefet.fetch.quantities.*
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.gui.images.Images
+import org.oefet.fetch.measurement.Output
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class OutputResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    ResultFile {
+class OutputResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+
+    val SET_SD_VOLTAGE = data.findColumn(Output.SET_SD_VOLTAGE)
+    val SET_SG_VOLTAGE = data.findColumn(Output.SET_SG_VOLTAGE)
+    val SD_VOLTAGE     = data.findColumn(Output.SD_VOLTAGE)
+    val SD_CURRENT     = data.findColumn(Output.SD_CURRENT)
+    val SG_VOLTAGE     = data.findColumn(Output.SG_VOLTAGE)
+    val SG_CURRENT     = data.findColumn(Output.SG_CURRENT)
+    val FPP_1          = data.findColumn(Output.FPP_1)
+    val FPP_2          = data.findColumn(Output.FPP_2)
+    val TEMPERATURE    = data.findColumn(Output.TEMPERATURE)
+    val GROUND_CURRENT = data.findColumn(Output.GROUND_CURRENT)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
-    override val plot       = OutputPlot(data).apply { legendRows = data.getUniqueValues(SET_SG).size }
+    override val plot       = OutputPlot(data).apply { legendRows = data.getUniqueValues(SET_SG_VOLTAGE).size }
     override val name       = "Output Measurement (${data.getAttribute("Name")})"
     override val image      = Images.getImage("output.png")
     override val label      = "Output"
@@ -62,12 +73,12 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
             val SGV = 1
             val SDI = 2
 
-            for ((gate, data) in data.split(SET_SG)) {
+            for ((gate, data) in data.split(SET_SG_VOLTAGE)) {
 
-                val fb = data.splitTwoWaySweep { it[SET_SD] }
+                val fb = data.splitTwoWaySweep { it[SET_SD_VOLTAGE] }
 
-                for (row in fb.forward)  fwd.addData(row[SET_SD], gate, row[SD_CURRENT])
-                for (row in fb.backward) bwd.addData(row[SET_SD], gate, row[SD_CURRENT])
+                for (row in fb.forward)  fwd.addData(row[SET_SD_VOLTAGE], gate, row[SD_CURRENT])
+                for (row in fb.backward) bwd.addData(row[SET_SD_VOLTAGE], gate, row[SD_CURRENT])
 
             }
 
@@ -154,28 +165,13 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
 
             }
 
-            for ((gate, max) in maxLinMobility) quantities += MaxLinMobility(
-                max,
-                0.0,
-                ArrayList(parameters).apply {
-                    add(
-                        Gate(
-                            gate,
-                            0.0
-                        )
-                    )
-                })
-            for ((gate, max) in maxSatMobility) quantities += MaxSatMobility(
-                max,
-                0.0,
-                ArrayList(parameters).apply {
-                    add(
-                        Gate(
-                            gate,
-                            0.0
-                        )
-                    )
-                })
+            for ((gate, max) in maxLinMobility) {
+                quantities += MaxLinMobility(max, 0.0, ArrayList(parameters).apply { add(Gate(gate, 0.0)) })
+            }
+
+            for ((gate, max) in maxSatMobility) {
+                quantities += MaxSatMobility(max, 0.0, ArrayList(parameters).apply { add(Gate(gate, 0.0)) })
+            }
 
 
         } catch (e: Exception) {

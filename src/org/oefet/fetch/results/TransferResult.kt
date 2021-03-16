@@ -1,23 +1,34 @@
 package org.oefet.fetch.results
 
 import jisa.experiment.ResultTable
-import jisa.maths.interpolation.Interpolation
 import jisa.maths.functions.Function
-import org.oefet.fetch.*
-import org.oefet.fetch.quantities.*
+import jisa.maths.interpolation.Interpolation
+import org.oefet.fetch.EPSILON
 import org.oefet.fetch.gui.elements.TransferPlot
 import org.oefet.fetch.gui.images.Images
+import org.oefet.fetch.measurement.Transfer
+import org.oefet.fetch.quantities.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TransferResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    ResultFile {
+class TransferResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+
+    val SET_SD_VOLTAGE = data.findColumn(Transfer.SET_SD_VOLTAGE)
+    val SET_SG_VOLTAGE = data.findColumn(Transfer.SET_SG_VOLTAGE)
+    val SD_VOLTAGE     = data.findColumn(Transfer.SD_VOLTAGE)
+    val SD_CURRENT     = data.findColumn(Transfer.SD_CURRENT)
+    val SG_VOLTAGE     = data.findColumn(Transfer.SG_VOLTAGE)
+    val SG_CURRENT     = data.findColumn(Transfer.SG_CURRENT)
+    val FPP_1          = data.findColumn(Transfer.FPP_1)
+    val FPP_2          = data.findColumn(Transfer.FPP_2)
+    val TEMPERATURE    = data.findColumn(Transfer.TEMPERATURE)
+    val GROUND_CURRENT = data.findColumn(Transfer.GROUND_CURRENT)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
-    override val plot       = TransferPlot(data).apply { legendRows = data.getUniqueValues(SET_SD).size }
+    override val plot       = TransferPlot(data).apply { legendRows = data.getUniqueValues(SET_SD_VOLTAGE).size }
     override val name       = "Transfer Measurement (${data.getAttribute("Name")})"
     override val image      = Images.getImage("transfer.png")
     override val label      = "Transfer"
@@ -59,19 +70,19 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
             var maxLinMobility = 0.0
             var maxSatMobility = 0.0
 
-            for ((drain, data) in data.split(SET_SD)) {
+            for ((drain, data) in data.split(SET_SD_VOLTAGE)) {
 
-                val fb = data.splitTwoWaySweep { it[SET_SG] }
+                val fb = data.splitTwoWaySweep { it[SET_SG_VOLTAGE] }
 
                 val function: Function
                 val gradFwd: Function?
                 val gradBwd: Function?
 
-                val vGFwd  = fb.forward.getColumns(SET_SG)
+                val vGFwd  = fb.forward.getColumns(SET_SG_VOLTAGE)
                 val iDFwd  = fb.forward.getColumns(SD_CURRENT)
-                val vGBwd  = fb.backward.getColumns(SET_SG)
+                val vGBwd  = fb.backward.getColumns(SET_SG_VOLTAGE)
                 val iDBwd  = fb.backward.getColumns(SD_CURRENT)
-                val linear = abs(drain) < data.getMax { abs(it[SET_SG]) }
+                val linear = abs(drain) < data.getMax { abs(it[SET_SG_VOLTAGE]) }
 
                 if (linear) {
 
@@ -103,7 +114,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
                 }
 
-                for (gate in data.getUniqueValues(SET_SG).sorted()) {
+                for (gate in data.getUniqueValues(SET_SG_VOLTAGE).sorted()) {
 
                     val params = ArrayList(parameters)
                     params    += Gate(gate, 0.0)

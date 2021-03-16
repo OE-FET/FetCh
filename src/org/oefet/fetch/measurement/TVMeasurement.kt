@@ -54,18 +54,18 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     // Constants for referring to result table columns
     companion object {
 
-        const val MEAS_NO               = 0
-        const val SET_GATE              = 1
-        const val SET_HEATER            = 2
-        const val TEMPERATURE           = 3
-        const val GATE_VOLTAGE          = 4
-        const val GATE_CURRENT          = 5
-        const val HEATER_VOLTAGE        = 6
-        const val HEATER_CURRENT        = 7
-        const val HEATER_POWER          = 8
-        const val THERMAL_VOLTAGE       = 9
-        const val THERMAL_VOLTAGE_ERROR = 10
-        const val THERMAL_CURRENT       = 11
+        val MEAS_NO               = Col("Measurement No.")
+        val SET_GATE              = Col("Gate Set", "V")
+        val SET_HEATER            = Col("Heater Set", "V")
+        val TEMPERATURE           = Col("Temperature", "K")
+        val GATE_VOLTAGE          = Col("Gate Voltage", "V")
+        val GATE_CURRENT          = Col("Gate Current", "A")
+        val HEATER_VOLTAGE        = Col("Heater Voltage", "V")
+        val HEATER_CURRENT        = Col("Heater Current", "A")
+        val HEATER_POWER          = Col("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] }
+        val THERMAL_VOLTAGE       = Col("Thermal Voltage", "V")
+        val THERMAL_VOLTAGE_ERROR = Col("Thermal Voltage Error", "V")
+        val THERMAL_CURRENT       = Col("Thermal Current", "A")
 
         const val ORDER_GATE_HEATER = 0
         const val ORDER_HEATER_GATE = 1
@@ -242,18 +242,18 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     override fun getColumns(): Array<Col> {
 
         return arrayOf(
-            Col("Measurement No."),
-            Col("Gate Set", "V"),
-            Col("Heater Set", "V"),
-            Col("Temperature", "K"),
-            Col("Gate Voltage", "V"),
-            Col("Gate Current", "A"),
-            Col("Heater Voltage", "V"),
-            Col("Heater Current", "A"),
-            Col("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] },
-            Col("Thermal Voltage", "V"),
-            Col("Thermal Voltage Error", "V"),
-            Col("Thermal Current", "A")
+            MEAS_NO,
+            SET_GATE,
+            SET_HEATER,
+            TEMPERATURE,
+            GATE_VOLTAGE,
+            GATE_CURRENT,
+            HEATER_VOLTAGE,
+            HEATER_CURRENT,
+            HEATER_POWER,
+            THERMAL_VOLTAGE,
+            THERMAL_VOLTAGE_ERROR,
+            THERMAL_CURRENT
         )
 
     }

@@ -74,7 +74,7 @@ object Measure : Grid("Measurement", 1) {
         val table = Table("Data", action.data)
         val plot  = Measurements.createPlot(action.measurement) ?: FetChPlot("Unknown Measurement Plot", "X", "Y")
 
-        topRow.remove(this.plot);
+        topRow.remove(this.plot)
         bottomRow.remove(this.table)
         this.table = table
         this.plot  = plot

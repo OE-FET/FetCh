@@ -3,17 +3,27 @@ package org.oefet.fetch.results
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
 import jisa.maths.fits.Fitting
-import org.oefet.fetch.quantities.*
 import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.measurement.TVMeasurement.Companion.HEATER_POWER
-import org.oefet.fetch.measurement.TVMeasurement.Companion.SET_GATE
-import org.oefet.fetch.measurement.TVMeasurement.Companion.TEMPERATURE
-import org.oefet.fetch.measurement.TVMeasurement.Companion.THERMAL_VOLTAGE
+import org.oefet.fetch.measurement.TVMeasurement
+import org.oefet.fetch.quantities.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+
+    val MEAS_NO               = data.findColumn(TVMeasurement.MEAS_NO)
+    val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
+    val SET_HEATER            = data.findColumn(TVMeasurement.SET_HEATER)
+    val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
+    val GATE_VOLTAGE          = data.findColumn(TVMeasurement.GATE_VOLTAGE)
+    val GATE_CURRENT          = data.findColumn(TVMeasurement.GATE_CURRENT)
+    val HEATER_VOLTAGE        = data.findColumn(TVMeasurement.HEATER_VOLTAGE)
+    val HEATER_CURRENT        = data.findColumn(TVMeasurement.HEATER_CURRENT)
+    val HEATER_POWER          = data.findColumn(TVMeasurement.HEATER_POWER)
+    val THERMAL_VOLTAGE       = data.findColumn(TVMeasurement.THERMAL_VOLTAGE)
+    val THERMAL_VOLTAGE_ERROR = data.findColumn(TVMeasurement.THERMAL_VOLTAGE_ERROR)
+    val THERMAL_CURRENT       = data.findColumn(TVMeasurement.THERMAL_CURRENT)
 
     override val parameters = ArrayList<Quantity>()
     override val quantities = ArrayList<Quantity>()
@@ -65,32 +75,32 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
         val calibrationLeft = otherQuantities.filter {
             it is LeftStripResistance
             && it.isCompatibleWith(otherQuantities.first())
-            && it.parameters.find { p -> p is Drain }?.value ?: 1.0 == 0.0
+            && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
         }
 
         val calibrationRight = otherQuantities.filter {
             it is RightStripResistance
             && it.isCompatibleWith(otherQuantities.first())
-            && it.parameters.find { p -> p is Drain }?.value ?: 1.0 == 0.0
+            && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
         }
 
         if (calibrationLeft.isEmpty() || calibrationRight.isEmpty()) {
             return emptyList()
         }
 
-        val left = ResultList("Resistance", "Temperature")
+        val left  = ResultList("Resistance", "Temperature")
         val right = ResultList("Resistance", "Temperature")
 
         for (resistance in calibrationLeft) {
 
-            val temperature = resistance.parameters.find { it is Temperature } ?: continue
+            val temperature = resistance.getParameter(Temperature::class) ?: continue
             left.addData(resistance.value, temperature.value)
 
         }
 
         for (resistance in calibrationRight) {
 
-            val temperature = resistance.parameters.find { it is Temperature } ?: continue
+            val temperature = resistance.getParameter(Temperature::class) ?: continue
             right.addData(resistance.value, temperature.value)
 
         }
@@ -103,13 +113,13 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
         val powerLeft = otherQuantities.filter {
             it is LeftStripResistance
             && it.isCompatibleWith(otherQuantities.first())
-            && it.parameters.find { p -> p is Temperature }?.value == temperature
+            && it.getParameter(Temperature::class)?.value == temperature
         }
 
         val powerRight = otherQuantities.filter {
             it is RightStripResistance
             && it.isCompatibleWith(otherQuantities.first())
-            && it.parameters.find { p -> p is Temperature }?.value == temperature
+            && it.getParameter(Temperature::class)?.value == temperature
         }
 
         val dataLeft  = ResultList("Power", "Temperature", "Error")
@@ -117,7 +127,7 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         for (resistance in powerLeft) {
 
-            val power        = resistance.parameters.find { it is Power } ?: continue
+            val power        = resistance.getParameter(Power::class) ?: continue
             val temp         = leftFit.gradient * resistance.value + leftFit.intercept
             val intermediate = leftFit.gradient * resistance.value * sqrt((leftFit.gradientError/leftFit.gradient).pow(2) + (resistance.error/resistance.value).pow(2))
             val tempError    = sqrt(intermediate.pow(2) + leftFit.interceptError.pow(2))
@@ -128,7 +138,7 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
         for (resistance in powerRight) {
 
-            val power        = resistance.parameters.find { it is Power } ?: continue
+            val power        = resistance.getParameter(Power::class) ?: continue
             val temp         = rightFit.gradient * resistance.value + rightFit.intercept
             val intermediate = rightFit.gradient * resistance.value * sqrt((rightFit.gradientError/rightFit.gradient).pow(2) + (resistance.error/resistance.value).pow(2))
             val tempError    = sqrt(intermediate.pow(2) + rightFit.interceptError.pow(2))

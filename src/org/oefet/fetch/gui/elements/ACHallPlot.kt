@@ -2,16 +2,14 @@ package org.oefet.fetch.gui.elements
 
 import jisa.experiment.ResultTable
 import jisa.gui.Series.Dash.DASHED
-import jisa.gui.Series.Dash.DOTTED
 import jisa.maths.matrices.RealMatrix
 import org.oefet.fetch.measurement.ACHall
-import org.oefet.fetch.measurement.ACHall.Companion.HALL_ERROR
-import org.oefet.fetch.measurement.ACHall.Companion.HALL_VOLTAGE
-import org.oefet.fetch.measurement.ACHall.Companion.SD_CURRENT
-import org.oefet.fetch.measurement.ACHall.Companion.X_VOLTAGE
-import org.oefet.fetch.measurement.ACHall.Companion.Y_VOLTAGE
 
 class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?) : FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]") {
+
+    val HALL_ERROR   = data.findColumn(ACHall.HALL_ERROR)
+    val HALL_VOLTAGE = data.findColumn(ACHall.HALL_VOLTAGE)
+    val SD_CURRENT   = data.findColumn(ACHall.SD_CURRENT)
 
     constructor(data: ResultTable) : this(data, null, null)
 

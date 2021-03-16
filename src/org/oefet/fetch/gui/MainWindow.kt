@@ -21,7 +21,7 @@ object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
         addAll(Connections)
 
-        setMaximised(true)
+        isMaximised = true
         setExitOnClose(true)
         setIcon(Images.getURL("fEt.png"))
 
