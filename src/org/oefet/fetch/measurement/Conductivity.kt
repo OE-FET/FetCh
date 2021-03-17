@@ -1,19 +1,16 @@
 package org.oefet.fetch.measurement
 
-import jisa.Util.runRegardless
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.gui.Configurator
-import jisa.maths.Range
-import org.oefet.fetch.gui.tabs.Connections
+import java.lang.Double.min
 
 class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 1.0)
-    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -10e-6, +10e-6, 11, Range.Type.LINEAR, 1)
+    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -10e-6, +10e-6, 11)
     private val symIParam    = BooleanParameter("Source-Drain", "Sweep Both Ways", null, false)
     private val holdGParam   = BooleanParameter("Source-Gate", "Active", null, false)
     private val gateVParam   = DoubleParameter("Source-Gate", "Voltage", "V", 50.0)
@@ -38,7 +35,7 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
         val SG_CURRENT     = Col("SG Current", "A")
         val FPP1_VOLTAGE   = Col("FPP 1 Voltage", "V")
         val FPP2_VOLTAGE   = Col("FPP 2 Voltage", "V")
-        val FPP_VOLTAGE    = Col("FPP Voltage", "V") { (it[FPP1_VOLTAGE] - it[FPP2_VOLTAGE]) }
+        val FPP_VOLTAGE    = Col("FPP Voltage", "V")
         val TEMPERATURE    = Col("Temperature", "K")
         val GROUND_CURRENT = Col("Ground Current", "A")
     }
@@ -56,7 +53,7 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
             TEMPERATURE,
             GROUND_CURRENT
         )
-        
+
     }
 
     override fun checkForErrors(): List<String> {
@@ -81,7 +78,16 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
         val sdSMU = sdSMU!!
         val sgSMU = if (holdG) sgSMU else null
 
-        results.setAttribute("Integration Time", "${fpp1?.integrationTime ?: fpp2?.integrationTime ?: sdSMU.integrationTime} s")
+        val intTime = when {
+
+            fpp1 != null && fpp2 != null -> min(fpp1!!.integrationTime, fpp2!!.integrationTime)
+            fpp1 != null                 -> fpp1!!.integrationTime
+            fpp2 != null                 -> fpp2!!.integrationTime
+            else                         -> sdSMU.integrationTime
+
+        }
+
+        results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
 
         // Turn everything off before starting
@@ -103,17 +109,34 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
         fpp2?.turnOn()
         sgSMU?.turnOn()
 
+        val determineVoltage: (Double, Double, Double) -> Double = when {
+
+            fpp1 != null && fpp2 != null -> { _, f1, f2 -> f2 - f1 }
+            fpp1 != null                 -> { _, f1, _  -> f1 }
+            fpp2 != null                 -> { _, _, f2  -> f2 }
+            else                         -> { sd, _, _  -> sd }
+
+        }
+
         // Sweep current
         for (current in if (symI) currents.mirror() else currents) {
 
             sdSMU.current = current
+
             sleep(delTime)
 
+            val sdVoltage   = sdSMU.voltage
+            val fpp1Voltage = fpp1?.voltage ?: Double.NaN
+            val fpp2Voltage = fpp2?.voltage ?: Double.NaN
+
             results.addData(
-                sdSMU.voltage, sdSMU.current,
-                sgSMU?.voltage ?: Double.NaN, sgSMU?.current ?: Double.NaN,
-                fpp1?.voltage ?: sdSMU.voltage,
-                fpp2?.voltage ?: 0.0,
+                sdVoltage,
+                sdSMU.current,
+                sgSMU?.voltage ?: Double.NaN,
+                sgSMU?.current ?: Double.NaN,
+                fpp1Voltage,
+                fpp2Voltage,
+                determineVoltage(sdVoltage, fpp1Voltage, fpp2Voltage),
                 tMeter?.temperature ?: Double.NaN,
                 gdSMU?.current ?: Double.NaN
             )
@@ -121,8 +144,6 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
         }
 
     }
-
-    private fun sleep(millis: Long) = sleep(millis.toInt())
 
     override fun onFinish() {
 
@@ -136,8 +157,6 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
 
     override fun onInterrupt() {}
 
-    override fun onError() {
-
-    }
+    override fun onError() {}
 
 }
