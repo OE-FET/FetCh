@@ -77,10 +77,10 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
             }
 
             // Check which channels were used (if it contains a non-finite value, assume it weren't used)
-            val hvm1 = data.find { !it[HALL_1].isFinite() } == null
-            val hvm2 = data.find { !it[HALL_2].isFinite() } == null
-            val fpp1 = data.find { !it[FPP_1].isFinite()  } == null
-            val fpp2 = data.find { !it[FPP_2].isFinite()  } == null
+            val hvm1 = data.count { !it[HALL_1].isFinite() } == 0
+            val hvm2 = data.count { !it[HALL_2].isFinite() } == 0
+            val fpp1 = data.count { !it[FPP_1].isFinite()  } == 0
+            val fpp2 = data.count { !it[FPP_2].isFinite()  } == 0
 
             // If both current and field were swept, then we can perform a better analysis of the output
             if (data.getUniqueValues(FIELD).size > 1 && data.getUniqueValues(SET_SD_CURRENT).size > 1) {
