@@ -7,7 +7,6 @@ import jisa.maths.fits.Fitting
 import org.oefet.fetch.gui.elements.DCHallPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.DCHall
-import org.oefet.fetch.measurement.DCHall.Companion.SG_VOLTAGE
 import org.oefet.fetch.quantities.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -51,7 +50,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     val SET_SD_CURRENT = data.findColumn(DCHall.SET_SD_CURRENT)
     val SD_CURRENT     = data.findColumn(DCHall.SD_CURRENT)
-    val SD_VOLTAGE     = data.findColumn(DCHall.SD_VOLTAGE)
+    val SET_SG_VOLTAGE = data.findColumn(DCHall.SET_SG_VOLTAGE)
     val FIELD          = data.findColumn(DCHall.FIELD)
     val HALL_1         = data.findColumn(DCHall.HALL_1)
     val HALL_2         = data.findColumn(DCHall.HALL_2)
@@ -66,7 +65,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
         parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         // Split data-up into separate tables based on gate voltage
-        for ((gate, data) in data.split(SD_VOLTAGE)) {
+        for ((gate, data) in data.split(SET_SG_VOLTAGE)) {
 
             val parameters = ArrayList<Quantity>(parameters)
             parameters    += Gate(gate, 0.0)
