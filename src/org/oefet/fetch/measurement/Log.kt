@@ -1,5 +1,6 @@
 package org.oefet.fetch.measurement
 
+import jisa.Util
 import jisa.control.Connection
 import jisa.control.RTask
 import jisa.devices.interfaces.*
@@ -183,6 +184,10 @@ object Log {
         }
 
         log.addData(*data)
+
+        if ((task.count % 500) == 0) {
+            Util.runAsync { System.gc() }
+        }
 
     }
 
