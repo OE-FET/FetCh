@@ -51,7 +51,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     val SET_SD_CURRENT = data.findColumn(DCHall.SET_SD_CURRENT)
     val SD_CURRENT     = data.findColumn(DCHall.SD_CURRENT)
-    val SD_VOLTAGE     = data.findColumn(SG_VOLTAGE)
+    val SD_VOLTAGE     = data.findColumn(DCHall.SD_VOLTAGE)
     val FIELD          = data.findColumn(DCHall.FIELD)
     val HALL_1         = data.findColumn(DCHall.HALL_1)
     val HALL_2         = data.findColumn(DCHall.HALL_2)
