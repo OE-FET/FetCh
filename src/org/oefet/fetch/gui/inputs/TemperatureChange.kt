@@ -1,25 +1,27 @@
 package org.oefet.fetch.gui.inputs
 
+import jisa.control.SRunnable
 import jisa.devices.interfaces.TC
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.Configurator
 import jisa.gui.Fields
 import jisa.gui.Grid
-import jisa.gui.Tabs
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.images.Images
 
 class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
 
-    val basic       = Fields("Temperature Set-Points")
-    val config      = Configurator<TC>("Temperature Controller", TC::class.java)
-    val parameters  = Grid("Parameters", 1, basic)
+    val basic = Fields("Temperature Set-Points")
+    val config = Configurator<TC>("Temperature Controller", TC::class.java)
+    val parameters = Grid("Parameters", 1, basic)
     val instruments = Grid("Instruments", 1, config)
 
     val temp = basic.addDoubleField("Temperature [K]", 300.0)
 
-    init { basic.addSeparator() }
+    init {
+        basic.addSeparator()
+    }
 
     val stabPerc = basic.addDoubleField("Stability Range [%]", 1.0)
     val stabTime = basic.addDoubleField("Stability Time [s]", 600.0)
@@ -47,27 +49,45 @@ class TemperatureChange : Grid("Temperature Change", 1), ActionInput {
             basic.writeToConfig(Settings.tempSingleBasic)
             config.writeToConfig(Settings.tempConfig)
 
-            val temperature = temp.value
+            temperature         = temp.value
+            stabilityPercentage = stabPerc.value
+            stabilityTime       = (stabTime.value * 1000.0).toLong()
 
-            queue.addAction("Change Temperature to $temperature K") {
+            action = queue.addAction(InputAction("Change Temperature to $temperature K", this, SRunnable {
 
                 val tc = config.configuration.get() ?: throw Exception("No temperature controller configured")
 
                 tc.targetTemperature = temperature
                 tc.useAutoHeater()
+
                 tc.waitForStableTemperature(temperature, stabilityPercentage, stabilityTime)
 
-            }
+            }))
 
         }
 
 
     }
 
-    val stabilityPercentage: Double
-        get() = stabPerc.value
+    override fun edit() {
 
-    val stabilityTime: Long
-        get() = (stabTime.value * 1000.0).toLong()
+        showAsAlert()
+
+        basic.writeToConfig(Settings.tempSingleBasic)
+        config.writeToConfig(Settings.tempConfig)
+
+        temperature         = temp.value
+        stabilityPercentage = stabPerc.value
+        stabilityTime       = (stabTime.value * 1000.0).toLong()
+        action?.name        = "Change Temperature to $temperature K"
+
+
+
+    }
+
+    var temperature = 0.0
+    var stabilityPercentage = 0.0
+    var stabilityTime = 600000.toLong()
+    var action: ActionQueue.Action? = null
 
 }

@@ -1,5 +1,6 @@
 package org.oefet.fetch.gui.inputs
 
+import jisa.control.SRunnable
 import jisa.devices.interfaces.EMController
 import jisa.devices.power.IPS120
 import jisa.experiment.ActionQueue
@@ -18,6 +19,9 @@ class HeaterSwitch : Grid("Heater Switch", 1), ActionInput {
     val instruments = Grid("Instruments", 1, config)
 
     val switch      = basic.addCheckBox("Heater On?",false)
+    var on          = false
+
+    var action: ActionQueue.Action? = null
 
     init {
 
@@ -36,17 +40,31 @@ class HeaterSwitch : Grid("Heater Switch", 1), ActionInput {
         if (showAsConfirmation()) {
 
             config.writeToConfig(Settings.fieldSingleConfig)
+            on  = switch.value
 
-            queue.addAction("Turn Heater ${if (switch.value) "On" else "Off"}") {
+            action = queue.addAction(InputAction("Turn Heater ${if (on) "On" else "Off"}", this, SRunnable {
+
                 val emc = config.configuration.get() ?: throw Exception("No IPS120 Configured")
+
                 if (emc is IPS120) {
-                    emc.setHeater(switch.value)
+                    emc.setHeater(on)
                 } else {
                     throw Exception("Configured EM Controller is not an IPS120")
                 }
-            }
+
+            }))
 
         }
+    }
+
+    override fun edit() {
+
+        showAsAlert()
+
+        config.writeToConfig(Settings.fieldSingleConfig)
+        on  = switch.value
+        action?.name = "Turn Heater ${if (on) "On" else "Off"}"
+
 
     }
 

@@ -100,6 +100,8 @@ object Dashboard : Grid("Dashboard", 3) {
 
             }
 
+            plot.isSliderVisible = true
+
             val show = !Settings.dashboard.hasValue(plot.title) || Settings.dashboard.booleanValue(plot.title).get()
 
             plots.add(plot)
