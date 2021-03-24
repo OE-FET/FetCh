@@ -34,19 +34,7 @@ class Repeat : Grid("Repeat", 2), SweepInput {
             val name  = name.get()
             val times = times.get()
 
-            repeat(times) { n ->
-
-                for (action in subQueue) {
-
-                    val copy = action.copy()
-                    copy.setVariable(name, n.toString())
-                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, "$n")
-
-                    queue.addAction(copy)
-
-                }
-
-            }
+            repeat(times) { n -> queue.addAlteredQueue(subQueue) { it.setAttribute(name, "$n") } }
 
         }
 

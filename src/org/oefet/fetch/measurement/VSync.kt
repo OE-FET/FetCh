@@ -9,7 +9,12 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.elements.SyncPlot
+import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.gui.tabs.Connections
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.OutputResult
+import org.oefet.fetch.results.TVResult
 import java.lang.Exception
 
 class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
@@ -46,6 +51,14 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         val FPP_2          = Col("Four Point Probe 2", "V")
         val TEMPERATURE    = Col("Temperature", "K")
         val GROUND_CURRENT = Col("Ground Current", "A")
+    }
+
+    override fun createPlot(data: ResultTable): SyncPlot {
+        return SyncPlot(data)
+    }
+
+    override fun processResults(data: ResultTable, extra: List<Quantity>): OutputResult {
+        return OutputResult(data, extra)
     }
 
     override fun getColumns(): Array<Col> {

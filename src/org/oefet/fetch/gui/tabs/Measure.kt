@@ -71,6 +71,8 @@ object Measure : Grid("Measurement", 1) {
         action.setAttribute("Dielectric Thickness", "${dThick.value} m")
         action.setAttribute("Dielectric Permittivity", dielConst.value)
 
+        println(action.data.attributes)
+
         val table = Table("Data", action.data)
         val plot  = Measurements.createPlot(action.measurement) ?: FetChPlot("Unknown Measurement Plot", "X", "Y")
 
@@ -107,18 +109,41 @@ object Measure : Grid("Measurement", 1) {
 
     private fun runMeasurement() {
 
-        Log.start("${baseFile}-${System.currentTimeMillis()}-log.csv")
-
         if (queue.size < 1) {
             GUI.errorAlert("Measurement sequence is empty!")
             return
         }
 
+        val last = queue.actions.find { it.status == ActionQueue.Status.INTERRUPTED }
+
+        val from = if (last != null) {
+
+            val response = GUI.choiceWindow(
+                "Start Point Selection",
+                "Start Point Selection",
+                "The measurement sequence was previously interrupted.\n\nPlease select how you wish to proceed:",
+                "Start at the first item in the sequence",
+                "Start at the previously interrupted item"
+            )
+
+            if (response == 1) last else null
+
+        } else {
+            null
+        }
+
         disable(true)
+
+        Log.start("${baseFile}-${System.currentTimeMillis()}-log.csv")
 
         try {
 
-            val result = queue.start()
+            val result = if (from != null) {
+                queue.start(from)
+            } else {
+                queue.start()
+            }
+
             Log.stop()
 
             when (result) {

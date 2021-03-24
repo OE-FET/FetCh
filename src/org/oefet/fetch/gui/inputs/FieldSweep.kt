@@ -3,10 +3,8 @@ package org.oefet.fetch.gui.inputs
 import jisa.devices.interfaces.EMController
 import jisa.enums.Icon
 import jisa.experiment.ActionQueue
-import jisa.gui.Configurator
-import jisa.gui.Fields
-import jisa.gui.Grid
-import jisa.gui.Tabs
+import jisa.gui.*
+import jisa.gui.ActionQueueDisplay.ActionRunnable
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.gui.images.Images
@@ -51,16 +49,11 @@ class FieldSweep : Tabs("Field Sweep"), SweepInput {
             for (B in range) {
 
                 queue.addAction("Change Field to $B T") {
-                    val emc = config.configuration.get() ?: throw Exception("No EM Controller Configured")
+                    val emc = config.configuration.instrument ?: throw Exception("No EM Controller Configured")
                     emc.field = B
                 }
 
-
-                queue.addQueue(subQueue) {
-                    it.setVariable(name, "$B T")
-                    if (it is ActionQueue.MeasureAction) it.setAttribute(name, "$B T")
-                    it
-                }
+                queue.addAlteredQueue(subQueue) { it.setAttribute(name, "$B T") }
 
             }
 
