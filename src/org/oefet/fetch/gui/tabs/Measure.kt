@@ -63,15 +63,13 @@ object Measure : Grid("Measurement", 1) {
 
     fun display(action: ActionQueue.MeasureAction) {
 
-        action.setAttribute("Name", name.get())
-        action.setAttribute("Length", "${length.value} m")
-        action.setAttribute("FPP Separation", "${fppLength.value} m")
-        action.setAttribute("Width", "${width.value} m")
-        action.setAttribute("Thickness", "${cThick.value} m")
-        action.setAttribute("Dielectric Thickness", "${dThick.value} m")
-        action.setAttribute("Dielectric Permittivity", dielConst.value)
-
-        println(action.data.attributes)
+        action.data.setAttribute("Name", name.get())
+        action.data.setAttribute("Length", "${length.value} m")
+        action.data.setAttribute("FPP Separation", "${fppLength.value} m")
+        action.data.setAttribute("Width", "${width.value} m")
+        action.data.setAttribute("Thickness", "${cThick.value} m")
+        action.data.setAttribute("Dielectric Thickness", "${dThick.value} m")
+        action.data.setAttribute("Dielectric Permittivity", dielConst.value)
 
         val table = Table("Data", action.data)
         val plot  = Measurements.createPlot(action.measurement) ?: FetChPlot("Unknown Measurement Plot", "X", "Y")
