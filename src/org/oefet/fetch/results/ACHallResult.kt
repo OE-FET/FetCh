@@ -99,7 +99,7 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
         }
 
-        parameters.add(HallPhase(minTheta, 0.0, parameters, possibleParameters))
+        quantities.add(HallPhase(minTheta, 0.0, parameters, possibleParameters))
 
         // Calculate error weightings
         val hallErrors = data.getColumns(X_ERROR, Y_ERROR).rowQuadratures
