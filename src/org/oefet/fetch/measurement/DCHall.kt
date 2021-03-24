@@ -324,23 +324,4 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         return results
     }
 
-    /**
-     * Custom extension to arrays of doubles for calculating standard deviation.
-     */
-    private fun Array<out Double>.stdDeviation(): Double {
-
-        if (size < 2) {
-            return 0.0
-        }
-
-        val mean = average()
-        var sum = 0.0
-
-        for (value in this) sum += (value - mean).pow(2)
-
-        return sqrt(sum / (size - 1))
-
-    }
-
-
 }
