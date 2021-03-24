@@ -5,6 +5,13 @@ import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Plot
+import org.oefet.fetch.gui.elements.ACHallPlot
+import org.oefet.fetch.gui.elements.FPPPlot
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.ACHallResult
+import org.oefet.fetch.results.CondResult
+import org.oefet.fetch.results.ResultFile
 import java.lang.Double.min
 
 class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
@@ -38,6 +45,14 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
         val FPP_VOLTAGE    = Col("FPP Voltage", "V")
         val TEMPERATURE    = Col("Temperature", "K")
         val GROUND_CURRENT = Col("Ground Current", "A")
+    }
+
+    override fun createPlot(data: ResultTable): FPPPlot {
+        return FPPPlot(data)
+    }
+
+    override fun processResults(data: ResultTable, extra: List<Quantity>): CondResult {
+        return CondResult(data, extra)
     }
 
     override fun getColumns(): Array<Col> {

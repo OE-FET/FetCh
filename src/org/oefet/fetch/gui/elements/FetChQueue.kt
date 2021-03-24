@@ -54,20 +54,15 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
      */
     private val addButton = addToolbarMenuButton("Add...").apply {
 
-        addItem("Measurements:") {}.apply { isDisabled = true }
-        addSeparator()
+        addSeparator("Measurements")
 
         for (type in Measurements.types) addItem(type.name) { askMeasurement(type.createMeasurement()) }
 
-        addSeparator()
-        addItem("Actions:") {}.apply { isDisabled = true }
-        addSeparator()
+        addSeparator("Actions")
 
         for (type in ActionInput.types) addItem(type.name) { type.create().ask(queue) }
 
-        addSeparator()
-        addItem("Sweeps:") {}.apply { isDisabled = true }
-        addSeparator()
+        addSeparator("Sweeps")
 
         for (type in SweepInput.types) addItem(type.name) { type.create().ask(queue) }
 
@@ -142,14 +137,13 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         val input = MeasurementConfigurator(measurement.name, measurement).apply {
             linkToConfig(Settings.inputs)
             windowHeight = 750.0
-            windowWidth = 1024.0
+            windowWidth  = 1024.0
         }
 
         if (input.showInput()) {
 
             val action = queue.addMeasurement(measurement.label, measurement)
 
-            action.setAttribute("Type", measurement.type)
             action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
 
             action.setBefore { Measure.display(it) }

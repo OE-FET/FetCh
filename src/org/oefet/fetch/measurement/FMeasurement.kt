@@ -3,10 +3,14 @@ package org.oefet.fetch.measurement
 import jisa.devices.interfaces.*
 import jisa.devices.Configuration
 import jisa.experiment.Measurement
+import jisa.experiment.ResultTable
+import jisa.gui.Plot
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.ResultFile
 import java.util.*
 import kotlin.reflect.KClass
 
-abstract class FMeasurement(private val name: String, private val label: String, val type: String) : Measurement() {
+abstract class FMeasurement(private val name: String, label: String, val type: String) : Measurement() {
 
     private val labelProperty     = StringParameter("Basic", "Name", null, label)
     private val instrumentSetters = LinkedList<() -> Unit>()
@@ -24,6 +28,10 @@ abstract class FMeasurement(private val name: String, private val label: String,
     protected var fpp2:     VMeter?   = null
     protected var tvMeter:  VMeter?   = null
     protected var heater:   SMU?      = null
+
+    abstract fun createPlot(data: ResultTable): Plot
+
+    abstract fun processResults(data: ResultTable, extra: List<Quantity>): ResultFile
 
     /**
      * Checks that everything required for this measurement is present. Returns all missing instrument errors as
@@ -44,6 +52,8 @@ abstract class FMeasurement(private val name: String, private val label: String,
         if (errors.isNotEmpty()) {
             throw Exception(errors.joinToString(", "))
         }
+
+        results.setAttribute("Type", type)
 
         super.start()
 

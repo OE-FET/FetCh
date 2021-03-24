@@ -94,13 +94,9 @@ class Stress : Tabs("Stress"), SweepInput {
             val sdV = sdV.get()
             val sgV = sgV.get()
 
-            repeat(num.get()) {
+            repeat(num.get()) { n ->
 
-                queue.addAction(
-                    (if (sdHold) "SD = $sdV V " else "") + (if (sgHold) "SG = $sgV V " else "") + "for ${Util.msToString(
-                        time
-                    )}"
-                ) {
+                queue.addAction("Hold " + (if (sdHold) "SD = $sdV V " else "") + (if (sgHold) "SG = $sgV V " else "") + "for ${Util.msToString(time)}") {
 
                     var sdSMU: SMU? = null
                     var sgSMU: SMU? = null
@@ -136,18 +132,7 @@ class Stress : Tabs("Stress"), SweepInput {
 
                 }
 
-                for (action in subQueue) {
-
-                    val copy = action.copy()
-                    copy.setVariable(name, Util.msToString((it + 1) * time))
-                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(
-                        name,
-                        "${((it + 1) * time).toDouble() / 1000.0} s"
-                    )
-
-                    queue.addAction(copy)
-
-                }
+                queue.addAlteredQueue(subQueue) { it.setAttribute(name, "${((n + 1) * time).toDouble() / 1000.0} s") }
 
             }
 

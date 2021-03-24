@@ -12,7 +12,12 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Configurator
 import jisa.maths.Range
+import org.oefet.fetch.gui.elements.TVCPlot
+import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.gui.tabs.Connections
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.TVCResult
+import org.oefet.fetch.results.TVResult
 import java.util.*
 import kotlin.Exception
 
@@ -50,6 +55,14 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     val symSGV     get() = symSGVParam.value
     val gateHold   get() = (gateHoldParam.value * 1000).toInt()
     val order      get() = orderParam.value
+
+    override fun createPlot(data: ResultTable): TVPlot {
+        return TVPlot(data)
+    }
+
+    override fun processResults(data: ResultTable, extra: List<Quantity>): TVResult {
+        return TVResult(data, extra)
+    }
 
     // Constants for referring to result table columns
     companion object {

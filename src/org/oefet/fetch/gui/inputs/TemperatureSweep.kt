@@ -76,15 +76,7 @@ class TemperatureSweep : Tabs("Temperature Sweep"), SweepInput {
 
                 }
 
-                for (action in subQueue) {
-
-                    val copy = action.copy()
-                    copy.setVariable(name, "$T K")
-                    if (copy is ActionQueue.MeasureAction) copy.setAttribute(name, "$T K")
-
-                    queue.addAction(copy)
-
-                }
+                queue.addAlteredQueue(subQueue) { it.setAttribute(name, "$T K") }
 
             }
 

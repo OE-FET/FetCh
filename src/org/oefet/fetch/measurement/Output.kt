@@ -7,6 +7,11 @@ import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.maths.Range
+import org.oefet.fetch.gui.elements.FPPPlot
+import org.oefet.fetch.gui.elements.OutputPlot
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.CondResult
+import org.oefet.fetch.results.OutputResult
 
 class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
@@ -39,6 +44,14 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
         val FPP_2          = Col("Four Point Probe 2", "V")
         val TEMPERATURE    = Col("Temperature", "K")
         val GROUND_CURRENT = Col("Ground Current", "A")
+    }
+
+    override fun createPlot(data: ResultTable): OutputPlot {
+        return OutputPlot(data)
+    }
+
+    override fun processResults(data: ResultTable, extra: List<Quantity>): OutputResult {
+        return OutputResult(data, extra)
     }
 
     override fun getColumns(): Array<Col> {
