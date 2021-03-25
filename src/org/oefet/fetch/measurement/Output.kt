@@ -17,9 +17,9 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     // Measurement Parameters
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 61, Range.Type.LINEAR, 1)
+    private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 61)
     private val symVSDParam  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
-    private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 7, Range.Type.LINEAR, 1)
+    private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 7)
 
     private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
     private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }

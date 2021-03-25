@@ -22,9 +22,7 @@ class TemperatureSweep : Tabs("Temperature Sweep"), SweepInput {
 
     init { basic.addSeparator() }
 
-    val minT = basic.addDoubleField("Start [K]", 300.0)
-    val maxT = basic.addDoubleField("Stop [K]", 50.0)
-    val numT = basic.addIntegerField("No. Steps", 6)
+    val range = basic.addDoubleRange("Temperature [K]", Range.linear(100, 300, 5), 100.0, 300.0, 5, 50.0, 2)
 
     init { basic.addSeparator() }
 
@@ -64,7 +62,7 @@ class TemperatureSweep : Tabs("Temperature Sweep"), SweepInput {
 
             val name = name.get()
 
-            for (T in Range.linear(minT.get(), maxT.get(), numT.get())) {
+            for (T in range.value) {
 
                 queue.addAction("Change Temperature to $T K") {
 
@@ -89,9 +87,6 @@ class TemperatureSweep : Tabs("Temperature Sweep"), SweepInput {
         names.clear()
         return super.showAsConfirmation()
     }
-
-    val values: Range<Double>
-        get() = Range.linear(minT.get(), maxT.get(), numT.get())
 
     val stabilityPercentage: Double
         get() = stabPerc.get()

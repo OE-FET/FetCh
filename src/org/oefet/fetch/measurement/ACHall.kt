@@ -29,10 +29,10 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     private val paGainParam    = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
     private val exGainParam    = DoubleParameter("Basic", "Extra Gain", null, 10.0)
     private val rmsFieldParam  = DoubleParameter("Magnets", "RMS Field Strength", "T", 0.666 / sqrt(2.0))
-    private val frequencyParam = RangeParameter("Magnets", "Frequency", "Hz", 1.5, 1.5, 1, Range.Type.LINEAR, 1)
+    private val frequencyParam = RangeParameter("Magnets", "Frequency", "Hz", 1.5, 1.5, 1)
     private val spinParam      = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
-    private val currentParam   = RangeParameter("Source-Drain", "Current", "A", -50e-6, 50e-6, 5, Range.Type.LINEAR, 1)
-    private val gateParam      = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
+    private val currentParam   = RangeParameter("Source-Drain", "Current", "A", -50e-6, 50e-6, 5)
+    private val gateParam      = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1)
 
     private val gdSMUConfig    = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
     private val sdSMUConfig    = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }

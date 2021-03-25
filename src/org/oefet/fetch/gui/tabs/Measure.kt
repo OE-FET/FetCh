@@ -107,6 +107,16 @@ object Measure : Grid("Measurement", 1) {
 
     private fun runMeasurement() {
 
+        if (name.value.trim() == "") {
+            GUI.errorAlert("Please enter a name for this measurement sequence.")
+            return
+        }
+
+        if (dir.value.trim() == "") {
+            GUI.errorAlert("Please select an output directory for this measurement sequence.")
+            return
+        }
+
         if (queue.size < 1) {
             GUI.errorAlert("Measurement sequence is empty!")
             return

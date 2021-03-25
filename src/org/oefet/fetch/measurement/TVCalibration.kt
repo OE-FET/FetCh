@@ -21,9 +21,9 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
     private val avgCountParam = IntegerParameter("Basic", "Averaging Count", null,1)
     private val avgDelayParam = DoubleParameter("Basic", "Averaging Delay", "s", 0.0)
     private val probeParam    = ChoiceParameter("Basic", "Strip", 0, "Left", "Right")
-    private val heaterVParam  = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
+    private val heaterVParam  = RangeParameter("Heater", "Heater Voltage", "V", Range.polynomial(0, 5, 6, 2), 0.0, 5.0, 6, 1.0, 2)
     private val holdHVParam   = DoubleParameter("Heater", "Hold Time", "s", 60.0)
-    private val currParam     = RangeParameter("Resistive Thermometer", "Current", "A", 0.0, 100e-6, 11, Range.Type.LINEAR, 1)
+    private val currParam     = RangeParameter("Resistive Thermometer", "Current", "A", 0.0, 100e-6, 11)
     private val holdSIParam   = DoubleParameter("Resistive Thermometer", "Hold Time", "s", 0.5)
 
     private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
