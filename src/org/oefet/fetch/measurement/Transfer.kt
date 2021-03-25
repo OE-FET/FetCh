@@ -20,8 +20,8 @@ import java.lang.Exception
 class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
 
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 7, Range.Type.LINEAR, 1)
-    private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 61, Range.Type.LINEAR, 1)
+    private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 7)
+    private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 61)
     private val symVSGParam  = BooleanParameter("Source-Gate", "Sweep Both Ways", null, true)
 
     private val gdSMUConfig   = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }

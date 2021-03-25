@@ -5,6 +5,7 @@ import jisa.enums.Icon
 import jisa.experiment.ActionQueue
 import jisa.gui.*
 import jisa.gui.ActionQueueDisplay.ActionRunnable
+import jisa.maths.Range
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.gui.images.Images
@@ -17,7 +18,7 @@ class FieldSweep : Tabs("Field Sweep"), SweepInput {
     val parameters  = Grid("Parameters", 2, basic)
     val instruments = Grid("Instruments", 1, config)
     val name        = basic.addTextField("Variable Name", "B").apply { isDisabled = true }
-    val rangeB      = basic.addDoubleRange("Field [T]", 0.0, 1.0, 11)
+    val rangeB      = basic.addDoubleRange("Field [T]", Range.linear(0.0, 1.0, 11), 0.0, 1.0, 11, 0.1, 2)
     val subQueue    = ActionQueue()
 
     init {

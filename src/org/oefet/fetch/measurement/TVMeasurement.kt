@@ -29,12 +29,12 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     private val orderParam      = ChoiceParameter("Basic", "Sweep Order", 0, "Gate → Heater", "Heater → Gate")
 
     // Heater parameters
-    private val heaterVParam    = RangeParameter("Heater", "Heater Voltage", "V", 0.0, 5.0, 6, Range.Type.POLYNOMIAL, 2)
+    private val heaterVParam    = RangeParameter("Heater", "Heater Voltage", "V", Range.polynomial(0, 5, 6, 2), 0.0, 5.0, 6, 1.0, 2)
     private val symHVParam      = BooleanParameter("Heater", "Sweep Both Ways", null, false)
     private val heaterHoldParam = DoubleParameter("Heater", "Hold Time", "s", 60.0)
 
     // Gate parameters
-    private val gateParam       = RangeParameter("Gate", "Voltage", "V", 0.0, 10.0, 11, Range.Type.LINEAR, 1)
+    private val gateParam       = RangeParameter("Gate", "Voltage", "V", 0.0, 10.0, 11)
     private val symSGVParam     = BooleanParameter("Gate", "Sweep Both Ways", null, false)
     private val gateHoldParam   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
 

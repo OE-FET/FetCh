@@ -49,9 +49,9 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
     private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
     private val repTimeParam = DoubleParameter("Basic", "Repeat Time", "s", 0.0)
-    private val fieldParam   = RangeParameter("Magnet", "Field", "T", -1.0, +1.0, 11, Range.Type.LINEAR, 1)
-    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -50e-6, +50e-6, 11, Range.Type.LINEAR, 1)
-    private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
+    private val fieldParam   = RangeParameter("Magnet", "Field", "T", -1.0, +1.0, 11)
+    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -50e-6, +50e-6, 11)
+    private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1)
 
     // Instrument configurations to ask user for
     private val magnetConfig = addInstrument("Magnet Controller", EMController::class)
