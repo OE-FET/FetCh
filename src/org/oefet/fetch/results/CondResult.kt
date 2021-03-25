@@ -6,6 +6,7 @@ import jisa.maths.fits.Fitting
 import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.measurement.Conductivity
 import org.oefet.fetch.quantities.*
+import kotlin.math.abs
 
 class CondResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
 
@@ -65,8 +66,8 @@ class CondResult(override val data: ResultTable, extraParams: List<Quantity> = e
             data.getColumns(SD_CURRENT)
         )
 
-        val value = fit.gradient * separation / (width * thickness) / 100.0
-        val error = fit.gradientError * separation / (width * thickness) / 100.0
+        val value = abs(fit.gradient * separation / (width * thickness) / 100.0)
+        val error = abs(fit.gradientError * separation / (width * thickness) / 100.0)
 
         quantities += Conductivity(
             value,

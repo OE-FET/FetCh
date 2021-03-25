@@ -25,11 +25,27 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
     private val sd = Configurator<SMU>("Source-Drain Channel", SMU::class.java)
     private val sg = Configurator<SMU>("Source-Gate Channel", SMU::class.java)
 
+    private var action : ActionQueue.Action? = null
+
+
+
     init {
 
         addAll(basic, Grid(2, sdConf, sgConf), Grid(2, sd, sg))
 
         setIcon(Images.getURL("fEt.png"))
+
+    }
+
+    override fun edit() {
+
+        showAsAlert()
+
+        basic.writeToConfig(Settings.holdBasic)
+        sdConf.writeToConfig(Settings.holdSD)
+        sgConf.writeToConfig(Settings.holdSG)
+
+        action?.name = "Hold " + (if (sdHold.value) "SD = $sdV V " else "") + (if (sgHold.value) "SG = $sgV V " else "") + "for ${Util.msToString((time.value * 1000.0).toLong())}"
 
     }
 
@@ -50,13 +66,14 @@ class Hold : Grid("Voltage Hold", 1), ActionInput {
             sd.writeToConfig(Settings.holdSDConf)
             sg.writeToConfig(Settings.holdSGConf)
 
-            val time   = time.get()
-            val sdHold = sdHold.get()
-            val sgHold = sgHold.get()
-            val sdV    = sdV.get()
-            val sgV    = sgV.get()
 
-            queue.addAction((if (sdHold) "SD = $sdV V " else "") + (if (sgHold) "SG = $sgV V " else "") + "for ${Util.msToString((time * 1000.0).toLong())}") {
+            action = queue.addAction("Hold " + (if (sdHold.value) "SD = $sdV V " else "") + (if (sgHold.value) "SG = $sgV V " else "") + "for ${Util.msToString((time.value * 1000.0).toLong())}") {
+
+                val time   = time.value
+                val sdHold = sdHold.value
+                val sgHold = sgHold.value
+                val sdV    = sdV.value
+                val sgV    = sgV.value
 
                 var sdSMU : SMU? = null
                 var sgSMU : SMU? = null

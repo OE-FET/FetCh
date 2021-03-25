@@ -9,8 +9,13 @@ import jisa.enums.Input
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Configurator
+import jisa.gui.Plot
 import jisa.maths.Range
+import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.gui.tabs.Connections
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.ACHallResult
+import org.oefet.fetch.results.ResultFile
 import java.time.Duration
 import java.util.*
 import kotlin.math.pow
@@ -65,6 +70,14 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         val HALL_ERROR   = Col("Hall Voltage Error", "V")
         val TEMPERATURE  = Col("Temperature", "K")
 
+    }
+
+    override fun createPlot(data: ResultTable): ACHallPlot {
+        return ACHallPlot(data)
+    }
+
+    override fun processResults(data: ResultTable, extra: List<Quantity>): ACHallResult {
+        return ACHallResult(data, extra)
     }
 
     override fun loadInstruments() {

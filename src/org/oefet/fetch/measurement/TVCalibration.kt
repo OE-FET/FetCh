@@ -8,6 +8,12 @@ import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.maths.Range
+import org.oefet.fetch.gui.elements.TVCPlot
+import org.oefet.fetch.gui.elements.TVPlot
+import org.oefet.fetch.gui.elements.TransferPlot
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.TVCResult
+import org.oefet.fetch.results.TransferResult
 import java.util.*
 
 class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
@@ -48,6 +54,14 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
         val STRIP_CURRENT       = Col("Strip Current", "A")
         val TEMPERATURE         = Col("Temperature", "K")
 
+    }
+
+    override fun createPlot(data: ResultTable): TVCPlot {
+        return TVCPlot(data)
+    }
+
+    override fun processResults(data: ResultTable, extra: List<Quantity>): TVCResult {
+        return TVCResult(data, extra)
     }
 
     override fun checkForErrors(): List<String> {

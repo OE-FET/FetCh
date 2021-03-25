@@ -21,7 +21,10 @@ interface Input {
 
 interface ActionInput : Input {
 
+    fun edit()
+
     companion object {
+
         val types = Reflections("org.oefet.fetch.gui.inputs").getSubTypesOf(ActionInput::class.java).map {
             Input.Type(it.getConstructor().newInstance())
         }

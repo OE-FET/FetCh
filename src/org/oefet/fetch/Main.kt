@@ -10,8 +10,6 @@ import org.oefet.fetch.gui.tabs.Connections
 
 fun main() {
 
-    println((TCPIPSocketAddress("192.168.0.2", 5025)).toString())
-
     Splash.show()
     MainWindow.select(0)
     Splash.close()

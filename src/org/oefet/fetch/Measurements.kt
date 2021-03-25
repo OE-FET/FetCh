@@ -7,68 +7,38 @@ import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.*
 import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.measurement.*
+import org.reflections.Reflections
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.reflect
 
 object Measurements {
 
-    /**
-     * This is where each type of measurement is defined - specifying which classes are responsible for their running,
-     * processing of results and plotting of data - in the following format:
-     *
-     * Config("Label", ::Measurement, ::ResultFile, ::Plot)
-     *
-     * For instance:
-     *
-     * Config("Output", ::Output, ::OutputResult, ::OutputPlot)
-     *
-     * Breaking this down:
-     *
-     * - "Output" specifies that csv files of this measurement type are labelled with the text "Output" in their attributes line to identify them
-     * - ::Output specifies that to run a new measurement of this type, an Output object should be created
-     * - ::OutputResult specifies that results of this type of measurement are handled by OutputResult objects
-     * - ::OutputPlot specifies that to display data from this type of measurement an OutputPlot object should be created
-     */
-    val types = listOf(
-        Config(::Output,        ::OutputResult,   ::OutputPlot),
-        Config(::Transfer,      ::TransferResult, ::TransferPlot),
-        Config(::VSync,         ::TransferResult, ::SyncPlot),
-        Config(::Conductivity,  ::CondResult,     ::FPPPlot),
-        Config(::ACHall,        ::ACHallResult,   ::ACHallPlot),
-        Config(::DCHall,        ::DCHallResult,   ::DCHallPlot),
-        Config(::TVMeasurement, ::TVResult,       ::TVPlot),
-        Config(::TVCalibration, ::TVCResult,      ::TVCPlot)
-    )
+    val types = Reflections("org.oefet.fetch.measurement")
+        .getSubTypesOf(FMeasurement::class.java)
+        .sortedBy { it.simpleName }
+        .map { Config(it.getConstructor().newInstance()) }
 
-    class Config(
-        val measurement: () -> FMeasurement,
-        val result: (ResultTable, List<Quantity>) -> ResultFile,
-        val plot: (ResultTable) -> Plot
-    ) {
-
-        private val example = measurement()
+    class Config(private val example: FMeasurement) {
 
         val type   = example.type
         val name   = example.name
         val mClass = example::class
-        val rClass = result.reflect()?.returnType?.jvmErasure
+        val rClass = example::processResults.returnType.jvmErasure
 
-        fun createMeasurement(): FMeasurement                                                = measurement()
-        fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = result(data, extra)
-        fun createPlot(data: ResultTable)                                                    = plot(data)
+        fun createMeasurement(): FMeasurement                                                = mClass.primaryConstructor!!.call()
+        fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = example.processResults(data, extra)
+        fun createPlot(data: ResultTable)                                                    = example.createPlot(data)
 
 
     }
 
     fun loadResultFile(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile? {
 
-        return types.find { it.type == data.getAttribute("Type") }?.createResult(data, extra) ?: convertFile(
-            data,
-            extra
-        )
+        return types.find { it.type == data.getAttribute("Type") }?.createResult(data, extra) ?: convertFile(data, extra)
 
     }
 

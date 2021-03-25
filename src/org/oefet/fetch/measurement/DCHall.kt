@@ -9,7 +9,14 @@ import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.gui.Colour
+import jisa.gui.Doc
 import jisa.maths.Range
+import org.oefet.fetch.gui.elements.DCHallPlot
+import org.oefet.fetch.gui.elements.FPPPlot
+import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.results.CondResult
+import org.oefet.fetch.results.DCHallResult
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -30,6 +37,13 @@ import kotlin.math.sqrt
  * 7.   Regardless of how run() ended, the onFinish() method is then always called afterwards.
  */
 class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
+
+    private val notice = Doc("Ramping Down").apply {
+        addHeading("Ramping Down Magnet").setAlignment(Doc.Align.CENTRE).setColour(Colour.RED)
+        addText("This measurement has been interrupted and so the electromagnet\nis now safely returning itself to a zero current state.").setAlignment(Doc.Align.CENTRE)
+        addText("Please Wait...").setAlignment(Doc.Align.CENTRE)
+    }
+
 
     // Measurement parameters to ask user for when configuring measurement
     private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
@@ -85,6 +99,14 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         val FPP_2_ERROR    = Col("Four-Point Probe 2 Error", "V")
         val TEMPERATURE    = Col("Temperature", "K")
 
+    }
+
+    override fun createPlot(data: ResultTable): DCHallPlot {
+        return DCHallPlot(data)
+    }
+
+    override fun processResults(data: ResultTable, extra: List<Quantity>): DCHallResult {
+        return DCHallResult(data, extra)
     }
 
     /**
@@ -256,7 +278,13 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      * Code to run if the measurement is stopped before completion - this happens when the user presses "stop"
      */
     override fun onInterrupt() {
+
         Util.errLog.println("DC Hall Measurement Interrupted.")
+
+        if (magnet != null) {
+            notice.show()
+        }
+
     }
 
     override fun onError() {
@@ -281,6 +309,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         runRegardless { fpp2?.turnOff() }
         runRegardless { magnet?.turnOff() }
 
+        notice.close()
+
     }
 
     /**
@@ -293,24 +323,5 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
         return results
     }
-
-    /**
-     * Custom extension to arrays of doubles for calculating standard deviation.
-     */
-    private fun Array<out Double>.stdDeviation(): Double {
-
-        if (size < 2) {
-            return 0.0
-        }
-
-        val mean = average()
-        var sum = 0.0
-
-        for (value in this) sum += (value - mean).pow(2)
-
-        return sqrt(sum / (size - 1))
-
-    }
-
 
 }
