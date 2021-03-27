@@ -5,6 +5,7 @@ import jisa.devices.Configuration
 import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
+import jisa.maths.Range
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ResultFile
 import java.util.*
@@ -12,8 +13,9 @@ import kotlin.reflect.KClass
 
 abstract class FMeasurement(private val name: String, label: String, val type: String) : Measurement() {
 
-    private val labelProperty     = StringParameter("Basic", "Name", null, label)
-    private val instrumentSetters = LinkedList<() -> Unit>()
+    private val labelProperty = StringParameter("Basic", "Name", null, label)
+    private val setters       = LinkedList<() -> Unit>()
+    private val errors        = LinkedList<String>()
 
     protected var gdSMU:    SMU?      = null
     protected var sdSMU:    SMU?      = null
@@ -37,17 +39,18 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
      * Checks that everything required for this measurement is present. Returns all missing instrument errors as
      * a list of strings. Measurement will only go ahead if this list is empty.
      */
-    abstract fun checkForErrors() : List<String>
+    open fun checkForErrors() : List<String> = emptyList()
 
     open fun loadInstruments() {
-        instrumentSetters.forEach { it() }
+        setters.forEach { it() }
     }
 
     override fun start() {
 
+        errors.clear()
         loadInstruments()
 
-        val errors = checkForErrors()
+        errors += checkForErrors()
 
         if (errors.isNotEmpty()) {
             throw Exception(errors.joinToString(", "))
@@ -71,10 +74,66 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
         labelProperty.value = value
     }
 
-    fun <I: Instrument> addInstrument(name: String, type: KClass<I>, setter: (I?) -> Unit = {}): Configuration<I> {
+    fun <I: Instrument> addOptionalInstrument(name: String, type: KClass<I>, setter: (I?) -> Unit = {}): Configuration<I> {
         val config = addInstrument(name, type.java)
-        instrumentSetters.add { setter(config.get()) }
+        setters.add { setter(config.get()) }
         return config
+    }
+
+    fun <I: Instrument> addRequiredInstrument(name: String, type: KClass<I>, setter: (I) -> Unit = {}): Configuration<I> {
+
+        val config = addInstrument(name, type.java)
+
+        setters.add {
+
+            val inst = config.instrument
+
+            if (inst == null) {
+                errors += "$name is not configured"
+            } else {
+                setter(inst)
+            }
+
+        }
+
+        return config
+
+    }
+
+    fun addParameter(section: String, name: String, defaultValue: String, setter: (String) -> Unit) : Parameter<String> {
+        val param = StringParameter(section, name, null, defaultValue)
+        setters += { setter(param.value) }
+        return param
+    }
+
+    fun addParameter(section: String, name: String, defaultValue: Double, setter: (Double) -> Unit) : Parameter<Double> {
+        val param =  DoubleParameter(section, name, null, defaultValue)
+        setters += { setter(param.value) }
+        return param
+    }
+
+    fun addParameter(section: String, name: String, defaultValue: Int, setter: (Int) -> Unit) : Parameter<Int> {
+        val param =  IntegerParameter(section, name, null, defaultValue)
+        setters += { setter(param.value) }
+        return param
+    }
+
+    fun addParameter(section: String, name: String, defaultValue: Boolean, setter: (Boolean) -> Unit) : Parameter<Boolean> {
+        val param =  BooleanParameter(section, name, null, defaultValue)
+        setters += { setter(param.value) }
+        return param
+    }
+
+    fun addChoiceParameter(section: String, name: String, vararg options: String, setter: (Int) -> Unit) : Parameter<Int> {
+        val param = ChoiceParameter(section, name, 0, *options)
+        setters += { setter(param.value) }
+        return param
+    }
+
+    fun addParameter(section: String, name: String, defaultValue: Range<Double>, setter: (Range<Double>) -> Unit) : Parameter<Range<Double>> {
+        val param =  RangeParameter(section, name, null, defaultValue)
+        setters += { setter(param.value) }
+        return param
     }
 
     fun runRegardless (toRun: () -> Unit) {

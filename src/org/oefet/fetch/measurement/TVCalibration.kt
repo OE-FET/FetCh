@@ -9,11 +9,8 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.TVCPlot
-import org.oefet.fetch.gui.elements.TVPlot
-import org.oefet.fetch.gui.elements.TransferPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVCResult
-import org.oefet.fetch.results.TransferResult
 import java.util.*
 
 class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
@@ -26,12 +23,12 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
     private val currParam     = RangeParameter("Resistive Thermometer", "Current", "A", 0.0, 100e-6, 11)
     private val holdSIParam   = DoubleParameter("Resistive Thermometer", "Hold Time", "s", 0.5)
 
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val htSMUConfig  = addInstrument("Heater Channel", SMU::class) { heater = it }
-    private val sdSMUConfig  = addInstrument("Strip Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
-    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class) { tMeter = it }
+    private val gdSMUConfig  = addOptionalInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val htSMUConfig  = addOptionalInstrument("Heater Channel", SMU::class) { heater = it }
+    private val sdSMUConfig  = addOptionalInstrument("Strip Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val fpp1Config   = addOptionalInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
+    private val fpp2Config   = addOptionalInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
+    private val tMeterConfig = addOptionalInstrument("Thermometer", TMeter::class) { tMeter = it }
 
     val avgCount get() = avgCountParam.value
     val avgDelay get() = (avgDelayParam.value * 1000.0).toInt()

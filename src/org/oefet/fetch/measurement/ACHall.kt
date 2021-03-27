@@ -1,21 +1,14 @@
 package org.oefet.fetch.measurement
 
-import jisa.Util.runRegardless
 import jisa.control.Repeat
 import jisa.devices.interfaces.*
-import jisa.devices.Configuration
 import jisa.enums.Coupling
 import jisa.enums.Input
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.gui.Configurator
-import jisa.gui.Plot
-import jisa.maths.Range
 import org.oefet.fetch.gui.elements.ACHallPlot
-import org.oefet.fetch.gui.tabs.Connections
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ACHallResult
-import org.oefet.fetch.results.ResultFile
 import java.time.Duration
 import java.util.*
 import kotlin.math.pow
@@ -34,13 +27,13 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     private val currentParam   = RangeParameter("Source-Drain", "Current", "A", -50e-6, 50e-6, 5)
     private val gateParam      = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1)
 
-    private val gdSMUConfig    = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val sdSMUConfig    = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val sgSMUConfig    = addInstrument("Source-Gate Channel", SMU::class)  { sgSMU = it }
-    private val dcPowerConfig  = addInstrument("Motor Power Supply", DCPower::class) { dcPower = it }
-    private val lockInConfig   = addInstrument("Lock-In Amplifier", DPLockIn::class) { lockIn = it }
-    private val preAmpConfig   = addInstrument("Voltage Pre-Amplifier", VPreAmp::class) { preAmp = it }
-    private val tMeterConfig   = addInstrument("Thermometer", TMeter::class) { tMeter = it }
+    private val gdSMUConfig    = addOptionalInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val sdSMUConfig    = addOptionalInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val sgSMUConfig    = addOptionalInstrument("Source-Gate Channel", SMU::class)  { sgSMU = it }
+    private val dcPowerConfig  = addOptionalInstrument("Motor Power Supply", DCPower::class) { dcPower = it }
+    private val lockInConfig   = addOptionalInstrument("Lock-In Amplifier", DPLockIn::class) { lockIn = it }
+    private val preAmpConfig   = addOptionalInstrument("Voltage Pre-Amplifier", VPreAmp::class) { preAmp = it }
+    private val tMeterConfig   = addOptionalInstrument("Thermometer", TMeter::class) { tMeter = it }
 
     val intTime     get() = intTimeParam.value
     val delTime     get() = (1e3 * delTimeParam.value).toInt()

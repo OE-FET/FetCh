@@ -1,7 +1,6 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.Util.runRegardless
 import jisa.control.Repeat
 import jisa.devices.interfaces.IMeter
 import jisa.devices.interfaces.SMU
@@ -10,16 +9,11 @@ import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.gui.Configurator
 import jisa.maths.Range
-import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.gui.elements.TVPlot
-import org.oefet.fetch.gui.tabs.Connections
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.TVCResult
 import org.oefet.fetch.results.TVResult
 import java.util.*
-import kotlin.Exception
 
 class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
 
@@ -39,11 +33,11 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     private val gateHoldParam   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
 
     // Instrument configurators
-    private val gdSMUConfig     = addInstrument("Ground Channel (SPA)", SMU::class)
-    private val htSMUConfig     = addInstrument("Heater Channel", SMU::class)
-    private val sgSMUConfig     = addInstrument("Source-Gate Channel", SMU::class)
-    private val tvMeterConfig   = addInstrument("Thermal Voltage Channel", VMeter::class)
-    private val tMeterConfig    = addInstrument("Thermometer", TMeter::class)
+    private val gdSMUConfig     = addOptionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val htSMUConfig     = addOptionalInstrument("Heater Channel", SMU::class)
+    private val sgSMUConfig     = addOptionalInstrument("Source-Gate Channel", SMU::class)
+    private val tvMeterConfig   = addOptionalInstrument("Thermal Voltage Channel", VMeter::class)
+    private val tMeterConfig    = addOptionalInstrument("Thermometer", TMeter::class)
 
     // Quick access to parameter values
     val avgCount   get() = avgCountParam.value

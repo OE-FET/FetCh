@@ -1,7 +1,6 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.Util.runRegardless
 import jisa.control.Repeat
 import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.SMU
@@ -11,14 +10,9 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Colour
 import jisa.gui.Doc
-import jisa.maths.Range
 import org.oefet.fetch.gui.elements.DCHallPlot
-import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.CondResult
 import org.oefet.fetch.results.DCHallResult
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 /**
  * Measurement class for DC Hall measurements. Running the measurement generally goes like this:
@@ -54,15 +48,15 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1)
 
     // Instrument configurations to ask user for
-    private val magnetConfig = addInstrument("Magnet Controller", EMController::class)
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class)
-    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class)
-    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class)
-    private val hvm1Config   = addInstrument("Hall Voltmeter 1", VMeter::class)
-    private val hvm2Config   = addInstrument("Hall Voltmeter 2", VMeter::class)
-    private val fpp1Config   = addInstrument("Four-Point Probe 1", VMeter::class)
-    private val fpp2Config   = addInstrument("Four-Point Probe 2", VMeter::class)
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class)
+    private val magnetConfig = addOptionalInstrument("Magnet Controller", EMController::class)
+    private val gdSMUConfig  = addOptionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val sdSMUConfig  = addOptionalInstrument("Source-Drain Channel", SMU::class)
+    private val sgSMUConfig  = addOptionalInstrument("Source-Gate Channel", SMU::class)
+    private val hvm1Config   = addOptionalInstrument("Hall Voltmeter 1", VMeter::class)
+    private val hvm2Config   = addOptionalInstrument("Hall Voltmeter 2", VMeter::class)
+    private val fpp1Config   = addOptionalInstrument("Four-Point Probe 1", VMeter::class)
+    private val fpp2Config   = addOptionalInstrument("Four-Point Probe 2", VMeter::class)
+    private val tMeterConfig = addOptionalInstrument("Thermometer", TMeter::class)
 
     // Getters to quickly retrieve parameter values - nice-to-have but not necessary (just makes the code look cleaner)
     private val delTime  get() = (1e3 * delTimeParam.value).toInt() // Convert to milliseconds

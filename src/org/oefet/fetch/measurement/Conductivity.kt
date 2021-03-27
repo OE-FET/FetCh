@@ -5,13 +5,9 @@ import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.gui.Plot
-import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.ACHallResult
 import org.oefet.fetch.results.CondResult
-import org.oefet.fetch.results.ResultFile
 import java.lang.Double.min
 
 class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
@@ -22,12 +18,12 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     private val holdGParam   = BooleanParameter("Source-Gate", "Active", null, false)
     private val gateVParam   = DoubleParameter("Source-Gate", "Voltage", "V", 50.0)
 
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
-    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
-    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class) { tMeter = it }
+    private val gdSMUConfig  = addOptionalInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
+    private val sdSMUConfig  = addOptionalInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
+    private val sgSMUConfig  = addOptionalInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
+    private val fpp1Config   = addOptionalInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
+    private val fpp2Config   = addOptionalInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
+    private val tMeterConfig = addOptionalInstrument("Thermometer", TMeter::class) { tMeter = it }
 
     val delTime  get() = (1e3 * delTimeParam.value).toInt()
     val currents get() = currentParam.value

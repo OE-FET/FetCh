@@ -7,32 +7,43 @@ import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.maths.Range
-import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.CondResult
 import org.oefet.fetch.results.OutputResult
 
 class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
-    // Measurement Parameters
-    private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 61)
-    private val symVSDParam  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
-    private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 7)
+    // Parameters
+    var delTime    = 500
+    var sdVoltages = Range.step(0, 60, 1)
+    var symVSD     = true
+    var sgVoltages = Range.step(0, 60, 10)
 
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
-    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
-    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class) { tMeter = it }
+    // Required instruments
+    lateinit var sd: SMU
+    lateinit var sg: SMU
 
-    val delTime    get() = (1e3 * delTimeParam.value).toInt()
-    val sdVoltages get() = sdvParam.value
-    val symVSD     get() = symVSDParam.value
-    val sgVoltages get() = sgvParam.value
-    
+    // Optional instruments
+    var gd:  SMU?    = null
+    var fp1: VMeter? = null
+    var fp2: VMeter? = null
+    var tM:  TMeter? = null
+
+    init {
+        
+        addParameter("Basic", "Delay Time [s]", 0.5)            { delTime = (1000.0 * it).toInt() }
+        addParameter("Source-Drain", "Voltage [V]", sdVoltages) { sdVoltages = it }
+        addParameter("Source-Drain", "Sweep Both Ways", symVSD) { symVSD = it }
+        addParameter("Source-Gate", "Voltage [V]", sgVoltages)  { sgVoltages = it }
+
+        addOptionalInstrument("Ground Channel (SPA)", SMU::class)          { gd  = it }
+        addRequiredInstrument("Source-Drain Channel", SMU::class)          { sd  = it }
+        addRequiredInstrument("Source-Gate Channel", SMU::class)           { sg  = it }
+        addOptionalInstrument("Four-Point-Probe Channel 1", VMeter::class) { fp1 = it }
+        addOptionalInstrument("Four-Point-Probe Channel 2", VMeter::class) { fp2 = it }
+
+    }
+
     companion object {
         val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
         val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
@@ -71,60 +82,45 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     }
 
-    override fun checkForErrors() : List<String> {
-
-        val errors = ArrayList<String>()
-
-        if (sdSMU == null) errors += "SD channel not configured"
-        if (sgSMU == null) errors += "SG channel not configured"
-
-        return errors
-
-    }
-
     override fun run(results: ResultTable) {
 
-        // Assert that source-drain and source-gate must be connected
-        val sdSMU = this.sdSMU!!
-        val sgSMU = this.sgSMU!!
-
-        results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
+        results.setAttribute("Integration Time", "${sd.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
 
-        sdSMU.turnOff()
-        sgSMU.turnOff()
-        gdSMU?.turnOff()
-        fpp1?.turnOff()
-        fpp2?.turnOff()
+        sd.turnOff()
+        sg.turnOff()
+        gd?.turnOff()
+        fp1?.turnOff()
+        fp2?.turnOff()
 
         // Configure initial source modes
-        sdSMU.voltage = sdVoltages.first()
-        sgSMU.voltage = sgVoltages.first()
-        gdSMU?.voltage = 0.0
+        sd.voltage = sdVoltages.first()
+        sg.voltage = sgVoltages.first()
+        gd?.voltage = 0.0
 
-        sdSMU.turnOn()
-        sgSMU.turnOn()
-        gdSMU?.turnOn()
-        fpp1?.turnOn()
-        fpp2?.turnOn()
+        sd.turnOn()
+        sg.turnOn()
+        gd?.turnOn()
+        fp1?.turnOn()
+        fp2?.turnOn()
 
         for (vSG in sgVoltages) {
 
-            sgSMU.voltage = vSG
+            sg.voltage = vSG
 
             for (vSD in (if (symVSD) sdVoltages.mirror() else sdVoltages)) {
 
-                sdSMU.voltage = vSD
+                sd.voltage = vSD
 
                 sleep(delTime)
 
                 results.addData(
                     vSD, vSG,
-                    sdSMU.voltage, sdSMU.current,
-                    sgSMU.voltage, sgSMU.current,
-                    fpp1?.voltage ?: Double.NaN, fpp2?.voltage ?: Double.NaN,
-                    tMeter?.temperature ?: Double.NaN,
-                    gdSMU?.current ?: Double.NaN
+                    sd.voltage, sd.current,
+                    sg.voltage, sg.current,
+                    fp1?.voltage ?: Double.NaN, fp2?.voltage ?: Double.NaN,
+                    tM?.temperature ?: Double.NaN,
+                    gd?.current ?: Double.NaN
                 )
 
             }
@@ -135,11 +131,11 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     override fun onFinish() {
 
-        runRegardless { sdSMU?.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { fpp1?.turnOff() }
-        runRegardless { fpp2?.turnOff() }
+        runRegardless { sd.turnOff() }
+        runRegardless { sg.turnOff() }
+        runRegardless { gd?.turnOff() }
+        runRegardless { fp1?.turnOff() }
+        runRegardless { fp2?.turnOff() }
 
     }
 
