@@ -5,6 +5,7 @@ import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.CondResult
@@ -12,24 +13,18 @@ import java.lang.Double.min
 
 class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
-    private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 1.0)
-    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -10e-6, +10e-6, 11)
-    private val symIParam    = BooleanParameter("Source-Drain", "Sweep Both Ways", null, false)
-    private val holdGParam   = BooleanParameter("Source-Gate", "Active", null, false)
-    private val gateVParam   = DoubleParameter("Source-Gate", "Voltage", "V", 50.0)
+    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
+    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class)
+    private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
+    private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
+    private val tMeter by optionalConfig("Thermometer", TMeter::class)
 
-    private val gdSMUConfig  = addOptionalInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val sdSMUConfig  = addOptionalInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val sgSMUConfig  = addOptionalInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
-    private val fpp1Config   = addOptionalInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
-    private val fpp2Config   = addOptionalInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
-    private val tMeterConfig = addOptionalInstrument("Thermometer", TMeter::class) { tMeter = it }
-
-    val delTime  get() = (1e3 * delTimeParam.value).toInt()
-    val currents get() = currentParam.value
-    val symI     get() = symIParam.value
-    val holdG    get() = holdGParam.value
-    val gateV    get() = gateVParam.value
+    private val delTime  by input("Basic", "Delay Time [s]", 1.0) { (it * 1e3).toInt() }
+    private val currents by input("Source-Drain", "Current [A]", Range.linear(-10e-6, +10e-6, 11))
+    private val symI     by input("Source-Drain", "Sweep Both Ways", false)
+    private val holdG    by input("Source-Gate", "Active", false)
+    private val gateV    by input("Source-Gate", "Voltage [V]", 50.0)
 
     companion object {
         val SD_VOLTAGE     = Col("SD Voltage", "V")
@@ -71,10 +66,6 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
 
         val errors = ArrayList<String>()
 
-        if (sdSMU == null) {
-            errors += "SD channel not configured"
-        }
-
         if (holdG && sgSMU == null) {
             errors += "SG channel not configured"
         }
@@ -86,7 +77,7 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     override fun run(results: ResultTable) {
 
         // Assert that source-drain must be connected
-        val sdSMU = sdSMU!!
+        val sdSMU = sdSMU
         val sgSMU = if (holdG) sgSMU else null
 
         val intTime = when {
@@ -159,7 +150,7 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     override fun onFinish() {
 
         runRegardless { gdSMU?.turnOff() }
-        runRegardless { sdSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
         runRegardless { sgSMU?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }

@@ -1,7 +1,6 @@
 package org.oefet.fetch.measurement
 
 import jisa.devices.interfaces.*
-import jisa.devices.Configuration
 import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
@@ -10,26 +9,13 @@ import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ResultFile
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 abstract class FMeasurement(private val name: String, label: String, val type: String) : Measurement() {
 
-    private val labelProperty = StringParameter("Basic", "Name", null, label)
-    private val setters       = LinkedList<() -> Unit>()
-    private val errors        = LinkedList<String>()
-
-    protected var gdSMU:    SMU?      = null
-    protected var sdSMU:    SMU?      = null
-    protected var sgSMU:    SMU?      = null
-    protected var lockIn:   DPLockIn? = null
-    protected var preAmp:   VPreAmp?  = null
-    protected var dcPower:  DCPower?  = null
-    protected var tMeter:   TMeter?   = null
-    protected var fControl: FControl? = null
-    protected var tControl: TC?       = null
-    protected var fpp1:     VMeter?   = null
-    protected var fpp2:     VMeter?   = null
-    protected var tvMeter:  VMeter?   = null
-    protected var heater:   SMU?      = null
+    private   val labelProperty = StringParameter("Basic", "Name", null, label)
+    private   val errors        = LinkedList<String>()
+    protected val setters       = LinkedList<() -> Unit>()
 
     abstract fun createPlot(data: ResultTable): Plot
 
@@ -74,66 +60,75 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
         labelProperty.value = value
     }
 
-    fun <I: Instrument> addOptionalInstrument(name: String, type: KClass<I>, setter: (I?) -> Unit = {}): Configuration<I> {
+    fun <I: Instrument> optionalConfig(name: String, type: KClass<I>): ODelegate<I?> {
+
         val config = addInstrument(name, type.java)
-        setters.add { setter(config.get()) }
-        return config
+        val del    = ODelegate<I?>()
+
+        setters += { del.setValue(config.instrument) }
+
+        return del
+
     }
 
-    fun <I: Instrument> addRequiredInstrument(name: String, type: KClass<I>, setter: (I) -> Unit = {}): Configuration<I> {
+    fun <I: Instrument> requiredConfig(name: String, type: KClass<I>): RDelegate<I> {
 
         val config = addInstrument(name, type.java)
+        val del    = RDelegate<I>()
 
-        setters.add {
+        setters += {
 
             val inst = config.instrument
 
-            if (inst == null) {
-                errors += "$name is not configured"
+            if (inst != null) {
+                del.setValue(config.instrument)
             } else {
-                setter(inst)
+                errors += "$name is not configured"
             }
 
         }
 
-        return config
+        return del
 
     }
 
-    fun addParameter(section: String, name: String, defaultValue: String, setter: (String) -> Unit) : Parameter<String> {
-        val param = StringParameter(section, name, null, defaultValue)
-        setters += { setter(param.value) }
-        return param
+    fun <T> input(parameter: Parameter<T>) : PDelegate<T> {
+        return PDelegate(parameter)
     }
 
-    fun addParameter(section: String, name: String, defaultValue: Double, setter: (Double) -> Unit) : Parameter<Double> {
-        val param =  DoubleParameter(section, name, null, defaultValue)
-        setters += { setter(param.value) }
-        return param
+    fun <T,M> input(parameter: Parameter<T>, map: (T) -> M) : MDelegate<T,M> {
+        return MDelegate(parameter, map)
     }
 
-    fun addParameter(section: String, name: String, defaultValue: Int, setter: (Int) -> Unit) : Parameter<Int> {
-        val param =  IntegerParameter(section, name, null, defaultValue)
-        setters += { setter(param.value) }
-        return param
+    fun input(section: String, name: String, defaultValue: String) : PDelegate<String> {
+        return input(StringParameter(section, name, null, defaultValue))
     }
 
-    fun addParameter(section: String, name: String, defaultValue: Boolean, setter: (Boolean) -> Unit) : Parameter<Boolean> {
-        val param =  BooleanParameter(section, name, null, defaultValue)
-        setters += { setter(param.value) }
-        return param
+    fun input(section: String, name: String, defaultValue: Double) : PDelegate<Double> {
+        return input(DoubleParameter(section, name, null, defaultValue))
     }
 
-    fun addChoiceParameter(section: String, name: String, vararg options: String, setter: (Int) -> Unit) : Parameter<Int> {
-        val param = ChoiceParameter(section, name, 0, *options)
-        setters += { setter(param.value) }
-        return param
+    fun <M> input(section: String, name: String, defaultValue: Double, map: (Double) -> M) : MDelegate<Double, M> {
+        return input(DoubleParameter(section, name, null, defaultValue), map)
     }
 
-    fun addParameter(section: String, name: String, defaultValue: Range<Double>, setter: (Range<Double>) -> Unit) : Parameter<Range<Double>> {
-        val param =  RangeParameter(section, name, null, defaultValue)
-        setters += { setter(param.value) }
-        return param
+    fun input(section: String, name: String, defaultValue: Int) : PDelegate<Int> {
+        return input(IntegerParameter(section, name, null, defaultValue))
+
+    }
+
+    fun input(section: String, name: String, defaultValue: Boolean) : PDelegate<Boolean> {
+        return input(BooleanParameter(section, name, null, defaultValue))
+
+    }
+
+    fun choice(section: String, name: String, vararg options: String) : PDelegate<Int> {
+        return input(ChoiceParameter(section, name, 0, *options))
+
+    }
+
+    fun input(section: String, name: String, defaultValue: Range<Double>) : PDelegate<Range<Double>> {
+        return input(RangeParameter(section, name, null, defaultValue))
     }
 
     fun runRegardless (toRun: () -> Unit) {
@@ -142,6 +137,50 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
             toRun()
         } catch (e: Throwable) {
             e.printStackTrace()
+        }
+
+    }
+
+    class MDelegate<T,M>(private val parameter: Parameter<T>, private val map: (T) -> M) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): M {
+            return map(parameter.value)
+        }
+
+    }
+
+    class PDelegate<I>(private val parameter: Parameter<I>) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): I {
+            return parameter.value
+        }
+
+    }
+
+    class ODelegate<I: Instrument?> {
+
+        private var instrument: I? = null
+
+        fun setValue(instrument: I?) {
+            this.instrument = instrument
+        }
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): I? {
+            return instrument
+        }
+
+    }
+
+    class RDelegate<I: Instrument> {
+
+        private lateinit var instrument: I
+
+        fun setValue(instrument: I) {
+            this.instrument = instrument
+        }
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): I {
+            return instrument
         }
 
     }

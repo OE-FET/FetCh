@@ -6,6 +6,7 @@ import jisa.enums.Coupling
 import jisa.enums.Input
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.maths.Range
 import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ACHallResult
@@ -16,36 +17,29 @@ import kotlin.math.sqrt
 
 class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
-    private val intTimeParam   = DoubleParameter("Basic", "Integration Time", "s", 100.0)
-    private val delTimeParam   = DoubleParameter("Basic", "Delay Time", "s", Duration.ofMinutes(10).toSeconds().toDouble())
-    private val repeatsParam   = IntegerParameter("Basic", "Repeats", null, 600)
-    private val paGainParam    = DoubleParameter("Basic", "Pre-Amp Gain", null, 1.0)
-    private val exGainParam    = DoubleParameter("Basic", "Extra Gain", null, 10.0)
-    private val rmsFieldParam  = DoubleParameter("Magnets", "RMS Field Strength", "T", 0.666 / sqrt(2.0))
-    private val frequencyParam = RangeParameter("Magnets", "Frequency", "Hz", 1.5, 1.5, 1)
-    private val spinParam      = DoubleParameter("Magnets", "Spin-Up Time", "s", 600.0)
-    private val currentParam   = RangeParameter("Source-Drain", "Current", "A", -50e-6, 50e-6, 5)
-    private val gateParam      = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1)
+    private lateinit var fControl: FControl
 
-    private val gdSMUConfig    = addOptionalInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val sdSMUConfig    = addOptionalInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val sgSMUConfig    = addOptionalInstrument("Source-Gate Channel", SMU::class)  { sgSMU = it }
-    private val dcPowerConfig  = addOptionalInstrument("Motor Power Supply", DCPower::class) { dcPower = it }
-    private val lockInConfig   = addOptionalInstrument("Lock-In Amplifier", DPLockIn::class) { lockIn = it }
-    private val preAmpConfig   = addOptionalInstrument("Voltage Pre-Amplifier", VPreAmp::class) { preAmp = it }
-    private val tMeterConfig   = addOptionalInstrument("Thermometer", TMeter::class) { tMeter = it }
+    // Instruments
+    private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val sdSMU   by requiredConfig("Source-Drain Channel", SMU::class)
+    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class)
+    private val dcPower by requiredConfig("Motor Power Supply", DCPower::class)
+    private val lockIn  by requiredConfig("Lock-In Amplifier", DPLockIn::class)
+    private val preAmp  by optionalConfig("Voltage Pre-Amplifier", VPreAmp::class)
+    private val tMeter  by optionalConfig("Thermometer", TMeter::class)
 
-    val intTime     get() = intTimeParam.value
-    val delTime     get() = (1e3 * delTimeParam.value).toInt()
-    val repeats     get() = repeatsParam.value
-    val paGain      get() = paGainParam.value
-    val exGain      get() = exGainParam.value
-    val rmsField    get() = rmsFieldParam.value
-    val frequencies get() = frequencyParam.value
-    val spin        get() = (1e3 * spinParam.value).toInt()
-    val currents    get() = currentParam.value
-    val gates       get() = gateParam.value
-    val totGain     get() = paGain * exGain
+    private val intTime     by input("Basic", "Integration Time [s]", 100.0)
+    private val delTime     by input("Basic", "Delay Time [s]", 300.0) { (it * 1e3).toInt() }
+    private val repeats     by input("Basic", "Repeats", 300)
+    private val paGain      by input("Basic", "Pre-Amp Gain", 1.0)
+    private val exGain      by input("Basic", "Extra Gain", 10.0)
+    private val rmsField    by input("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
+    private val frequencies by input("Magnets", "Frequency [Hz]", Range.manual(1.5))
+    private val spin        by input("Magnets", "Spin-Up Time [s]", 600.0) { (it * 1e3).toInt() }
+    private val currents    by input("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))
+    private val gates       by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
+
+    private val totGain get() = paGain * exGain
 
     companion object {
 
@@ -76,12 +70,7 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     override fun loadInstruments() {
 
         super.loadInstruments()
-
-        fControl = if (lockIn != null && dcPower != null) {
-            FControl(lockIn!!, dcPower!!)
-        } else {
-            null
-        }
+        fControl = FControl(lockIn, dcPower)
 
     }
 
@@ -89,24 +78,12 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
         val errors = LinkedList<String>()
 
-        if (sdSMU == null) {
-            errors += "No SD channel configured"
-        }
-
         if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0)) {
             errors += "No SG channel configured"
         }
 
-        if (lockIn == null) {
-            errors += "No lock-in configured"
-        }
-
-        if (preAmp == null) {
+        if (preAmp == null && paGain != 1.0) {
             errors += "No pre-amp configured"
-        }
-
-        if (fControl == null) {
-            errors += "No frequency control available"
         }
 
         return errors
@@ -121,20 +98,14 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         results.setAttribute("Pre-Amp Gain", paGain)
         results.setAttribute("Extra Pre-Amp Gain", exGain)
 
-        // Assert that all required instruments must be connected
-        val sdSMU    = sdSMU!!
-        val lockIn   = lockIn!!
-        val preAmp   = preAmp!!
-        val fControl = fControl!!
-
         sdSMU.turnOff()
         sgSMU?.turnOff()
         gdSMU?.turnOff()
 
         // Configure the pre-amp
-        preAmp.coupling = Coupling.AC
-        preAmp.input    = Input.DIFF
-        preAmp.gain     = paGain
+        preAmp?.coupling = Coupling.AC
+        preAmp?.input    = Input.DIFF
+        preAmp?.gain     = paGain
 
         // Initialise the SMUs
         sdSMU.current  = currents.first()
@@ -217,10 +188,10 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     override fun onFinish() {
 
-        runRegardless { sdSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
         runRegardless { sgSMU?.turnOff() }
         runRegardless { gdSMU?.turnOff() }
-        runRegardless { fControl?.stop() }
+        runRegardless { fControl.stop() }
 
     }
 

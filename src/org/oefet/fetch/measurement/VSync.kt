@@ -13,26 +13,19 @@ import org.oefet.fetch.results.OutputResult
 
 class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
-    private val paramDelTime = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val paramMinVSD  = DoubleParameter("Source-Drain", "Start", "V", 0.0)
-    private val paramMaxVSD  = DoubleParameter("Source-Drain", "Stop", "V", 60.0)
-    private val paramNumVSD  = IntegerParameter("Source-Drain", "No. Steps", null, 7)
-    private val paramSymVSD  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
-    private val paramOffset  = DoubleParameter("Source-Gate", "Offset", "V", 0.0)
+    // Parameters
+    val delTime  by input("Basic", "Delay Time [s]", 0.5) { (it * 1e3).toInt() }
+    val voltages by input("Source-Drain", "Voltage [V]", Range.linear(0, 60))
+    val symVSD   by input("Source-Drain", "Sweep Both Ways", true)
+    val offset   by input("Source-Gate", "Offset [V]", 0.0)
 
-    private val gdSMUConfig  = addOptionalInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val sdSMUConfig  = addOptionalInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val sgSMUConfig  = addOptionalInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
-    private val fpp1Config   = addOptionalInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
-    private val fpp2Config   = addOptionalInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
-    private val tMeterConfig = addOptionalInstrument("Thermometer", TMeter::class) { tMeter = it }
-
-    val delTime get() = (paramDelTime.value * 1000).toInt()
-    val minVSD  get() = paramMinVSD.value
-    val maxVSD  get() = paramMaxVSD.value
-    val numVSD  get() = paramNumVSD.value
-    val symVSD  get() = paramSymVSD.value
-    val offset  get() = paramOffset.value
+    // Instruments
+    val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
+    val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
+    val sgSMU  by requiredConfig("Source-Gate Channel", SMU::class)
+    val fpp1   by optionalConfig("Four-Point-Probe Channel 1", VMeter::class)
+    val fpp2   by optionalConfig("Four-Point-Probe Channel 2", VMeter::class)
+    val tMeter by optionalConfig("Thermometer", TMeter::class)
 
     companion object {
         val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
@@ -72,30 +65,12 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
     }
 
-    override fun checkForErrors() : List<String> {
-
-        val errors = ArrayList<String>()
-
-        if (sdSMU == null) errors += "SD channel not configured"
-        if (sgSMU == null) errors += "SG channel not configured"
-
-        return errors
-
-    }
-
     override fun run(results: ResultTable) {
-
-        val sdSMU = this.sdSMU!!
-        val sgSMU = this.sgSMU!!
 
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
 
-        val voltages = if (symVSD) {
-            Range.linear(minVSD, maxVSD, numVSD).mirror()
-        } else {
-            Range.linear(minVSD, maxVSD, numVSD)
-        }
+        val voltages = if (symVSD) voltages.mirror() else voltages
 
         sdSMU.turnOff()
         sgSMU.turnOff()
@@ -104,8 +79,8 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         fpp2?.turnOff()
 
         // Configure initial source modes
-        sdSMU.voltage = minVSD
-        sgSMU.voltage = minVSD + offset
+        sdSMU.voltage = voltages.first()
+        sgSMU.voltage = voltages.first() + offset
         gdSMU?.voltage = 0.0
 
         sdSMU.turnOn()
@@ -142,8 +117,8 @@ class VSync : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
     override fun onFinish() {
 
-        runRegardless { sdSMU?.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
+        runRegardless { sgSMU.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
