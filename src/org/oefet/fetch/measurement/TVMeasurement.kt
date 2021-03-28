@@ -1,7 +1,6 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.Util.runRegardless
 import jisa.control.Repeat
 import jisa.devices.interfaces.IMeter
 import jisa.devices.interfaces.SMU
@@ -10,51 +9,31 @@ import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.gui.Configurator
 import jisa.maths.Range
-import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.gui.elements.TVPlot
-import org.oefet.fetch.gui.tabs.Connections
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.TVCResult
 import org.oefet.fetch.results.TVResult
 import java.util.*
-import kotlin.Exception
 
 class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
 
-    // Basic parameters
-    private val avgCountParam   = IntegerParameter("Basic", "Averaging Count", null, 1)
-    private val avgDelayParam   = DoubleParameter("Basic", "Averaging Delay", "s", 0.0)
-    private val orderParam      = ChoiceParameter("Basic", "Sweep Order", 0, "Gate → Heater", "Heater → Gate")
+    // User input parameters
+    private val avgCount   by input("Basic", "Averaging Count", 1)
+    private val avgDelay   by input("Basic", "Averaging Delay [s]", 0.0) { (it * 1e3).toInt() }
+    private val order      by choice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
+    private val heaterV    by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
+    private val symHV      by input("Heater", "Sweep Both Ways", false)
+    private val heaterHold by input("Heater", "Hold Time [s]", 60.0) { (it * 1e3).toInt() }
+    private val gates      by input("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
+    private val symSGV     by input("Gate", "Sweep Both Ways", false)
+    private val gateHold   by input("Gate", "Hold Time [s]", 1.0) { (it * 1e3).toInt() }
 
-    // Heater parameters
-    private val heaterVParam    = RangeParameter("Heater", "Heater Voltage", "V", Range.polynomial(0, 5, 6, 2), 0.0, 5.0, 6, 1.0, 2)
-    private val symHVParam      = BooleanParameter("Heater", "Sweep Both Ways", null, false)
-    private val heaterHoldParam = DoubleParameter("Heater", "Hold Time", "s", 60.0)
-
-    // Gate parameters
-    private val gateParam       = RangeParameter("Gate", "Voltage", "V", 0.0, 10.0, 11)
-    private val symSGVParam     = BooleanParameter("Gate", "Sweep Both Ways", null, false)
-    private val gateHoldParam   = DoubleParameter("Gate", "Hold Time", "s", 1.0)
-
-    // Instrument configurators
-    private val gdSMUConfig     = addInstrument("Ground Channel (SPA)", SMU::class)
-    private val htSMUConfig     = addInstrument("Heater Channel", SMU::class)
-    private val sgSMUConfig     = addInstrument("Source-Gate Channel", SMU::class)
-    private val tvMeterConfig   = addInstrument("Thermal Voltage Channel", VMeter::class)
-    private val tMeterConfig    = addInstrument("Thermometer", TMeter::class)
-
-    // Quick access to parameter values
-    val avgCount   get() = avgCountParam.value
-    val avgDelay   get() = (avgDelayParam.value * 1000).toInt()
-    val heaterV    get() = heaterVParam.value
-    val symHV      get() = symHVParam.value
-    val heaterHold get() = (heaterHoldParam.value * 1000).toInt()
-    val gates      get() = gateParam.value
-    val symSGV     get() = symSGVParam.value
-    val gateHold   get() = (gateHoldParam.value * 1000).toInt()
-    val order      get() = orderParam.value
+    // Instruments
+    private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val heater  by requiredConfig("Heater Channel", SMU::class)
+    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class)
+    private val tvMeter by requiredConfig("Thermal Voltage Channel", VMeter::class)
+    private val tMeter  by optionalConfig("Thermometer", TMeter::class)
 
     override fun createPlot(data: ResultTable): TVPlot {
         return TVPlot(data)
@@ -85,29 +64,11 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
 
     }
 
-    override fun loadInstruments() {
-
-        gdSMU   = gdSMUConfig.get()
-        heater  = htSMUConfig.get()
-        sgSMU   = sgSMUConfig.get()
-        tvMeter = tvMeterConfig.get()
-        tMeter  = tMeterConfig.get()
-
-    }
-
     override fun checkForErrors(): List<String> {
 
         val errors = LinkedList<String>()
 
-        if (heater == null) {
-            errors += "Heater is not configured"
-        }
-
-        if (tvMeter == null) {
-            errors += "Thermal-Voltage Voltmeter is not configured"
-        }
-
-        if (sgSMU == null && !(gates.max() != gates.min())) {
+        if (sgSMU == null && !(gates.max() == 0.0 && gates.min() == 0.0)) {
             errors += "No gate channel configured."
         }
 
@@ -116,10 +77,6 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     }
 
     override fun run(results: ResultTable) {
-
-        // Heater SMU and TV voltmeter channels MUST always be configured
-        val heater  = this.heater!!
-        val tvMeter = this.tvMeter!!
 
         // Record measurement parameters into result file
         results.setAttribute("Integration Time", "${tvMeter.integrationTime} s")
@@ -187,7 +144,7 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
                             heater.current,
                             tvVoltage.mean,
                             tvVoltage.standardDeviation,
-                            if (tvMeter is IMeter) tvMeter.current else Double.NaN
+                            if (tvMeter is IMeter) (tvMeter as IMeter).current else Double.NaN
                         )
 
                     }
@@ -229,7 +186,7 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
                             heater.current,
                             tvVoltage.mean,
                             tvVoltage.standardDeviation,
-                            if (tvMeter is SMU) tvMeter.current else Double.NaN
+                            if (tvMeter is IMeter) (tvMeter as IMeter).current else Double.NaN
                         )
 
                     }
@@ -246,10 +203,10 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
     }
 
     override fun onFinish() {
-        runRegardless { heater?.turnOff() }
+        runRegardless { heater.turnOff() }
         runRegardless { sgSMU?.turnOff() }
         runRegardless { gdSMU?.turnOff() }
-        runRegardless { tvMeter?.turnOff() }
+        runRegardless { tvMeter.turnOff() }
     }
 
     override fun getColumns(): Array<Col> {

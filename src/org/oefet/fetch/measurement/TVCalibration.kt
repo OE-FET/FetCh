@@ -9,37 +9,28 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.TVCPlot
-import org.oefet.fetch.gui.elements.TVPlot
-import org.oefet.fetch.gui.elements.TransferPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVCResult
-import org.oefet.fetch.results.TransferResult
 import java.util.*
 
 class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 
-    private val avgCountParam = IntegerParameter("Basic", "Averaging Count", null,1)
-    private val avgDelayParam = DoubleParameter("Basic", "Averaging Delay", "s", 0.0)
-    private val probeParam    = ChoiceParameter("Basic", "Strip", 0, "Left", "Right")
-    private val heaterVParam  = RangeParameter("Heater", "Heater Voltage", "V", Range.polynomial(0, 5, 6, 2), 0.0, 5.0, 6, 1.0, 2)
-    private val holdHVParam   = DoubleParameter("Heater", "Hold Time", "s", 60.0)
-    private val currParam     = RangeParameter("Resistive Thermometer", "Current", "A", 0.0, 100e-6, 11)
-    private val holdSIParam   = DoubleParameter("Resistive Thermometer", "Hold Time", "s", 0.5)
+    // Parameters
+    private val avgCount by input("Basic", "Averaging Count",1)
+    private val avgDelay by input("Basic", "Averaging Delay [s]", 0.0) { (it * 1e3).toInt() }
+    private val probe    by choice("Basic", "Strip", "Left", "Right")
+    private val heaterV  by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
+    private val holdHV   by input("Heater", "Hold Time [s]", 60.0) { (it * 1e3).toInt() }
+    private val currents by input("Resistive Thermometer", "Current [A]", Range.linear(0.0, 100e-6, 11))
+    private val holdSI   by input("Resistive Thermometer", "Hold Time", 0.5) { (it * 1e3).toInt() }
 
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val htSMUConfig  = addInstrument("Heater Channel", SMU::class) { heater = it }
-    private val sdSMUConfig  = addInstrument("Strip Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
-    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class) { tMeter = it }
-
-    val avgCount get() = avgCountParam.value
-    val avgDelay get() = (avgDelayParam.value * 1000.0).toInt()
-    val probe    get() = probeParam.value
-    val heaterV  get() = heaterVParam.value
-    val holdHV   get() = (1e3 * holdHVParam.value).toInt()
-    val currents get() = currParam.value
-    val holdSI   get() = (1e3 * holdSIParam.value).toInt()
+    // Instruments
+    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val heater by requiredConfig("Heater Channel", SMU::class)
+    private val sdSMU  by requiredConfig("Strip Source-Drain Channel", SMU::class)
+    private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
+    private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
+    private val tMeter by optionalConfig("Thermometer", TMeter::class)
 
     companion object {
 
@@ -64,26 +55,7 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
         return TVCResult(data, extra)
     }
 
-    override fun checkForErrors(): List<String> {
-
-        val errors = LinkedList<String>()
-
-        if (heater == null) {
-            errors += "Heater is not configured"
-        }
-
-        if (sdSMU == null) {
-            errors += "Source-drain channel is not configured"
-        }
-
-        return errors
-
-    }
-
     override fun run(results: ResultTable) {
-
-        val heater = this.heater!!
-        val sdSMU  = this.sdSMU!!
 
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Averaging Count", avgCount.toString())
@@ -156,9 +128,9 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
     }
 
     override fun onFinish() {
-        runRegardless { heater?.turnOff() }
+        runRegardless { heater.turnOff() }
         runRegardless { gdSMU?.turnOff() }
-        runRegardless { sdSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
     }
 
     override fun getColumns(): Array<Col> {

@@ -1,7 +1,6 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.Util.runRegardless
 import jisa.control.Repeat
 import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.SMU
@@ -13,19 +12,14 @@ import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.DCHallPlot
-import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.CondResult
 import org.oefet.fetch.results.DCHallResult
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 /**
  * Measurement class for DC Hall measurements. Running the measurement generally goes like this:
  *
  * 1.   FetCh GUI asks the measurement for all "Parameters" and "Instruments" it has configured, so that it can draw
  *      the correct configuration window - these are defined at the top of this class and stored as private variables.
- *      e.g. DoubleParameter(sectionName, parameterName, units, defaultValue)
  * 2.   When it is time to run the measurement the loadInstruments() method is run first to load the instruments as
  *      as graphically configured by the user in the GUI.
  * 3.   Then checkForErrors() is run - if it returns anything other than an empty list of errors, the measurement will
@@ -44,38 +38,25 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         addText("Please Wait...").setAlignment(Doc.Align.CENTRE)
     }
 
-
-    // Measurement parameters to ask user for when configuring measurement
-    private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
-    private val repTimeParam = DoubleParameter("Basic", "Repeat Time", "s", 0.0)
-    private val fieldParam   = RangeParameter("Magnet", "Field", "T", -1.0, +1.0, 11)
-    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -50e-6, +50e-6, 11)
-    private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1)
+    // Parameter inputs to ask the user for
+    private val delTime  by input("Basic", "Delay Time [s]", 0.5) { (it * 1e3).toInt() }
+    private val repTime  by input("Basic", "Repeat Time [s]", 0.0) { (it * 1e3).toInt() }
+    private val repeats  by input("Basic", "Repeats", 50)
+    private val fields   by input("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
+    private val currents by input("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))
+    private val gates    by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
 
     // Instrument configurations to ask user for
-    private val magnetConfig = addInstrument("Magnet Controller", EMController::class)
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class)
-    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class)
-    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class)
-    private val hvm1Config   = addInstrument("Hall Voltmeter 1", VMeter::class)
-    private val hvm2Config   = addInstrument("Hall Voltmeter 2", VMeter::class)
-    private val fpp1Config   = addInstrument("Four-Point Probe 1", VMeter::class)
-    private val fpp2Config   = addInstrument("Four-Point Probe 2", VMeter::class)
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class)
+    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
+    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class)
+    private val hvm1   by optionalConfig("Hall Voltmeter 1", VMeter::class)
+    private val hvm2   by optionalConfig("Hall Voltmeter 2", VMeter::class)
+    private val fpp1   by optionalConfig("Four-Point Probe 1", VMeter::class)
+    private val fpp2   by optionalConfig("Four-Point Probe 2", VMeter::class)
+    private val tMeter by optionalConfig("Thermometer", TMeter::class)
+    private val magnet by optionalConfig("Magnet Controller", EMController::class)
 
-    // Getters to quickly retrieve parameter values - nice-to-have but not necessary (just makes the code look cleaner)
-    private val delTime  get() = (1e3 * delTimeParam.value).toInt() // Convert to milliseconds
-    private val repTime  get() = (1e3 * repTimeParam.value).toInt() // Convert to milliseconds
-    private val repeats  get() = repeatsParam.value
-    private val fields   get() = fieldParam.value
-    private val currents get() = currentParam.value
-    private val gates    get() = gateParam.value
-
-    // Class variables/properties to hold onto hall voltmeters and em controller objects
-    private var hvm1:   VMeter?       = null
-    private var hvm2:   VMeter?       = null
-    private var magnet: EMController? = null
 
     /**
      * Constants to refer to columns in this measurement's result table
@@ -110,23 +91,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     }
 
     /**
-     * Loads/applies all the needed instrument configurations just before the measurement is run
-     */
-    override fun loadInstruments() {
-
-        gdSMU  = gdSMUConfig.get()
-        sdSMU  = sdSMUConfig.get()
-        sgSMU  = sgSMUConfig.get()
-        hvm1   = hvm1Config.get()
-        hvm2   = hvm2Config.get()
-        fpp1   = fpp1Config.get()
-        fpp2   = fpp2Config.get()
-        tMeter = tMeterConfig.get()
-        magnet = magnetConfig.get()
-
-    }
-
-    /**
      * Checks to see if anything is amiss before run(...) is called. If this returns anything other than an empty list
      * the measurement will just return an error and not run. In this case, we are checking to make sure the needed
      * instruments for the configured measurement are present (e.g. is there a source-gate channel if a gate sweep is
@@ -135,11 +99,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     override fun checkForErrors(): List<String> {
 
         val errors = ArrayList<String>()
-
-        // Source-Drain channel is always required
-        if (sdSMU == null) {
-            errors += "Source-Drain channel is not configured"
-        }
 
         // Source-Gate channel is required if a gate voltage is to be used
         if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0)) {
@@ -192,9 +151,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      * generated by using the columns returned by getColumns() above - as an argument.
      */
     override fun run(results: ResultTable) {
-
-        // Source-Drain channel MUST be present (cannot be null)
-        val sdSMU = sdSMU!!
 
         // Save measurement parameters to result file
         results.setAttribute("Integration Time", "${hvm1?.integrationTime ?: hvm2?.integrationTime ?: "0.0"} s")
@@ -300,7 +256,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
         // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
         // failing would prevent the rest from running.
-        runRegardless { sdSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { sgSMU?.turnOff() }
         runRegardless { hvm1?.turnOff() }

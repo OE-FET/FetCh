@@ -7,32 +7,26 @@ import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.maths.Range
-import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.CondResult
 import org.oefet.fetch.results.OutputResult
 
 class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
-    // Measurement Parameters
-    private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val sdvParam     = RangeParameter("Source-Drain", "Voltage", "V", 0.0, 60.0, 61)
-    private val symVSDParam  = BooleanParameter("Source-Drain", "Sweep Both Ways", null, true)
-    private val sgvParam     = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 60.0, 7)
+    // Parameters
+    val delTime    by input("Basic", "Delay Time [s]", 0.5) { (it * 1000.0).toInt() }
+    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1))
+    val symVSD     by input("Source-Drain", "Sweep Both Ways", true)
+    val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 10))
 
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class) { gdSMU = it }
-    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class) { sdSMU = it }
-    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class) { sgSMU = it }
-    private val fpp1Config   = addInstrument("Four-Point Probe Channel 1", VMeter::class) { fpp1 = it }
-    private val fpp2Config   = addInstrument("Four-Point Probe Channel 2", VMeter::class) { fpp2 = it }
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class) { tMeter = it }
+    // Instruments
+    val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
+    val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
+    val sgSMU  by requiredConfig("Source-Gate Channel", SMU::class)
+    val fpp1   by optionalConfig("Four-Point-Probe Channel 1", VMeter::class)
+    val fpp2   by optionalConfig("Four-Point-Probe Channel 2", VMeter::class)
+    val tMeter by optionalConfig("Thermometer", TMeter::class)
 
-    val delTime    get() = (1e3 * delTimeParam.value).toInt()
-    val sdVoltages get() = sdvParam.value
-    val symVSD     get() = symVSDParam.value
-    val sgVoltages get() = sgvParam.value
-    
     companion object {
         val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
         val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
@@ -71,22 +65,7 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     }
 
-    override fun checkForErrors() : List<String> {
-
-        val errors = ArrayList<String>()
-
-        if (sdSMU == null) errors += "SD channel not configured"
-        if (sgSMU == null) errors += "SG channel not configured"
-
-        return errors
-
-    }
-
     override fun run(results: ResultTable) {
-
-        // Assert that source-drain and source-gate must be connected
-        val sdSMU = this.sdSMU!!
-        val sgSMU = this.sgSMU!!
 
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
@@ -135,8 +114,8 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     override fun onFinish() {
 
-        runRegardless { sdSMU?.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
+        runRegardless { sgSMU.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
