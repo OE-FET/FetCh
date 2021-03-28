@@ -15,13 +15,7 @@ import java.util.*
 
 class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 
-    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val heater by requiredConfig("Heater Channel", SMU::class)
-    private val sdSMU  by requiredConfig("Strip Source-Drain Channel", SMU::class)
-    private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
-    private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
-    private val tMeter by optionalConfig("Thermometer", TMeter::class)
-
+    // Parameters
     private val avgCount by input("Basic", "Averaging Count",1)
     private val avgDelay by input("Basic", "Averaging Delay [s]", 0.0) { (it * 1e3).toInt() }
     private val probe    by choice("Basic", "Strip", "Left", "Right")
@@ -29,6 +23,14 @@ class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "T
     private val holdHV   by input("Heater", "Hold Time [s]", 60.0) { (it * 1e3).toInt() }
     private val currents by input("Resistive Thermometer", "Current [A]", Range.linear(0.0, 100e-6, 11))
     private val holdSI   by input("Resistive Thermometer", "Hold Time", 0.5) { (it * 1e3).toInt() }
+
+    // Instruments
+    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val heater by requiredConfig("Heater Channel", SMU::class)
+    private val sdSMU  by requiredConfig("Strip Source-Drain Channel", SMU::class)
+    private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
+    private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
+    private val tMeter by optionalConfig("Thermometer", TMeter::class)
 
     companion object {
 

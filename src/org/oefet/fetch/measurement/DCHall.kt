@@ -20,7 +20,6 @@ import org.oefet.fetch.results.DCHallResult
  *
  * 1.   FetCh GUI asks the measurement for all "Parameters" and "Instruments" it has configured, so that it can draw
  *      the correct configuration window - these are defined at the top of this class and stored as private variables.
- *      e.g. DoubleParameter(sectionName, parameterName, units, defaultValue)
  * 2.   When it is time to run the measurement the loadInstruments() method is run first to load the instruments as
  *      as graphically configured by the user in the GUI.
  * 3.   Then checkForErrors() is run - if it returns anything other than an empty list of errors, the measurement will
@@ -257,7 +256,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
         // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
         // failing would prevent the rest from running.
-        runRegardless { sdSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { sgSMU?.turnOff() }
         runRegardless { hvm1?.turnOff() }

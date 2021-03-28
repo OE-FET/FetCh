@@ -17,22 +17,23 @@ import java.util.*
 
 class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
 
+    // User input parameters
+    private val avgCount   by input("Basic", "Averaging Count", 1)
+    private val avgDelay   by input("Basic", "Averaging Delay [s]", 0.0) { (it * 1e3).toInt() }
+    private val order      by choice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
+    private val heaterV    by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
+    private val symHV      by input("Heater", "Sweep Both Ways", false)
+    private val heaterHold by input("Heater", "Hold Time [s]", 60.0) { (it * 1e3).toInt() }
+    private val gates      by input("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
+    private val symSGV     by input("Gate", "Sweep Both Ways", false)
+    private val gateHold   by input("Gate", "Hold Time [s]", 1.0) { (it * 1e3).toInt() }
+
+    // Instruments
     private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
     private val heater  by requiredConfig("Heater Channel", SMU::class)
     private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class)
     private val tvMeter by requiredConfig("Thermal Voltage Channel", VMeter::class)
     private val tMeter  by optionalConfig("Thermometer", TMeter::class)
-
-    // Quick access to parameter values
-    val avgCount   by input("Basic", "Averaging Count", 1)
-    val avgDelay   by input("Basic", "Averaging Delay [s]", 0.0) { (it * 1e3).toInt() }
-    val order      by choice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
-    val heaterV    by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
-    val symHV      by input("Heater", "Sweep Both Ways", false)
-    val heaterHold by input("Heater", "Hold Time [s]", 60.0) { (it * 1e3).toInt() }
-    val gates      by input("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
-    val symSGV     by input("Gate", "Sweep Both Ways", false)
-    val gateHold   by input("Gate", "Hold Time [s]", 1.0) { (it * 1e3).toInt() }
 
     override fun createPlot(data: ResultTable): TVPlot {
         return TVPlot(data)
@@ -67,7 +68,7 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
 
         val errors = LinkedList<String>()
 
-        if (sgSMU == null && gates.max() != gates.min()) {
+        if (sgSMU == null && !(gates.max() == 0.0 && gates.min() == 0.0)) {
             errors += "No gate channel configured."
         }
 

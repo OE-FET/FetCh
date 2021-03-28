@@ -17,17 +17,7 @@ import kotlin.math.sqrt
 
 class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
-    private lateinit var fControl: FControl
-
-    // Instruments
-    private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val sdSMU   by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class)
-    private val dcPower by requiredConfig("Motor Power Supply", DCPower::class)
-    private val lockIn  by requiredConfig("Lock-In Amplifier", DPLockIn::class)
-    private val preAmp  by optionalConfig("Voltage Pre-Amplifier", VPreAmp::class)
-    private val tMeter  by optionalConfig("Thermometer", TMeter::class)
-
+    // User input parameters
     private val intTime     by input("Basic", "Integration Time [s]", 100.0)
     private val delTime     by input("Basic", "Delay Time [s]", 300.0) { (it * 1e3).toInt() }
     private val repeats     by input("Basic", "Repeats", 300)
@@ -38,6 +28,17 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     private val spin        by input("Magnets", "Spin-Up Time [s]", 600.0) { (it * 1e3).toInt() }
     private val currents    by input("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))
     private val gates       by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
+
+    // Instruments
+    private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val sdSMU   by requiredConfig("Source-Drain Channel", SMU::class)
+    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class)
+    private val dcPower by requiredConfig("Motor Power Supply", DCPower::class)
+    private val lockIn  by requiredConfig("Lock-In Amplifier", DPLockIn::class)
+    private val preAmp  by optionalConfig("Voltage Pre-Amplifier", VPreAmp::class)
+    private val tMeter  by optionalConfig("Thermometer", TMeter::class)
+
+    private lateinit var fControl: FControl
 
     private val totGain get() = paGain * exGain
 
