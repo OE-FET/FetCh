@@ -5,8 +5,10 @@ import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
 import jisa.gui.Plot
 import jisa.maths.Range
+import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ResultFile
+import org.oefet.fetch.results.SimpleResultFile
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -17,9 +19,15 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
     private   val errors        = LinkedList<String>()
     protected val setters       = LinkedList<() -> Unit>()
 
-    abstract fun createPlot(data: ResultTable): Plot
+    open fun createPlot(data: ResultTable): FetChPlot {
+        return FetChPlot(name).apply {
+            createSeries().watchAll(data)
+        }
+    }
 
-    abstract fun processResults(data: ResultTable, extra: List<Quantity>): ResultFile
+    open fun processResults(data: ResultTable, extra: List<Quantity>): ResultFile {
+        return SimpleResultFile(name, data, extra)
+    }
 
     /**
      * Checks that everything required for this measurement is present. Returns all missing instrument errors as
@@ -60,12 +68,20 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
         labelProperty.value = value
     }
 
+    override fun onError() {
+
+    }
+
+    override fun onInterrupt() {
+
+    }
+
     fun <I: Instrument> optionalConfig(name: String, type: KClass<I>): ODelegate<I?> {
 
         val config = addInstrument(name, type.java)
-        val del    = ODelegate<I?>()
+        val del    = ODelegate<I?>(name, errors)
 
-        setters += { del.setValue(config.instrument) }
+        setters += {del.setValue(config.instrument)}
 
         return del
 
@@ -96,20 +112,12 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
         return PDelegate(parameter)
     }
 
-    fun <T,M> input(parameter: Parameter<T>, map: (T) -> M) : MDelegate<T,M> {
-        return MDelegate(parameter, map)
-    }
-
     fun input(section: String, name: String, defaultValue: String) : PDelegate<String> {
         return input(StringParameter(section, name, null, defaultValue))
     }
 
     fun input(section: String, name: String, defaultValue: Double) : PDelegate<Double> {
         return input(DoubleParameter(section, name, null, defaultValue))
-    }
-
-    fun <M> input(section: String, name: String, defaultValue: Double, map: (Double) -> M) : MDelegate<Double, M> {
-        return input(DoubleParameter(section, name, null, defaultValue), map)
     }
 
     fun input(section: String, name: String, defaultValue: Int) : PDelegate<Int> {
@@ -155,18 +163,34 @@ abstract class FMeasurement(private val name: String, label: String, val type: S
             return parameter.value
         }
 
+        infix fun <M> map(mapper: (I) -> M): MDelegate<I,M> {
+            return MDelegate(parameter, mapper)
+        }
+
     }
 
-    class ODelegate<I: Instrument?> {
+    class ODelegate<I: Instrument?>(private val name: String, private val errors: MutableList<String>) {
 
         private var instrument: I? = null
+        private var condition: () -> Boolean = { false }
 
         fun setValue(instrument: I?) {
+
             this.instrument = instrument
+
+            if (condition() && instrument == null) {
+                errors.add("$name is not configured")
+            }
+
         }
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I? {
             return instrument
+        }
+
+        infix fun requiredIf(condition: () -> Boolean) : ODelegate<I> {
+            this.condition = condition
+            return this
         }
 
     }

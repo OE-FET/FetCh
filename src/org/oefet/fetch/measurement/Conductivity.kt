@@ -14,7 +14,7 @@ import java.lang.Double.min
 class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
     // User input parameters
-    private val delTime  by input("Basic", "Delay Time [s]", 1.0) { (it * 1e3).toInt() }
+    private val delTime  by input("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
     private val currents by input("Source-Drain", "Current [A]", Range.linear(-10e-6, +10e-6, 11))
     private val symI     by input("Source-Drain", "Sweep Both Ways", false)
     private val holdG    by input("Source-Gate", "Active", false)
@@ -23,7 +23,7 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
     // Instruments
     private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
     private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class)
+    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { holdG }
     private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
     private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
     private val tMeter by optionalConfig("Thermometer", TMeter::class)
@@ -61,18 +61,6 @@ class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Condu
             TEMPERATURE,
             GROUND_CURRENT
         )
-
-    }
-
-    override fun checkForErrors(): List<String> {
-
-        val errors = ArrayList<String>()
-
-        if (holdG && sgSMU == null) {
-            errors += "SG channel not configured"
-        }
-
-        return errors
 
     }
 

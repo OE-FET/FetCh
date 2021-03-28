@@ -11,7 +11,7 @@ interface ResultFile {
     val data: ResultTable
     val parameters: MutableList<Quantity>
     val quantities: MutableList<Quantity>
-    val plot: Plot
+    val plot: Plot?
     val name: String
     val image: Image
     val label: String

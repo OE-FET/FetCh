@@ -19,8 +19,8 @@ object Measurements {
 
     val types = Reflections("org.oefet.fetch.measurement")
         .getSubTypesOf(FMeasurement::class.java)
-        .sortedBy { it.simpleName }
         .map { Config(it.getConstructor().newInstance()) }
+        .sortedBy { it.name }
 
     class Config(private val example: FMeasurement) {
 

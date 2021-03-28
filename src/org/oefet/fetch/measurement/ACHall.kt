@@ -10,8 +10,6 @@ import jisa.maths.Range
 import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ACHallResult
-import java.time.Duration
-import java.util.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -19,23 +17,23 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     // User input parameters
     private val intTime     by input("Basic", "Integration Time [s]", 100.0)
-    private val delTime     by input("Basic", "Delay Time [s]", 300.0) { (it * 1e3).toInt() }
+    private val delTime     by input("Basic", "Delay Time [s]", 300.0) map { (it * 1e3).toInt() }
     private val repeats     by input("Basic", "Repeats", 300)
     private val paGain      by input("Basic", "Pre-Amp Gain", 1.0)
     private val exGain      by input("Basic", "Extra Gain", 10.0)
     private val rmsField    by input("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
     private val frequencies by input("Magnets", "Frequency [Hz]", Range.manual(1.5))
-    private val spin        by input("Magnets", "Spin-Up Time [s]", 600.0) { (it * 1e3).toInt() }
+    private val spin        by input("Magnets", "Spin-Up Time [s]", 600.0) map { (it * 1e3).toInt() }
     private val currents    by input("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))
     private val gates       by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
 
     // Instruments
     private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
     private val sdSMU   by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class)
+    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 }}
     private val dcPower by requiredConfig("Motor Power Supply", DCPower::class)
     private val lockIn  by requiredConfig("Lock-In Amplifier", DPLockIn::class)
-    private val preAmp  by optionalConfig("Voltage Pre-Amplifier", VPreAmp::class)
+    private val preAmp  by optionalConfig("Voltage Pre-Amplifier", VPreAmp::class) requiredIf { paGain != 1.0 }
     private val tMeter  by optionalConfig("Thermometer", TMeter::class)
 
     private lateinit var fControl: FControl
@@ -60,14 +58,6 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     }
 
-    override fun createPlot(data: ResultTable): ACHallPlot {
-        return ACHallPlot(data)
-    }
-
-    override fun processResults(data: ResultTable, extra: List<Quantity>): ACHallResult {
-        return ACHallResult(data, extra)
-    }
-
     override fun loadInstruments() {
 
         super.loadInstruments()
@@ -75,19 +65,23 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     }
 
-    override fun checkForErrors(): List<String> {
+    override fun getColumns(): Array<Col> {
 
-        val errors = LinkedList<String>()
-
-        if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0)) {
-            errors += "No SG channel configured"
-        }
-
-        if (preAmp == null && paGain != 1.0) {
-            errors += "No pre-amp configured"
-        }
-
-        return errors
+        return arrayOf(
+            SD_VOLTAGE,
+            SD_CURRENT,
+            SG_VOLTAGE,
+            SG_CURRENT,
+            RMS_FIELD,
+            FREQUENCY,
+            X_VOLTAGE,
+            X_ERROR,
+            Y_VOLTAGE,
+            Y_ERROR,
+            HALL_VOLTAGE,
+            HALL_ERROR,
+            TEMPERATURE
+        )
 
     }
 
@@ -196,32 +190,12 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     }
 
-    override fun getColumns(): Array<Col> {
-
-        return arrayOf(
-            SD_VOLTAGE,
-            SD_CURRENT,
-            SG_VOLTAGE,
-            SG_CURRENT,
-            RMS_FIELD,
-            FREQUENCY,
-            X_VOLTAGE,
-            X_ERROR,
-            Y_VOLTAGE,
-            Y_ERROR,
-            HALL_VOLTAGE,
-            HALL_ERROR,
-            TEMPERATURE
-        )
-
+    override fun processResults(data: ResultTable, extra: List<Quantity>): ACHallResult {
+        return ACHallResult(data, extra)
     }
 
-    override fun onInterrupt() {
-
-    }
-
-    override fun onError() {
-
+    override fun createPlot(data: ResultTable): ACHallPlot {
+        return ACHallPlot(data)
     }
 
 }
