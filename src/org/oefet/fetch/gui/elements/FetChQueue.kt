@@ -3,15 +3,17 @@ package org.oefet.fetch.gui.elements
 import jisa.experiment.ActionQueue
 import jisa.gui.ActionQueueDisplay
 import jisa.gui.GUI
+import jisa.gui.Grid
 import jisa.gui.MeasurementConfigurator
+import org.oefet.fetch.Actions
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.inputs.ActionInput
-import org.oefet.fetch.gui.inputs.InputAction
-import org.oefet.fetch.gui.inputs.SweepInput
+import org.oefet.fetch.Sweeps
+import org.oefet.fetch.action.Action
 import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.measurement.FMeasurement
+import org.oefet.fetch.sweep.Sweep
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
 
@@ -36,14 +38,6 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
                 }
 
-                is InputAction -> {
-
-                    if (it.input is ActionInput) {
-                        it.input.edit()
-                    }
-
-                }
-
             }
 
         }
@@ -60,11 +54,11 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
         addSeparator("Actions")
 
-        for (type in ActionInput.types) addItem(type.name) { type.create().ask(queue) }
+        for (type in Actions.types) addItem(type.name) { askAction(type.create()) }
 
         addSeparator("Sweeps")
 
-        for (type in SweepInput.types) addItem(type.name) { type.create().ask(queue) }
+        for (type in Sweeps.types) addItem(type.name) { askSweep(type.create()) }
 
     }
 
@@ -120,16 +114,14 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
     /**
      * Whether the buttons for adding/clearing actions are enabled or not
      */
-    var isDisabled: Boolean
-        get() = addButton.isDisabled
-        set(value) {
-            addButton.isDisabled  = value
-            clearQueue.isDisabled = value
-            upButton.isDisabled   = value
-            dnButton.isDisabled   = value
-            rmButton.isDisabled   = value
-        }
-
+    override fun setDisabled(disabled: Boolean) {
+        isSelectable          = !disabled
+        addButton.isDisabled  = disabled
+        clearQueue.isDisabled = disabled
+        upButton.isDisabled   = disabled
+        dnButton.isDisabled   = disabled
+        rmButton.isDisabled   = disabled
+    }
 
     private fun askMeasurement(measurement: FMeasurement) {
 
@@ -145,13 +137,118 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             val action = queue.addMeasurement(measurement.label, measurement)
 
             action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
-
             action.setBefore { Measure.display(it) }
-
             action.setAfter {
                 it.data.finalise()
                 FileLoad.addData(it.data)
                 System.gc()
+            }
+
+        }
+
+    }
+
+    private fun askAction(measurement: Action) {
+
+        // Generate measurement parameter input GUI and make it remember values from last time
+        val input = MeasurementConfigurator(measurement.name, measurement).apply {
+            linkToConfig(Settings.inputs)
+        }
+
+        if (input.showInput()) {
+
+            val action = queue.addMeasurement(measurement.label, measurement)
+
+            action.setBefore { Measure.display(it) }
+
+            action.setAfter { System.gc() }
+
+        }
+
+    }
+
+    private fun askSweep(measurement: Sweep) {
+
+        // Generate measurement parameter input GUI and make it remember values from last time
+        val input = MeasurementConfigurator(measurement.name, measurement).apply {
+            linkToConfig(Settings.inputs)
+        }
+
+        val sweepQueue = FetChQueue("Interval Actions", measurement.queue)
+
+        val grid  = Grid(measurement.name, 2, input, sweepQueue)
+
+        if (grid.showAsConfirmation()) {
+
+            input.update()
+
+            val multiAction = ActionQueue.MultiAction(measurement.name)
+
+            measurement.loadInstruments()
+
+            for (action in measurement.generateActions()) {
+
+                if (action is ActionQueue.MeasureAction) {
+
+                    action.setBefore { Measure.display(it) }
+
+                    if (action.measurement is FMeasurement) {
+
+                        action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
+
+                        action.setAfter {
+                            it.data.finalise()
+                            FileLoad.addData(it.data)
+                            System.gc()
+                        }
+
+                    }
+
+                }
+
+                multiAction.actions += action
+
+            }
+
+            queue.addAction(multiAction)
+
+            setOnDoubleClick(multiAction) {
+
+                if (grid.showAsConfirmation()) {
+
+                    input.update()
+
+                    multiAction.name = measurement.name
+                    multiAction.actions.clear()
+
+                    measurement.loadInstruments()
+
+                    for (action in measurement.generateActions()) {
+
+                        if (action is ActionQueue.MeasureAction) {
+
+                            action.setBefore { Measure.display(it) }
+
+                            if (action.measurement is FMeasurement) {
+
+                                action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
+
+                                action.setAfter {
+                                    it.data.finalise()
+                                    FileLoad.addData(it.data)
+                                    System.gc()
+                                }
+
+                            }
+
+                        }
+
+                        multiAction.actions += action
+
+                    }
+
+                }
+
             }
 
         }

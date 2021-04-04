@@ -14,8 +14,8 @@ import org.oefet.fetch.results.OutputResult
 class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
     // Parameters
-    val delTime    by input("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }
-    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1))
+    val delTime    by input("Basic", "Delay Time [s]", 0.5) map { it.toMSec() }
+    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1)) map { if (symVSD) it.mirror() else it }
     val symVSD     by input("Source-Drain", "Sweep Both Ways", true)
     val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 10))
 
@@ -77,8 +77,8 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
         fpp2?.turnOff()
 
         // Configure initial source modes
-        sdSMU.voltage = sdVoltages.first()
-        sgSMU.voltage = sgVoltages.first()
+        sdSMU.voltage  = sdVoltages.first()
+        sgSMU.voltage  = sgVoltages.first()
         gdSMU?.voltage = 0.0
 
         sdSMU.turnOn()
@@ -91,7 +91,7 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
 
             sgSMU.voltage = vSG
 
-            for (vSD in (if (symVSD) sdVoltages.mirror() else sdVoltages)) {
+            for (vSD in sdVoltages) {
 
                 sdSMU.voltage = vSD
 
@@ -109,6 +109,8 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
                     tMeter?.temperature ?: Double.NaN,
                     gdSMU?.current ?: Double.NaN
                 )
+
+                checkPoint()
 
             }
 

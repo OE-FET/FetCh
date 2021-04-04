@@ -27,7 +27,7 @@ object Measurements {
         val type   = example.type
         val name   = example.name
         val mClass = example::class
-        val rClass = example::processResults.returnType.jvmErasure
+        val rClass = (example::processResults).reflect()?.returnType?.jvmErasure
 
         fun createMeasurement(): FMeasurement                                                = mClass.primaryConstructor!!.call()
         fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = example.processResults(data, extra)
