@@ -21,7 +21,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
         setOnDoubleClick {
 
-            if (!isDisabled) {
+            if (!addButton.isDisabled) {
 
                 when (it) {
 
@@ -217,7 +217,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
             setOnDoubleClick(multiAction) {
 
-                if (grid.showAsConfirmation()) {
+                if (!addButton.isDisabled && grid.showAsConfirmation()) {
 
                     input.update()
 
