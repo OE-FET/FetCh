@@ -13,25 +13,24 @@ import jisa.maths.Range
 import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVResult
-import java.util.*
 
 class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
 
     // User input parameters
     private val avgCount   by input("Basic", "Averaging Count", 1)
-    private val avgDelay   by input("Basic", "Averaging Delay [s]", 0.0) { (it * 1e3).toInt() }
+    private val avgDelay   by input("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
     private val order      by choice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
     private val heaterV    by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
     private val symHV      by input("Heater", "Sweep Both Ways", false)
-    private val heaterHold by input("Heater", "Hold Time [s]", 60.0) { (it * 1e3).toInt() }
+    private val heaterHold by input("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
     private val gates      by input("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
     private val symSGV     by input("Gate", "Sweep Both Ways", false)
-    private val gateHold   by input("Gate", "Hold Time [s]", 1.0) { (it * 1e3).toInt() }
+    private val gateHold   by input("Gate", "Hold Time [s]", 1.0) map { (it * 1e3).toInt() }
 
     // Instruments
     private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
     private val heater  by requiredConfig("Heater Channel", SMU::class)
-    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class)
+    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
     private val tvMeter by requiredConfig("Thermal Voltage Channel", VMeter::class)
     private val tMeter  by optionalConfig("Thermometer", TMeter::class)
 
@@ -61,18 +60,6 @@ class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal
 
         const val ORDER_GATE_HEATER = 0
         const val ORDER_HEATER_GATE = 1
-
-    }
-
-    override fun checkForErrors(): List<String> {
-
-        val errors = LinkedList<String>()
-
-        if (sgSMU == null && !(gates.max() == 0.0 && gates.min() == 0.0)) {
-            errors += "No gate channel configured."
-        }
-
-        return errors
 
     }
 

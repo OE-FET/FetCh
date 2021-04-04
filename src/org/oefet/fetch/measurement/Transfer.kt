@@ -14,7 +14,7 @@ import org.oefet.fetch.results.TransferResult
 class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
 
     // Parameters
-    val delTime    by input("Basic", "Delay Time [s]", 0.5) { (it * 1000.0).toInt() }
+    val delTime    by input("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }
     val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1))
     val symVSD     by input("Source-Drain", "Sweep Both Ways", true)
     val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 10))
@@ -98,10 +98,14 @@ class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
                 sleep(delTime)
 
                 results.addData(
-                    vSD, vSG,
-                    sdSMU.voltage, sdSMU.current,
-                    sgSMU.voltage, sgSMU.current,
-                    fpp1?.voltage ?: Double.NaN, fpp2?.voltage ?: Double.NaN,
+                    vSD,
+                    vSG,
+                    sdSMU.voltage,
+                    sdSMU.current,
+                    sgSMU.voltage,
+                    sgSMU.current,
+                    fpp1?.voltage ?: Double.NaN,
+                    fpp2?.voltage ?: Double.NaN,
                     tMeter?.temperature ?: Double.NaN,
                     gdSMU?.current ?: Double.NaN
                 )

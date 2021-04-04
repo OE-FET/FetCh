@@ -8,6 +8,7 @@ import jisa.experiment.ActionQueue.Result.*
 import jisa.experiment.ResultStream
 import jisa.experiment.ResultTable
 import jisa.gui.*
+import org.oefet.fetch.FEntity
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.*
@@ -72,7 +73,7 @@ object Measure : Grid("Measurement", 1) {
         action.data.setAttribute("Dielectric Permittivity", dielConst.value)
 
         val table = Table("Data", action.data)
-        val plot  = Measurements.createPlot(action.measurement) ?: FetChPlot("Unknown Measurement Plot", "X", "Y")
+        val plot  = (action.measurement as FEntity).createPlot(action.data)
 
         topRow.remove(this.plot)
         bottomRow.remove(this.table)
@@ -122,7 +123,10 @@ object Measure : Grid("Measurement", 1) {
             return
         }
 
-        val last = queue.actions.find { it.status == ActionQueue.Status.INTERRUPTED }
+        queueList.clearSelection()
+        queueList.scrollToTop()
+
+        val last = queue.interruptedAction
 
         val from = if (last != null) {
 

@@ -19,15 +19,15 @@ object Measurements {
 
     val types = Reflections("org.oefet.fetch.measurement")
         .getSubTypesOf(FMeasurement::class.java)
-        .sortedBy { it.simpleName }
         .map { Config(it.getConstructor().newInstance()) }
+        .sortedBy { it.name }
 
     class Config(private val example: FMeasurement) {
 
         val type   = example.type
         val name   = example.name
         val mClass = example::class
-        val rClass = example::processResults.returnType.jvmErasure
+        val rClass = (example::processResults).reflect()?.returnType?.jvmErasure
 
         fun createMeasurement(): FMeasurement                                                = mClass.primaryConstructor!!.call()
         fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = example.processResults(data, extra)

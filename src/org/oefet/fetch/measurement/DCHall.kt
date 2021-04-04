@@ -39,8 +39,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     }
 
     // Parameter inputs to ask the user for
-    private val delTime  by input("Basic", "Delay Time [s]", 0.5) { (it * 1e3).toInt() }
-    private val repTime  by input("Basic", "Repeat Time [s]", 0.0) { (it * 1e3).toInt() }
+    private val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
+    private val repTime  by input("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
     private val repeats  by input("Basic", "Repeats", 50)
     private val fields   by input("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
     private val currents by input("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))
@@ -49,13 +49,13 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     // Instrument configurations to ask user for
     private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
     private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class)
-    private val hvm1   by optionalConfig("Hall Voltmeter 1", VMeter::class)
+    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
+    private val hvm1   by requiredConfig("Hall Voltmeter 1", VMeter::class)
     private val hvm2   by optionalConfig("Hall Voltmeter 2", VMeter::class)
     private val fpp1   by optionalConfig("Four-Point Probe 1", VMeter::class)
     private val fpp2   by optionalConfig("Four-Point Probe 2", VMeter::class)
     private val tMeter by optionalConfig("Thermometer", TMeter::class)
-    private val magnet by optionalConfig("Magnet Controller", EMController::class)
+    private val magnet by optionalConfig("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
 
 
     /**
@@ -88,35 +88,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     override fun processResults(data: ResultTable, extra: List<Quantity>): DCHallResult {
         return DCHallResult(data, extra)
-    }
-
-    /**
-     * Checks to see if anything is amiss before run(...) is called. If this returns anything other than an empty list
-     * the measurement will just return an error and not run. In this case, we are checking to make sure the needed
-     * instruments for the configured measurement are present (e.g. is there a source-gate channel if a gate sweep is
-     * configured - for instance).
-     */
-    override fun checkForErrors(): List<String> {
-
-        val errors = ArrayList<String>()
-
-        // Source-Gate channel is required if a gate voltage is to be used
-        if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0)) {
-            errors += "Source-Gate channel is not configured"
-        }
-
-        // We need at least one Hall voltmeter
-        if (hvm1 == null && hvm2 == null) {
-            errors += "No Hall voltmeters are configured"
-        }
-
-        // Electromagnet controller is needed if more than one field value is to be used
-        if (magnet == null && fields.min() != fields.max()) {
-            errors += "No electromagnet controller configured"
-        }
-
-        return errors
-
     }
 
     /**
@@ -153,7 +124,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     override fun run(results: ResultTable) {
 
         // Save measurement parameters to result file
-        results.setAttribute("Integration Time", "${hvm1?.integrationTime ?: hvm2?.integrationTime ?: "0.0"} s")
+        results.setAttribute("Integration Time", "${hvm1.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
         results.setAttribute("Averaging Count", repeats.toDouble())
         results.setAttribute("Averaging Delay", "$repTime ms")
@@ -162,7 +133,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         gdSMU?.turnOff()
         sdSMU.turnOff()
         sgSMU?.turnOff()
-        hvm1?.turnOff()
+        hvm1.turnOff()
         hvm2?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
@@ -176,13 +147,13 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         gdSMU?.turnOn()
         sdSMU.turnOn()
         sgSMU?.turnOn()
-        hvm1?.turnOn()
+        hvm1.turnOn()
         hvm2?.turnOn()
         fpp1?.turnOn()
         fpp2?.turnOn()
 
         // Prepare repeat measurements
-        val hvm1Values = Repeat.prepare(repeats, repTime) { hvm1?.voltage ?: Double.NaN }
+        val hvm1Values = Repeat.prepare(repeats, repTime) { hvm1.voltage }
         val hvm2Values = Repeat.prepare(repeats, repTime) { hvm2?.voltage ?: Double.NaN }
         val fpp1Values = Repeat.prepare(repeats, repTime) { fpp1?.voltage ?: Double.NaN }
         val fpp2Values = Repeat.prepare(repeats, repTime) { fpp2?.voltage ?: Double.NaN }
@@ -259,7 +230,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         runRegardless { sdSMU.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { sgSMU?.turnOff() }
-        runRegardless { hvm1?.turnOff() }
+        runRegardless { hvm1.turnOff() }
         runRegardless { hvm2?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
