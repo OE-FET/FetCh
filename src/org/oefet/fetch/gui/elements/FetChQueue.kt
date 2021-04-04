@@ -21,19 +21,23 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
         setOnDoubleClick {
 
-            when (it) {
+            if (!isDisabled) {
 
-                is ActionQueue.MeasureAction -> {
+                when (it) {
 
-                    val measurement = it.measurement
+                    is ActionQueue.MeasureAction -> {
 
-                    val input = MeasurementConfigurator(measurement.name, measurement).apply {
-                        windowHeight = 750.0
-                        windowWidth = 1024.0
-                    }
+                        val measurement = it.measurement
 
-                    if (input.showInput()) {
-                        it.name = measurement.label
+                        val input = MeasurementConfigurator(measurement.name, measurement).apply {
+                            windowHeight = 750.0
+                            windowWidth = 1024.0
+                        }
+
+                        if (input.showInput()) {
+                            it.name = measurement.label
+                        }
+
                     }
 
                 }
@@ -115,7 +119,6 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
      * Whether the buttons for adding/clearing actions are enabled or not
      */
     override fun setDisabled(disabled: Boolean) {
-        isSelectable          = !disabled
         addButton.isDisabled  = disabled
         clearQueue.isDisabled = disabled
         upButton.isDisabled   = disabled
