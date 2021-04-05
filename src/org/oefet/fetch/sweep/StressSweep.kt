@@ -17,6 +17,7 @@ class StressSweep : Sweep("Stress") {
 
     val time      by input("Basic", "Interval Time [s]", 600.0) map { it.toMSec() }
     val count     by input("Basic", "No. Intervals", 10)
+    val interval  by input("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val useSD     by input("Source-Drain", "Enabled", false)
     val sdVoltage by input("Source-Drain", "Voltage [V]", 50.0)
     val useSG     by input("Source-Gate", "Enabled", false)
@@ -30,7 +31,7 @@ class StressSweep : Sweep("Stress") {
         val list = LinkedList<ActionQueue.Action>()
 
         for (i in 0 until count) {
-            list += ActionQueue.MeasureAction("${if (useSD) "SD = $sdVoltage V " else ""}${if (useSG) "SG = $sgVoltage V " else ""}for ${Util.msToString(time.toLong())}", SweepPoint(time, useSD, sdVoltage, useSG, sgVoltage, sdSMU, sgSMU), {}, {})
+            list += ActionQueue.MeasureAction("${if (useSD) "SD = $sdVoltage V " else ""}${if (useSG) "SG = $sgVoltage V " else ""}for ${Util.msToString(time.toLong())}", SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, sdSMU, sgSMU), {}, {})
             list += queue.getAlteredCopy { it.setAttribute("S", "${ ((i + 1) * time).toSeconds() } s") }
         }
 
@@ -50,7 +51,7 @@ class StressSweep : Sweep("Stress") {
         return emptyArray()
     }
 
-    class SweepPoint(val time: Int, val useSD: Boolean, val sdVoltage: Double, val useSG: Boolean, val sgVoltage: Double, val sdSMU: SMU?, val sgSMU: SMU?) : Action("Hold") {
+    class SweepPoint(val time: Int, val interval: Long, val useSD: Boolean, val sdVoltage: Double, val useSG: Boolean, val sgVoltage: Double, val sdSMU: SMU?, val sgSMU: SMU?) : Action("Hold") {
 
         var task: RTask? = null
 
@@ -80,7 +81,7 @@ class StressSweep : Sweep("Stress") {
                 throw Exception(errors.joinToString(", "))
             }
 
-            task = RTask(2500) { t ->
+            task = RTask(interval) { t ->
 
                 results.addData(
                     t.secFromStart,
