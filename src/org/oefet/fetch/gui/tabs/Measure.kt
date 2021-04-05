@@ -225,7 +225,7 @@ object Measure : Grid("Measurement", 1) {
     }
 
     private fun stopMeasurement() {
-        while (toolbarStart.isDisabled) {
+        for (i in 1..30) {
             queue.stop()
         }
     }
