@@ -18,6 +18,7 @@ object Measure : Grid("Measurement", 1) {
 
     val queue     = ActionQueue()
     val queueList = FetChQueue("Measurements", queue)
+    val bigQueue  = FetChQueue("Measurements", queue)
     val basic     = Fields("Measurement Parameters")
     val name      = basic.addTextField("Name")
     val dir       = basic.addDirectorySelect("Output Directory")
@@ -33,6 +34,8 @@ object Measure : Grid("Measurement", 1) {
     val dThick     = basic.addDoubleField("Dielectric Thickness [m]")
     val dielectric = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
     val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
+
+    val bigQueueButton: Button
 
     val toolbarStart = addToolbarButton("Start", ::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", ::stopMeasurement)
@@ -59,6 +62,14 @@ object Measure : Grid("Measurement", 1) {
 
         dielectric.setOnChange(::setDielectric)
         setDielectric()
+
+        queueList.addToolbarSeparator()
+
+        bigQueueButton = queueList.addToolbarButton("⛶") {
+            bigQueue.close()
+            bigQueue.isMaximised = true
+            bigQueue.show()
+        }
 
     }
 
@@ -187,6 +198,7 @@ object Measure : Grid("Measurement", 1) {
         toolbarStart.isDisabled =  flag
         toolbarStop.isDisabled  = !flag
         queueList.isDisabled    =  flag
+        bigQueue.isDisabled     =  flag
 
         if (flag) {
 
