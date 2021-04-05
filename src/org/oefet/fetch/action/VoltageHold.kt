@@ -14,6 +14,7 @@ class VoltageHold : Action("Hold") {
     var task: RTask? = null
 
     val time      by input("Basic", "Hold Time [s]", 600.0) map { it.toMSec() }
+    val interval  by input("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val useSD     by input("Source-Drain", "Enabled", false)
     val sdVoltage by input("Source-Drain", "Voltage [V]", 50.0)
     val useSG     by input("Source-Gate", "Enabled", false)
@@ -34,7 +35,7 @@ class VoltageHold : Action("Hold") {
 
     override fun run(results: ResultTable) {
 
-        task = RTask(2500) { t ->
+        task = RTask(interval) { t ->
 
             results.addData(
                 t.secFromStart,
