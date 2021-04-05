@@ -14,6 +14,7 @@ import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.measurement.FMeasurement
 import org.oefet.fetch.sweep.Sweep
+import org.oefet.fetch.sweep.SweepAction
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
 
@@ -35,6 +36,49 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
                         if (input.showInput()) {
                             it.name = measurement.label
+                        }
+
+                    }
+
+                    is SweepAction -> {
+
+                        val grid        = it.grid
+                        val input       = it.config
+                        val measurement = it.measurement
+
+                        if (!addButton.isDisabled && grid.showAsConfirmation()) {
+
+                            input.update()
+
+                            it.name = measurement.name
+                            it.actions.clear()
+
+                            measurement.loadInstruments()
+
+                            for (action in measurement.generateActions()) {
+
+                                if (action is ActionQueue.MeasureAction) {
+
+                                    action.setBefore { Measure.display(it) }
+
+                                    if (action.measurement is FMeasurement) {
+
+                                        action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
+
+                                        action.setAfter {
+                                            it.data.finalise()
+                                            FileLoad.addData(it.data)
+                                            System.gc()
+                                        }
+
+                                    }
+
+                                }
+
+                                it.actions += action
+
+                            }
+
                         }
 
                     }
@@ -185,7 +229,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
             input.update()
 
-            val multiAction = ActionQueue.MultiAction(measurement.name)
+            val multiAction = SweepAction(measurement.name, grid, input, measurement)
 
             measurement.loadInstruments()
 
@@ -214,45 +258,6 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             }
 
             queue.addAction(multiAction)
-
-            setOnDoubleClick(multiAction) {
-
-                if (!addButton.isDisabled && grid.showAsConfirmation()) {
-
-                    input.update()
-
-                    multiAction.name = measurement.name
-                    multiAction.actions.clear()
-
-                    measurement.loadInstruments()
-
-                    for (action in measurement.generateActions()) {
-
-                        if (action is ActionQueue.MeasureAction) {
-
-                            action.setBefore { Measure.display(it) }
-
-                            if (action.measurement is FMeasurement) {
-
-                                action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
-
-                                action.setAfter {
-                                    it.data.finalise()
-                                    FileLoad.addData(it.data)
-                                    System.gc()
-                                }
-
-                            }
-
-                        }
-
-                        multiAction.actions += action
-
-                    }
-
-                }
-
-            }
 
         }
 
