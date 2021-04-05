@@ -225,7 +225,11 @@ object Measure : Grid("Measurement", 1) {
     }
 
     private fun stopMeasurement() {
-        for (i in 1..30) {
+
+        val list    = queue.flatActionList
+        val running = list.find { it is ActionQueue.MeasureAction && it.status == ActionQueue.Status.RUNNING } as ActionQueue.MeasureAction?
+
+        while (running?.measurement?.isRunning == true) {
             queue.stop()
         }
     }
