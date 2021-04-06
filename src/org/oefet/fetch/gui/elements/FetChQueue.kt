@@ -241,7 +241,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
                     if (action.measurement is FMeasurement) {
 
-                        action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
+                        action.setResultsPath { "${Measure.baseFile}-%s-${action.measurement.label}.csv" }
 
                         action.setAfter {
                             it.data.finalise()
