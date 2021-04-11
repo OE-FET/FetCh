@@ -11,7 +11,6 @@ import jisa.maths.Range
 import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVCResult
-import java.util.*
 
 class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 

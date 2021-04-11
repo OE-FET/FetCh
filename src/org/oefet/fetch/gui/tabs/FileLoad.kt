@@ -2,9 +2,9 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ActionQueue
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.Action
 import jisa.gui.*
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.analysis.*
@@ -173,7 +173,7 @@ object FileLoad : BorderDisplay("Results") {
 
                 // Any other errors should be properly reported
                 e.printStackTrace()
-                fileList.add(null, e.message, path, ActionQueue.Status.ERROR.image)
+                fileList.add(null, e.message, path, Action.Status.ERROR.image)
 
             }
 

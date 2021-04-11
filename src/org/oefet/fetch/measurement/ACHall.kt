@@ -6,6 +6,7 @@ import jisa.enums.Coupling
 import jisa.enums.Input
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.quantities.Quantity
@@ -30,11 +31,16 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     // Instruments
     private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
     private val sdSMU   by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 }}
+    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
     private val dcPower by requiredConfig("Motor Power Supply", DCPower::class)
     private val lockIn  by requiredConfig("Lock-In Amplifier", DPLockIn::class)
     private val preAmp  by optionalConfig("Voltage Pre-Amplifier", VPreAmp::class) requiredIf { paGain != 1.0 }
     private val tMeter  by optionalConfig("Thermometer", TMeter::class)
+
+    private val stageSpinUp    = MeasurementSubAction("Spin-up magnets")
+    private val stageAutoRange = MeasurementSubAction("Auto-range lock-in amplifier")
+    private val stageStabilise = MeasurementSubAction("Waiting for system to stabilise")
+    private val stageMeasure   = MeasurementSubAction("Measuring")
 
     private lateinit var fControl: FControl
 
@@ -42,26 +48,19 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     companion object {
 
-        val SD_VOLTAGE   = Col("SD Voltage", "V")
-        val SD_CURRENT   = Col("SD Current", "A")
-        val SG_VOLTAGE   = Col("SG Voltage", "V")
-        val SG_CURRENT   = Col("SG Current", "A")
-        val RMS_FIELD    = Col("RMS Field Strength", "T")
-        val FREQUENCY    = Col("Field Frequency", "Hz")
-        val X_VOLTAGE    = Col("X Voltage", "V")
-        val X_ERROR      = Col("X Error", "V")
-        val Y_VOLTAGE    = Col("Y Voltage", "V")
-        val Y_ERROR      = Col("Y Error", "V")
+        val SD_VOLTAGE = Col("SD Voltage", "V")
+        val SD_CURRENT = Col("SD Current", "A")
+        val SG_VOLTAGE = Col("SG Voltage", "V")
+        val SG_CURRENT = Col("SG Current", "A")
+        val RMS_FIELD = Col("RMS Field Strength", "T")
+        val FREQUENCY = Col("Field Frequency", "Hz")
+        val X_VOLTAGE = Col("X Voltage", "V")
+        val X_ERROR = Col("X Error", "V")
+        val Y_VOLTAGE = Col("Y Voltage", "V")
+        val Y_ERROR = Col("Y Error", "V")
         val HALL_VOLTAGE = Col("Hall Voltage", "V")
-        val HALL_ERROR   = Col("Hall Voltage Error", "V")
-        val TEMPERATURE  = Col("Temperature", "K")
-
-    }
-
-    override fun loadInstruments() {
-
-        super.loadInstruments()
-        fControl = FControl(lockIn, dcPower)
+        val HALL_ERROR = Col("Hall Voltage Error", "V")
+        val TEMPERATURE = Col("Temperature", "K")
 
     }
 
@@ -87,6 +86,8 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     override fun run(results: ResultTable) {
 
+        fControl = FControl(lockIn, dcPower)
+
         results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
         results.setAttribute("Averaging Count", repeats.toDouble())
@@ -99,16 +100,16 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
         // Configure the pre-amp
         preAmp?.coupling = Coupling.AC
-        preAmp?.input    = Input.DIFF
-        preAmp?.gain     = paGain
+        preAmp?.input = Input.DIFF
+        preAmp?.gain = paGain
 
         // Initialise the SMUs
-        sdSMU.current  = currents.first()
+        sdSMU.current = currents.first()
         sgSMU?.voltage = gates.first()
         gdSMU?.voltage = 0.0
 
         // Configure the lock-in amplifier
-        lockIn.refMode      = LockIn.RefMode.EXTERNAL
+        lockIn.refMode = LockIn.RefMode.EXTERNAL
         lockIn.timeConstant = intTime
 
         // Set everything going
@@ -122,12 +123,18 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
         for (frequency in frequencies) {
 
+
+            stageSpinUp.start();
             fControl.target = frequency
 
-            sleep(spin/10)
+            sleep(spin / 10)
+            stageSpinUp.complete()
 
+            stageAutoRange.start()
             lockIn.autoRange()
+            stageAutoRange.complete()
 
+            stageStabilise.start()
             sleep(spin)
 
             for (gate in gates) {
@@ -141,9 +148,13 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
                     sdSMU.current = current
 
+                    stageStabilise.start()
                     sleep(delTime)
+                    stageStabilise.complete()
 
+                    stageMeasure.start()
                     Repeat.runTogether(xValues, yValues)
+                    stageMeasure.complete()
 
                     val x = xValues.mean
                     val y = yValues.mean
@@ -181,12 +192,18 @@ class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     }
 
+    override fun getActions(): List<MeasurementSubAction> {
+        return listOf(stageSpinUp, stageAutoRange, stageStabilise, stageMeasure)
+    }
+
     override fun onFinish() {
 
         runRegardless { sdSMU.turnOff() }
         runRegardless { sgSMU?.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { fControl.stop() }
+
+        actions.forEach { it.reset() }
 
     }
 

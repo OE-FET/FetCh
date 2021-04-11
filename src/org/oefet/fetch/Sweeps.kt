@@ -1,6 +1,5 @@
 package org.oefet.fetch
 
-import org.oefet.fetch.action.Action
 import org.oefet.fetch.sweep.Sweep
 import org.reflections.Reflections
 import kotlin.reflect.full.primaryConstructor
@@ -12,11 +11,11 @@ object Sweeps {
                     .map { Config(it.getConstructor().newInstance()) }
                     .sortedBy { it.name }
 
-    class Config(private val example: Sweep) {
+    class Config<T>(private val example: Sweep<T>) {
 
         val name = example.name
 
-        fun create(): Sweep {
+        fun create(): Sweep<T> {
             return example::class.primaryConstructor!!.call()
         }
 

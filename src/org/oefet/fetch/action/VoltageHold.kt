@@ -2,14 +2,13 @@ package org.oefet.fetch.action
 
 import jisa.Util
 import jisa.control.RTask
-import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.SMU
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Colour
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class VoltageHold : Action("Hold") {
+class VoltageHold : FAction("Hold") {
 
     var task: RTask? = null
 

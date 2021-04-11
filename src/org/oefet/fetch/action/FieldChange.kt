@@ -1,7 +1,5 @@
 package org.oefet.fetch.action
 
-import javafx.scene.paint.Color
-import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.EMController
 import jisa.experiment.Col
@@ -10,7 +8,7 @@ import jisa.gui.Colour
 import jisa.gui.Series
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class FieldChange : Action("Change Field") {
+class FieldChange : FAction("Change Field") {
 
     var task: RTask? = null
 

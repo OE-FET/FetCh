@@ -1,23 +1,30 @@
 package org.oefet.fetch.sweep
 
-import jisa.devices.interfaces.Instrument
-import jisa.experiment.ActionQueue
-import jisa.experiment.Measurement
+import jisa.experiment.Col
 import jisa.experiment.ResultTable
-import jisa.maths.Range
+import jisa.experiment.queue.Action
+import jisa.experiment.queue.ActionQueue
+import jisa.experiment.queue.SweepAction
 import org.oefet.fetch.FEntity
-import org.oefet.fetch.action.Action
-import org.oefet.fetch.gui.elements.FetChPlot
-import java.util.*
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 
-abstract class Sweep(private val name: String) : FEntity() {
+abstract class Sweep<T>(private val name: String) : FEntity() {
 
     val queue = ActionQueue()
 
     override fun getName(): String {
         return this.name
+    }
+
+    override fun getColumns(): Array<Col> {
+        return emptyArray()
+    }
+
+    override fun run(results: ResultTable) {
+
+    }
+
+    override fun onFinish() {
+
     }
 
     override fun setLabel(value: String) {
@@ -31,6 +38,14 @@ abstract class Sweep(private val name: String) : FEntity() {
 
     }
 
-    abstract fun generateActions() : List<ActionQueue.Action>
+    abstract fun getValues(): List<T>
+
+    abstract fun generateForValue(value: T, actions: List<Action<*>>): List<Action<*>>
+
+    abstract fun formatValue(value: T) : String
+
+    fun createSweepAction(): SweepAction<T> {
+        return SweepAction(name, getValues(), this::generateForValue).apply { setFormatter(this@Sweep::formatValue) }
+    }
 
 }

@@ -1,21 +1,21 @@
 package org.oefet.fetch
 
-import org.oefet.fetch.action.Action
+import org.oefet.fetch.action.FAction
 import org.reflections.Reflections
 import kotlin.reflect.full.primaryConstructor
 
 object Actions {
 
     val types = Reflections("org.oefet.fetch.action")
-                    .getSubTypesOf(Action::class.java)
+                    .getSubTypesOf(FAction::class.java)
                     .map { Config(it.getConstructor().newInstance()) }
                     .sortedBy { it.name }
 
-    class Config(private val example: Action) {
+    class Config(private val example: FAction) {
 
         val name = example.name
 
-        fun create(): Action {
+        fun create(): FAction {
             return example::class.primaryConstructor!!.call()
         }
 

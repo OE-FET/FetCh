@@ -93,8 +93,16 @@ abstract class FEntity : Measurement() {
         return input(StringParameter(section, name, null, defaultValue))
     }
 
+    fun input (name: String, defaultValue: String) : PDelegate<String> {
+        return input("Basic", name, defaultValue)
+    }
+
     fun input(section: String, name: String, defaultValue: Double) : PDelegate<Double> {
         return input(DoubleParameter(section, name, null, defaultValue))
+    }
+
+    fun input (name: String, defaultValue: Double) : PDelegate<Double> {
+        return input("Basic", name, defaultValue)
     }
 
     fun input(section: String, name: String, defaultValue: Int) : PDelegate<Int> {
@@ -102,9 +110,17 @@ abstract class FEntity : Measurement() {
 
     }
 
+    fun input (name: String, defaultValue: Int) : PDelegate<Int> {
+        return input("Basic", name, defaultValue)
+    }
+
     fun input(section: String, name: String, defaultValue: Boolean) : PDelegate<Boolean> {
         return input(BooleanParameter(section, name, null, defaultValue))
 
+    }
+
+    fun input (name: String, defaultValue: Boolean) : PDelegate<Boolean> {
+        return input("Basic", name, defaultValue)
     }
 
     fun choice(section: String, name: String, vararg options: String) : PDelegate<Int> {
@@ -114,6 +130,10 @@ abstract class FEntity : Measurement() {
 
     fun input(section: String, name: String, defaultValue: Range<Double>) : PDelegate<Range<Double>> {
         return input(RangeParameter(section, name, null, defaultValue))
+    }
+
+    fun input (name: String, defaultValue: Range<Double>) : PDelegate<Range<Double>> {
+        return input("Basic", name, defaultValue)
     }
 
     fun runRegardless (toRun: () -> Unit) {
