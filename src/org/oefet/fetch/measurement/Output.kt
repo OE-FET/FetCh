@@ -1,6 +1,5 @@
 package org.oefet.fetch.measurement
 
-import jisa.Util
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
@@ -125,16 +124,6 @@ class Output : FMeasurement("Output Measurement", "Output", "Output") {
         runRegardless { gdSMU?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
-
-    }
-
-    override fun onInterrupt() {
-
-        Util.errLog.println("Transfer measurement interrupted.")
-
-    }
-
-    override fun onError() {
 
     }
 

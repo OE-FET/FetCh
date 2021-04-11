@@ -7,10 +7,9 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Colour
 import jisa.gui.Series
-import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class TemperatureChange : Action("Change Temperature") {
+class TemperatureChange : FAction("Change Temperature") {
 
     var task: RTask? = null
 

@@ -1,20 +1,14 @@
 package org.oefet.fetch.action
 
-import jisa.Util
 import jisa.control.RTask
 import jisa.devices.power.IPS120
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Colour
 import jisa.gui.Plot
-import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChPlot
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.roundToInt
-import kotlin.math.sin
 
-class HeaterSwitch : Action("Heater Switch") {
+class HeaterSwitch : FAction("Heater Switch") {
 
     var task: RTask? = null
 

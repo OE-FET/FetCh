@@ -6,14 +6,9 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.gui.Colour
 import jisa.gui.Plot
-import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChPlot
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.roundToInt
-import kotlin.math.sin
 
-class Wait : Action("Wait") {
+class Wait : FAction("Wait") {
 
     var task: RTask? = null
 

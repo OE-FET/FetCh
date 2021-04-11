@@ -1,23 +1,22 @@
 package org.oefet.fetch.gui.tabs
 
-import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ActionQueue
-import jisa.experiment.ActionQueue.Result.*
-import jisa.experiment.ResultStream
+import jisa.experiment.queue.ActionQueue.Result.*
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.ActionQueue
+import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
 import org.oefet.fetch.FEntity
-import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.*
+import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import org.oefet.fetch.measurement.*
 
 object Measure : Grid("Measurement", 1) {
 
     val queue     = ActionQueue()
-    val queueList = FetChQueue("Measurements", queue)
+    val queueList = FetChQueue("Measurements", queue).apply { maxHeight = 500.0 }
     val bigQueue  = FetChQueue("Measurements", queue)
     val basic     = Fields("Measurement Parameters")
     val name      = basic.addTextField("Name")
@@ -73,7 +72,7 @@ object Measure : Grid("Measurement", 1) {
 
     }
 
-    fun display(action: ActionQueue.MeasureAction) {
+    fun display(action: MeasurementAction) {
 
         action.data.setAttribute("Name", name.get())
         action.data.setAttribute("Length", "${length.value} m")
@@ -129,17 +128,15 @@ object Measure : Grid("Measurement", 1) {
             return
         }
 
-        if (queue.size < 1) {
+        if (queue.actions.size < 1) {
             GUI.errorAlert("Measurement sequence is empty!")
             return
         }
 
-        queueList.clearSelection()
-        queueList.scrollToTop()
+        queueList.setSelectedActions()
 
-        val last = queue.interruptedAction
 
-        val from = if (last != null) {
+        val resume = if (queue.isInterrupted) {
 
             val response = GUI.choiceWindow(
                 "Start Point Selection",
@@ -149,10 +146,10 @@ object Measure : Grid("Measurement", 1) {
                 "Start at the previously interrupted item"
             )
 
-            if (response == 1) last else null
+            response == 1
 
         } else {
-            null
+            false
         }
 
         disable(true)
@@ -161,17 +158,13 @@ object Measure : Grid("Measurement", 1) {
 
         try {
 
-            val result = if (from != null) {
-                queue.start(from)
-            } else {
-                queue.start()
-            }
+            val result = if (resume) queue.resume() else queue.start()
 
             Log.stop()
 
             when (result) {
 
-                COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
+                SUCCESS     -> GUI.infoAlert("Measurement sequence completed successfully")
                 INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
                 ERROR       -> GUI.errorAlert("Measurement sequence completed with error(s)")
                 else        -> GUI.errorAlert("Unknown queue result")
@@ -197,8 +190,8 @@ object Measure : Grid("Measurement", 1) {
 
         toolbarStart.isDisabled =  flag
         toolbarStop.isDisabled  = !flag
-        queueList.isDisabled    =  flag
-        bigQueue.isDisabled     =  flag
+        queueList.isDisabled    = flag
+        bigQueue.isDisabled     = flag
 
         if (flag) {
 
@@ -225,13 +218,7 @@ object Measure : Grid("Measurement", 1) {
     }
 
     private fun stopMeasurement() {
-
-        val list    = queue.flatActionList
-        val running = list.find { it is ActionQueue.MeasureAction && it.status == ActionQueue.Status.RUNNING } as ActionQueue.MeasureAction?
-
-        while (running?.measurement?.isRunning == true) {
-            queue.stop()
-        }
+        queue.stop()
     }
 
 }

@@ -1,38 +1,27 @@
 package org.oefet.fetch.sweep
 
-import jisa.experiment.ActionQueue
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
-import java.util.*
+import jisa.experiment.queue.Action
+import jisa.maths.Range
 
-class Repeat : Sweep("Repeat") {
+class Repeat : Sweep<Int>("Repeat") {
 
     val count by input("Basic", "Count", 5)
 
-    override fun generateActions(): List<ActionQueue.Action> {
+    override fun getValues(): List<Int> {
+        return Range.count(0, count-1).array().toList()
+    }
 
-        val list = LinkedList<ActionQueue.Action>()
+    override fun generateForValue(value: Int, actions: List<Action<*>>): List<Action<*>> {
 
-        for (i in 0 until count) {
-
-            list += queue.getAlteredCopy { it.setAttribute("N", "$i") }
-
+        actions.forEach {
+            it.setAttribute("N", "$value")
+            it.addTag("N = $value")
         }
 
-        return list
+        return actions
 
     }
 
-    override fun run(results: ResultTable?) {
-
-    }
-
-    override fun onFinish() {
-
-    }
-
-    override fun getColumns(): Array<Col> {
-        return emptyArray()
-    }
+    override fun formatValue(value: Int): String = "$value"
 
 }
