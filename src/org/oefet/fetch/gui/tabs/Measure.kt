@@ -100,12 +100,12 @@ object Measure : Grid("Measurement", 1) {
 
             0 -> {
                 dielConst.isDisabled = true
-                dielConst.value = 2.05
+                dielConst.value      = 2.05
             }
 
             1 -> {
                 dielConst.isDisabled = true
-                dielConst.value = 2.22
+                dielConst.value      = 2.22
             }
 
             2 -> {
@@ -135,18 +135,15 @@ object Measure : Grid("Measurement", 1) {
 
         queueList.setSelectedActions()
 
-
         val resume = if (queue.isInterrupted) {
 
-            val response = GUI.choiceWindow(
+            GUI.choiceWindow(
                 "Start Point Selection",
                 "Start Point Selection",
                 "The measurement sequence was previously interrupted.\n\nPlease select how you wish to proceed:",
                 "Start at the first item in the sequence",
                 "Start at the previously interrupted item"
-            )
-
-            response == 1
+            ) == 1
 
         } else {
             false
