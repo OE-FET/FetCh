@@ -150,11 +150,11 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
                     stageStabilise.start()
                     sleep(delTime)
-                    stageStabilise.complete()
+                    stageStabilise.reset()
 
                     stageMeasure.start()
                     Repeat.runTogether(xValues, yValues)
-                    stageMeasure.complete()
+                    stageMeasure.reset()
 
                     val x = xValues.mean
                     val y = yValues.mean
