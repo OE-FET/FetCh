@@ -9,6 +9,8 @@ import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.Action
+import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.quantities.Quantity
@@ -33,6 +35,19 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
     private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
     private val tvMeter by requiredConfig("Thermal Voltage Channel", VMeter::class)
     private val tMeter  by optionalConfig("Thermometer", TMeter::class)
+
+    private val actionGate   = MeasurementSubAction("Gate")
+    private val actionHeater = MeasurementSubAction("Heater")
+
+    override fun getActions(): List<Action<*>> {
+
+        return when(order) {
+            ORDER_GATE_HEATER -> listOf(actionGate, actionHeater)
+            ORDER_HEATER_GATE -> listOf(actionHeater, actionGate)
+            else              -> emptyList()
+        }
+
+    }
 
     override fun createPlot(data: ResultTable): TVPlot {
         return TVPlot(data)
@@ -105,10 +120,14 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
                 for (gateVoltage in gates) {
 
+                    actionGate.start()
                     sgSMU?.voltage = gateVoltage
                     sgSMU?.turnOn()
 
                     sleep(gateHold)
+                    actionGate.reset()
+
+                    actionHeater.start()
 
                     for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
 
@@ -136,6 +155,8 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
                     }
 
+                    actionHeater.reset()
+
                     heater.turnOff()
                     sleep(heaterHold)
 
@@ -147,10 +168,16 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
                 for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
 
+                    actionHeater.start()
+
                     heater.voltage = heaterVoltage
                     heater.turnOn()
 
                     sleep(heaterHold)
+
+                    actionHeater.reset()
+
+                    actionGate.start()
 
                     for (gateVoltage in gates) {
 
@@ -177,6 +204,8 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
                         )
 
                     }
+
+                    actionGate.reset()
 
                     sgSMU?.turnOff()
                     sleep(gateHold)

@@ -7,6 +7,8 @@ import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.Action
+import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.quantities.Quantity
@@ -31,6 +33,9 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
     private val tMeter by optionalConfig("Thermometer", TMeter::class)
 
+    private val actionHeater = MeasurementSubAction("Hold Heater")
+    private val actionSweep  = MeasurementSubAction("Sweep Current")
+
     companion object {
 
         val SET_HEATER_VOLTAGE  = Col("Set Heater Voltage", "V")
@@ -44,6 +49,10 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         val STRIP_CURRENT       = Col("Strip Current", "A")
         val TEMPERATURE         = Col("Temperature", "K")
 
+    }
+
+    override fun getActions(): List<Action<*>> {
+        return listOf(actionHeater, actionSweep)
     }
 
     override fun createPlot(data: ResultTable): TVCPlot {
@@ -96,9 +105,15 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
         for (heaterVoltage in heaterV) {
 
+            actionHeater.start()
+
             heater.voltage = heaterVoltage
             heater.turnOn()
             sleep(holdHV)
+
+            actionHeater.reset()
+
+            actionSweep.start()
 
             for (stripCurrent in currents) {
 
@@ -122,6 +137,8 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
             }
 
+            actionSweep.reset()
+
         }
 
     }
@@ -130,6 +147,7 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         runRegardless { heater.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { sdSMU.turnOff() }
+        actions.forEach { it.reset() }
     }
 
     override fun getColumns(): Array<Col> {

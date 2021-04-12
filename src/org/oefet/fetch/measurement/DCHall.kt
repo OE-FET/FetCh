@@ -8,6 +8,8 @@ import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.Action
+import jisa.experiment.queue.MeasurementSubAction
 import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
@@ -16,19 +18,7 @@ import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.DCHallResult
 
 /**
- * Measurement class for DC Hall measurements. Running the measurement generally goes like this:
- *
- * 1.   FetCh GUI asks the measurement for all "Parameters" and "Instruments" it has configured, so that it can draw
- *      the correct configuration window - these are defined at the top of this class and stored as private variables.
- * 2.   When it is time to run the measurement the loadInstruments() method is run first to load the instruments as
- *      as graphically configured by the user in the GUI.
- * 3.   Then checkForErrors() is run - if it returns anything other than an empty list of errors, the measurement will
- *      just return an error and not run any further.
- * 4.   A new ResultTable is generated based-off the columns returned by getColumns().
- * 5.   The measurement code in run() is called, being handed the new ResultTable generated in step 4.
- * 6.   The code in run() can either complete successfully, in error or be interrupted - if interrupted, the
- *      onInterrupt() method is called.
- * 7.   Regardless of how run() ended, the onFinish() method is then always called afterwards.
+ * Measurement class for DC Hall measurements.
  */
 class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
@@ -57,6 +47,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val tMeter by optionalConfig("Thermometer", TMeter::class)
     private val magnet by optionalConfig("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
 
+    private val actionMagnet  = MeasurementSubAction("Ramp Magnet")
+    private val actionCurrent = MeasurementSubAction("Sweep Current")
 
     /**
      * Constants to refer to columns in this measurement's result table
@@ -164,7 +156,11 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
             for (field in fields) {
 
+                actionMagnet.start()
                 magnet?.field = field
+                actionMagnet.reset()
+
+                actionCurrent.start()
 
                 for (current in currents) {
 
@@ -195,6 +191,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
                 }
 
+                actionCurrent.reset()
+
             }
 
         }
@@ -214,16 +212,15 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     }
 
-    override fun onError() {
-
-    }
-
     /**
      * Code that always runs after the measurement has finished - this will always run regardless of whether the
      * measurement finished successfully, was interrupted or failed with an error. Generally used to make sure everything
      * gets switched off etc.
      */
     override fun onFinish() {
+
+        actions.forEach { it.reset() }
+        actionMagnet.start()
 
         // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
         // failing would prevent the rest from running.
@@ -238,6 +235,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
         notice.close()
 
+        actionMagnet.reset()
+
     }
 
     /**
@@ -249,6 +248,10 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         val results =  super.newResults(path)
         results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
         return results
+    }
+
+    override fun getActions(): List<Action<*>> {
+        return listOf(actionMagnet, actionCurrent)
     }
 
 }
