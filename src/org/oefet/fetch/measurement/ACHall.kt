@@ -14,7 +14,7 @@ import org.oefet.fetch.results.ACHallResult
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class ACHall : FMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
+class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     // User input parameters
     private val intTime     by input("Basic", "Integration Time [s]", 100.0)

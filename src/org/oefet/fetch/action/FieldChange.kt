@@ -8,7 +8,7 @@ import jisa.gui.Colour
 import jisa.gui.Series
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class FieldChange : FAction("Change Field") {
+class FieldChange : FetChAction("Change Field") {
 
     var task: RTask? = null
 

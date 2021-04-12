@@ -12,6 +12,6 @@ class Gate(
     override val name   = "Source-Gate Voltage"
     override val symbol = "Vsg"
     override val unit   = "V"
-    override val extra  = true
+    override val important  = true
 
 }

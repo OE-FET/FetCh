@@ -12,6 +12,6 @@ class Thickness(
     override val name   = "Channel Thickness"
     override val symbol = "tc"
     override val unit   = "m"
-    override val extra  = false
+    override val important  = false
 
 }

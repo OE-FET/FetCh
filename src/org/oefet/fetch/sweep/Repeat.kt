@@ -3,7 +3,7 @@ package org.oefet.fetch.sweep
 import jisa.experiment.queue.Action
 import jisa.maths.Range
 
-class Repeat : Sweep<Int>("Repeat") {
+class Repeat : FetChSweep<Int>("Repeat", "N") {
 
     val count by input("Basic", "Count", 5)
 
@@ -12,14 +12,7 @@ class Repeat : Sweep<Int>("Repeat") {
     }
 
     override fun generateForValue(value: Int, actions: List<Action<*>>): List<Action<*>> {
-
-        actions.forEach {
-            it.setAttribute("N", "$value")
-            it.addTag("N = $value")
-        }
-
         return actions
-
     }
 
     override fun formatValue(value: Int): String = "$value"

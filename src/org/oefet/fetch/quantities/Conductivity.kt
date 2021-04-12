@@ -12,7 +12,7 @@ class Conductivity(
     override val name   = "Conductivity"
     override val symbol = "σ"
     override val unit   = "S/cm"
-    override val extra  = false
+    override val important  = false
 
 }
 
@@ -26,6 +26,6 @@ class MConductivity(
     override val name   = "Magneto-Conductivity"
     override val symbol = "σ"
     override val unit   = "S/cm"
-    override val extra  = false
+    override val important  = false
 
 }

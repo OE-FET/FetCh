@@ -11,7 +11,7 @@ import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.CondResult
 import java.lang.Double.min
 
-class Conductivity : FMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
+class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
     // User input parameters
     private val delTime  by input("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }

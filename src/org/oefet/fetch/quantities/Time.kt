@@ -12,7 +12,7 @@ open class Time(
     override val name   = "Stress Time"
     override val symbol = "t"
     override val unit   = "s"
-    override val extra  = true
+    override val important  = true
 
 }
 
@@ -24,7 +24,7 @@ class IntegrationTime(override val value: Double,
     override val name   = "Integration Time"
     override val symbol = "t_int"
     override val unit   = "s"
-    override val extra  = false
+    override val important  = false
 
 }
 
@@ -36,7 +36,7 @@ class DelayTime(override val value: Double,
     override val name   = "Delay Time"
     override val symbol = "t_del"
     override val unit   = "ms"
-    override val extra  = false
+    override val important  = false
 
 }
 
@@ -48,7 +48,7 @@ class HeaterHoldTime(override val value: Double,
     override val name   = "Heater Hold Time"
     override val symbol = "t_hh"
     override val unit   = "ms"
-    override val extra  = false
+    override val important  = false
 
 }
 
@@ -60,6 +60,6 @@ class GateHoldTime(override val value: Double,
     override val name   = "Gate Hold Time"
     override val symbol = "t_gh"
     override val unit   = "ms"
-    override val extra  = false
+    override val important  = false
 
 }

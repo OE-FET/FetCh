@@ -13,7 +13,8 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TransferResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+class TransferResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+    FetChResult("Transfer Measurement", "Transfer", Images.getImage("transfer.png"), data, extraParams) {
 
     val SET_SD_VOLTAGE = data.findColumn(Transfer.SET_SD_VOLTAGE)
     val SET_SG_VOLTAGE = data.findColumn(Transfer.SET_SG_VOLTAGE)
@@ -25,24 +26,6 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
     val FPP_2          = data.findColumn(Transfer.FPP_2)
     val TEMPERATURE    = data.findColumn(Transfer.TEMPERATURE)
     val GROUND_CURRENT = data.findColumn(Transfer.GROUND_CURRENT)
-
-    override val parameters = ArrayList<Quantity>()
-    override val quantities = ArrayList<Quantity>()
-    override val plot       = TransferPlot(data).apply { legendRows = data.getUniqueValues(SET_SD_VOLTAGE).size }
-    override val name       = "Transfer Measurement (${data.getAttribute("Name")})"
-    override val image      = Images.getImage("transfer.png")
-    override val label      = "Transfer"
-
-    override var length:       Double = 0.0
-    override var separation:   Double = 0.0
-    override var width:        Double = 0.0
-    override var thickness:    Double = 0.0
-    override var dielectric:   Double = 0.0
-    override var permittivity: Double = 0.0
-    override var temperature:  Double = Double.NaN
-    override var repeat:       Double = 0.0
-    override var stress:       Double = 0.0
-    override var field:        Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,
@@ -61,8 +44,6 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
     init {
 
-        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
-
         val capacitance = permittivity * EPSILON / dielectric
 
         try {
@@ -74,9 +55,9 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
                 val fb = data.splitTwoWaySweep { it[SET_SG_VOLTAGE] }
 
-                val function: Function
-                val gradFwd: Function?
-                val gradBwd: Function?
+                val function: (Double) -> Double
+                val gradFwd:  Function?
+                val gradBwd:  Function?
 
                 val vGFwd  = fb.forward.getColumns(SET_SG_VOLTAGE)
                 val iDFwd  = fb.forward.getColumns(SD_CURRENT)
@@ -98,7 +79,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
 
                     } else null
 
-                    function = Function { 1e4 * abs((length / (capacitance * width)) * (it / drain)) }
+                    function = { 1e4 * abs((length / (capacitance * width)) * (it / drain)) }
 
                 } else {
 
@@ -110,7 +91,7 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
                         Interpolation.interpolate1D(vGBwd, iDBwd.map { x -> sqrt(abs(x)) }).derivative()
                     } else null
 
-                    function = Function { 1e4 * 2.0 * it.pow(2) * length / (width * capacitance) }
+                    function = { 1e4 * 2.0 * it.pow(2) * length / (width * capacitance) }
 
                 }
 
@@ -121,57 +102,27 @@ class TransferResult(override val data: ResultTable, extraParams: List<Quantity>
                     params    += Drain(drain, 0.0)
 
                     if (gradFwd != null) quantities += if (linear) {
-                        maxLinMobility = max(maxLinMobility, function.value(gradFwd.value(gate)))
-                        FwdLinMobility(
-                            function.value(gradFwd.value(gate)),
-                            0.0,
-                            params,
-                            possibleParameters
-                        )
+                        maxLinMobility = max(maxLinMobility, function(gradFwd.value(gate)))
+                        FwdLinMobility(function(gradFwd.value(gate)), 0.0, params, possibleParameters)
                     } else {
-                        maxSatMobility = max(maxSatMobility, function.value(gradFwd.value(gate)))
-                        FwdSatMobility(
-                            function.value(gradFwd.value(gate)),
-                            0.0,
-                            params,
-                            possibleParameters
-                        )
+                        maxSatMobility = max(maxSatMobility, function(gradFwd.value(gate)))
+                        FwdSatMobility(function(gradFwd.value(gate)), 0.0, params, possibleParameters)
                     }
 
                     if (gradBwd != null) quantities += if (linear) {
-                        maxLinMobility = max(maxLinMobility, function.value(gradBwd.value(gate)))
-                        BwdLinMobility(
-                            function.value(gradBwd.value(gate)),
-                            0.0,
-                            params,
-                            possibleParameters
-                        )
+                        maxLinMobility = max(maxLinMobility, function(gradBwd.value(gate)))
+                        BwdLinMobility(function(gradBwd.value(gate)), 0.0, params, possibleParameters)
                     } else {
-                        maxSatMobility = max(maxSatMobility, function.value(gradBwd.value(gate)))
-                        BwdSatMobility(
-                            function.value(gradBwd.value(gate)),
-                            0.0,
-                            params,
-                            possibleParameters
-                        )
+                        maxSatMobility = max(maxSatMobility, function(gradBwd.value(gate)))
+                        BwdSatMobility(function(gradBwd.value(gate)), 0.0, params, possibleParameters)
                     }
 
                 }
 
             }
 
-            if (maxLinMobility > 0) quantities += MaxLinMobility(
-                maxLinMobility,
-                0.0,
-                parameters,
-                possibleParameters
-            )
-            if (maxSatMobility > 0) quantities += MaxSatMobility(
-                maxSatMobility,
-                0.0,
-                parameters,
-                possibleParameters
-            )
+            if (maxLinMobility > 0) addQuantity(MaxLinMobility(maxLinMobility, 0.0, parameters, possibleParameters))
+            if (maxSatMobility > 0) addQuantity(MaxSatMobility(maxSatMobility, 0.0, parameters, possibleParameters))
 
         } catch (e: Exception) {
             e.printStackTrace()

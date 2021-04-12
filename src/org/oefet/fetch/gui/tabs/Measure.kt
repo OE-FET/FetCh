@@ -7,7 +7,7 @@ import jisa.experiment.ResultTable
 import jisa.experiment.queue.ActionQueue
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
-import org.oefet.fetch.FEntity
+import org.oefet.fetch.FetChEntity
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
@@ -83,7 +83,7 @@ object Measure : Grid("Measurement", 1) {
         action.data.setAttribute("Dielectric Permittivity", dielConst.value)
 
         val table = Table("Data", action.data)
-        val plot  = (action.measurement as FEntity).createPlot(action.data)
+        val plot  = (action.measurement as FetChEntity).createPlot(action.data)
 
         topRow.remove(this.plot)
         bottomRow.remove(this.table)

@@ -12,6 +12,6 @@ class DThickness(
     override val name   = "Dielectric Thickness"
     override val symbol = "td"
     override val unit   = "m"
-    override val extra  = false
+    override val important  = false
 
 }

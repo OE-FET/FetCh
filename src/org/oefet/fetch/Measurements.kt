@@ -5,7 +5,6 @@ import jisa.experiment.ResultTable
 import jisa.gui.Plot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.*
-import org.oefet.fetch.gui.elements.*
 import org.oefet.fetch.measurement.*
 import org.reflections.Reflections
 import kotlin.math.pow
@@ -18,25 +17,25 @@ import kotlin.reflect.jvm.reflect
 object Measurements {
 
     val types = Reflections("org.oefet.fetch.measurement")
-        .getSubTypesOf(FMeasurement::class.java)
+        .getSubTypesOf(FetChMeasurement::class.java)
         .map { Config(it.getConstructor().newInstance()) }
         .sortedBy { it.name }
 
-    class Config(private val example: FMeasurement) {
+    class Config(private val example: FetChMeasurement) {
 
-        val type   = example.type
+        val type   = example.tag
         val name   = example.name
         val mClass = example::class
         val rClass = (example::processResults).reflect()?.returnType?.jvmErasure
 
-        fun createMeasurement(): FMeasurement                                                = mClass.primaryConstructor!!.call()
-        fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile = example.processResults(data, extra)
-        fun createPlot(data: ResultTable)                                                    = example.createPlot(data)
+        fun createMeasurement(): FetChMeasurement                                             = mClass.primaryConstructor!!.call()
+        fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): FetChResult = example.processResults(data, extra)
+        fun createPlot(data: ResultTable)                                                     = example.createPlot(data)
 
 
     }
 
-    fun loadResultFile(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile? {
+    fun loadResultFile(data: ResultTable, extra: List<Quantity> = emptyList()): FetChResult? {
 
         return types.find { it.type == data.getAttribute("Type") }?.createResult(data, extra) ?: convertFile(data, extra)
 
@@ -48,7 +47,7 @@ object Measurements {
 
     }
 
-    fun createPlot(result: ResultFile): Plot? {
+    fun createPlot(result: FetChResult): Plot? {
         return types.find { it.rClass == result::class }?.createPlot(result.data)
     }
 
@@ -59,7 +58,7 @@ object Measurements {
     /**
      * Converts files from the old HallSpinner application for use in FetCh
      */
-    private fun convertFile(data: ResultTable, extra: List<Quantity> = emptyList()): ResultFile? {
+    private fun convertFile(data: ResultTable, extra: List<Quantity> = emptyList()): FetChResult? {
 
         when (data.getName(0)) {
 

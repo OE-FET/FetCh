@@ -9,7 +9,7 @@ import jisa.gui.Colour
 import jisa.gui.Series
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class TemperatureChange : FAction("Change Temperature") {
+class TemperatureChange : FetChAction("Change Temperature") {
 
     var task: RTask? = null
 

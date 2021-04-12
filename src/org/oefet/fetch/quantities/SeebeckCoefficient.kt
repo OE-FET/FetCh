@@ -11,6 +11,6 @@ class SeebeckCoefficient(
     override val name   = "Seebeck Coefficient"
     override val unit   = "V/K"
     override val symbol = "S"
-    override val extra  = false
+    override val important  = false
 
 }

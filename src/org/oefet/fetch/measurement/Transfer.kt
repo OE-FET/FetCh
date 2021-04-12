@@ -11,7 +11,7 @@ import org.oefet.fetch.gui.elements.TransferPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TransferResult
 
-class Transfer : FMeasurement("Transfer Measurement", "Transfer", "Transfer") {
+class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer") {
 
     // Parameters
     val delTime    by input("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }

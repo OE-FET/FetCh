@@ -12,6 +12,6 @@ open class BField (
     override val name   = "Magnetic Field"
     override val symbol = "B"
     override val unit   = "T"
-    override val extra  = true
+    override val important  = true
 
 }

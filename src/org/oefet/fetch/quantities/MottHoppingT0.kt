@@ -11,6 +11,6 @@ class MottHoppingT0(
     override val name   = "T0"
     override val unit   = "K"
     override val symbol = "T0"
-    override val extra  = false
+    override val important  = false
 
 }

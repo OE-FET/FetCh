@@ -11,6 +11,6 @@ class StripPowerCoefficient(
     override val name   = "Strip Power Coefficient"
     override val unit   = "Ohm/W"
     override val symbol = "SPC"
-    override val extra  = false
+    override val important  = false
 
 }

@@ -8,7 +8,7 @@ import jisa.gui.Colour
 import jisa.gui.Plot
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class Wait : FAction("Wait") {
+class Wait : FetChAction("Wait") {
 
     var task: RTask? = null
 

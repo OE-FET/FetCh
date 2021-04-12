@@ -12,6 +12,6 @@ class SweepDirection(
     override val name   = "Sweep Direction"
     override val symbol = "dir"
     override val unit   = ""
-    override val extra  = false
+    override val important  = false
 
 }

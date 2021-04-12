@@ -12,7 +12,7 @@ open class Repeat(
     override val name   = "Repeat No."
     override val symbol = "N"
     override val unit   = ""
-    override val extra  = true
+    override val important  = true
 
 }
 
@@ -20,6 +20,6 @@ class AveragingCount(value: Double) : Repeat(value) {
 
     override val name   = "Averaging Count"
     override val symbol = "N_a"
-    override val extra  = false
+    override val important  = false
 
 }

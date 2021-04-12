@@ -14,7 +14,7 @@ import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVResult
 
-class TVMeasurement : FMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
+class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
 
     // User input parameters
     private val avgCount   by input("Basic", "Averaging Count", 1)

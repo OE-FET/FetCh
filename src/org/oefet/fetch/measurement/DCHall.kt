@@ -30,7 +30,7 @@ import org.oefet.fetch.results.DCHallResult
  *      onInterrupt() method is called.
  * 7.   Regardless of how run() ended, the onFinish() method is then always called afterwards.
  */
-class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
+class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     private val notice = Doc("Ramping Down").apply {
         addHeading("Ramping Down Magnet").setAlignment(Doc.Align.CENTRE).setColour(Colour.RED)

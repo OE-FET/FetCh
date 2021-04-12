@@ -9,11 +9,11 @@ import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
 import jisa.maths.Range
-import org.oefet.fetch.action.FAction
+import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 
-class StressSweep : Sweep<Int>("Stress") {
+class StressSweep : FetChSweep<Int>("Stress", "S") {
 
     var task: RTask? = null
 
@@ -28,6 +28,23 @@ class StressSweep : Sweep<Int>("Stress") {
     val sdSMU by optionalConfig("Source-Drain Channel", SMU::class) requiredIf { useSD }
     val sgSMU by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { useSG }
 
+    override fun getValues(): List<Int> {
+        return Range.step(time, time * (count + 1), time).array().map { it.toInt() }
+    }
+
+    override fun generateForValue(value: Int, actions: List<Action<*>>): List<Action<*>> {
+
+        val list = LinkedList<Action<*>>()
+
+        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, sdSMU, sgSMU))
+        list += actions
+
+        return list
+
+    }
+
+    override fun formatValue(value: Int): String = Util.msToString(value.toLong())
+
     class SweepPoint(
         val time: Int,
         val interval: Long,
@@ -37,7 +54,7 @@ class StressSweep : Sweep<Int>("Stress") {
         val sgVoltage: Double,
         val sdSMU: SMU?,
         val sgSMU: SMU?
-    ) : FAction("Hold") {
+    ) : FetChAction("Hold") {
 
         var task: RTask? = null
 
@@ -126,27 +143,5 @@ class StressSweep : Sweep<Int>("Stress") {
         }
 
     }
-
-    override fun getValues(): List<Int> {
-        return Range.step(time, time * (count + 1), time).array().map { it.toInt() }
-    }
-
-    override fun generateForValue(value: Int, actions: List<Action<*>>): List<Action<*>> {
-
-        val list = LinkedList<Action<*>>()
-
-        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, sdSMU, sgSMU))
-        list += actions
-
-        list.forEach {
-            it.setAttribute("S", "${value.toSeconds()} s")
-            it.addTag("S = ${Util.msToString(value.toLong())}")
-        }
-
-        return list
-
-    }
-
-    override fun formatValue(value: Int): String = Util.msToString(value.toLong())
 
 }
