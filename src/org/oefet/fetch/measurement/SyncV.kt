@@ -11,7 +11,7 @@ import org.oefet.fetch.gui.elements.SyncPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.OutputResult
 
-class SyncV : FMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
+class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
     // Parameters
     val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }

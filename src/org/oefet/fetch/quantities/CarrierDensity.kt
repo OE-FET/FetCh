@@ -12,6 +12,6 @@ class CarrierDensity(
     override val name   = "Carrier Density"
     override val symbol = "n"
     override val unit   = "cm^-3"
-    override val extra  = false
+    override val important  = false
 
 }

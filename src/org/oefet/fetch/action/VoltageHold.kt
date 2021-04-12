@@ -8,7 +8,7 @@ import jisa.experiment.ResultTable
 import jisa.gui.Colour
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class VoltageHold : FAction("Hold") {
+class VoltageHold : FetChAction("Hold") {
 
     var task: RTask? = null
 

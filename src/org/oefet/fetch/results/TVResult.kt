@@ -10,30 +10,13 @@ import org.oefet.fetch.quantities.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+    FetChResult("Thermal Voltage Measurement", "Thermal Voltage", Images.getImage("fire.png"), data, extraParams) {
 
     val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
     val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
     val HEATER_POWER          = data.findColumn(TVMeasurement.HEATER_POWER)
     val THERMAL_VOLTAGE       = data.findColumn(TVMeasurement.THERMAL_VOLTAGE)
-
-    override val parameters = ArrayList<Quantity>()
-    override val quantities = ArrayList<Quantity>()
-    override val plot       = TVPlot(data)
-    override val name       = "Thermal Voltage Measurement (${data.getAttribute("Name")})"
-    override val image      = Images.getImage("fire.png")
-    override val label      = "Thermal Voltage"
-
-    override var length:       Double = 0.0
-    override var separation:   Double = 0.0
-    override var width:        Double = 0.0
-    override var thickness:    Double = 0.0
-    override var dielectric:   Double = 0.0
-    override var permittivity: Double = 0.0
-    override var temperature:  Double = Double.NaN
-    override var repeat:       Double = 0.0
-    override var stress:       Double = 0.0
-    override var field:        Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,
@@ -47,8 +30,6 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
     init {
 
-        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
-
         for ((gate, data) in data.split(SET_GATE)) {
 
             val params = ArrayList(parameters)
@@ -56,7 +37,7 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
             val fit = data.linearFit(HEATER_POWER, THERMAL_VOLTAGE)
 
-            if (fit != null) quantities += SeebeckPower(fit.gradient, fit.gradientError, params, possibleParameters)
+            if (fit != null) addQuantity(SeebeckPower(fit.gradient, fit.gradientError, params, possibleParameters))
 
         }
 
@@ -148,9 +129,7 @@ class TVResult(override val data: ResultTable, extraParams: List<Quantity> = emp
 
             val params = ArrayList(parameters)
             params    += Gate(gate, 0.0)
-            val dT     = rightPowerFit.value(data.getColumns(HEATER_POWER)) - leftPowerFit.value(data.getColumns(
-                HEATER_POWER
-            ))
+            val dT     = rightPowerFit.value(data.getColumns(HEATER_POWER)) - leftPowerFit.value(data.getColumns(HEATER_POWER))
             val fit    = Fitting.linearFit(dT, data.getColumns(THERMAL_VOLTAGE))
 
             if (fit != null) extras += SeebeckCoefficient(fit.gradient, fit.gradientError, params, possibleParameters)

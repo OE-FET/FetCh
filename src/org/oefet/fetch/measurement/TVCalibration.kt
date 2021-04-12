@@ -12,7 +12,7 @@ import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVCResult
 
-class TVCalibration : FMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
+class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 
     // Parameters
     private val avgCount by input("Basic", "Averaging Count",1)

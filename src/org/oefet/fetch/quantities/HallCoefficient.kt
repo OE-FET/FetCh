@@ -11,6 +11,6 @@ class HallCoefficient(
     override val name   = "Hall Coefficient"
     override val unit   = "m^3/C"
     override val symbol = "Rh"
-    override val extra  = false
+    override val important  = false
 
 }

@@ -11,6 +11,6 @@ class HallPhase(
     override val name   = "Hall Phase Offset"
     override val unit   = "rad"
     override val symbol = "ϕ"
-    override val extra  = false
+    override val important  = false
 
 }

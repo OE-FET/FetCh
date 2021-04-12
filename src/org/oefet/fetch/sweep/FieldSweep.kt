@@ -9,18 +9,35 @@ import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
 import jisa.gui.Series
 import jisa.maths.Range
-import org.oefet.fetch.action.FAction
+import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.gui.tabs.Measure
 import java.util.*
 
-class FieldSweep : Sweep<Double>("Field Sweep") {
+class FieldSweep : FetChSweep<Double>("Field Sweep", "B") {
 
     val fields    by input("Field", "Set-Points [T]", Range.step(-1, +1, 0.5))
     val interval  by input("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val emControl by optionalConfig("Electromagnet Controller", EMController::class)
 
-    class SweepPoint(val field: Double, val interval: Long, val fControl: EMController?) : FAction("Change Field") {
+    override fun getValues(): List<Double> {
+        return fields.array().toList();
+    }
+
+    override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {
+
+        val list = LinkedList<Action<out Any>>()
+
+        list += MeasurementAction(SweepPoint(value, interval, emControl)).apply { setOnMeasurementStart { Measure.display(it) }  }
+        list += actions
+
+        return list
+
+    }
+
+    override fun formatValue(value: Double): String = "$value T"
+
+    class SweepPoint(val field: Double, val interval: Long, val fControl: EMController?) : FetChAction("Change Field") {
 
         var task: RTask? = null
 
@@ -77,27 +94,5 @@ class FieldSweep : Sweep<Double>("Field Sweep") {
         }
 
     }
-
-    override fun getValues(): List<Double> {
-        return fields.array().toList();
-    }
-
-    override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {
-
-        val list = LinkedList<Action<out Any>>()
-
-        list += MeasurementAction(SweepPoint(value, interval, emControl)).apply { setOnMeasurementStart { Measure.display(it) }  }
-        list += actions
-
-        list.forEach {
-            it.setAttribute("B", "$value T")
-            it.addTag("B = $value T")
-        }
-
-        return list
-
-    }
-
-    override fun formatValue(value: Double): String = "$value T"
 
 }

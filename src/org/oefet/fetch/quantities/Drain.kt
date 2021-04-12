@@ -12,7 +12,7 @@ class Drain(
     override val name   = "Source-Drain Voltage"
     override val symbol = "Vsd"
     override val unit   = "V"
-    override val extra  = true
+    override val important  = true
 
 }
 
@@ -26,6 +26,6 @@ class Power(
     override val name   = "Power"
     override val symbol = "P"
     override val unit   = "W"
-    override val extra  = true
+    override val important  = true
 
 }

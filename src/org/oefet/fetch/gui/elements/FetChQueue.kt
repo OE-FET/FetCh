@@ -5,17 +5,16 @@ import jisa.experiment.queue.MeasurementAction
 import jisa.gui.GUI
 import jisa.gui.Grid
 import jisa.gui.MeasurementConfigurator
-import jisa.gui.MenuButton
 import jisa.gui.queue.ActionQueueDisplay
 import org.oefet.fetch.Actions
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.Sweeps
-import org.oefet.fetch.action.FAction
+import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.measurement.FMeasurement
-import org.oefet.fetch.sweep.Sweep
+import org.oefet.fetch.measurement.FetChMeasurement
+import org.oefet.fetch.sweep.FetChSweep
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
 
@@ -91,6 +90,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         get() {
             return addButton.isDisabled
         }
+
         set(disabled) {
             addButton.isDisabled = disabled
             clearQueue.isDisabled = disabled
@@ -99,7 +99,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             rmButton.isDisabled = disabled
         }
 
-    private fun askMeasurement(measurement: FMeasurement) {
+    private fun askMeasurement(measurement: FetChMeasurement) {
 
         // Generate measurement parameter input GUI and make it remember values from last time
         val input = MeasurementConfigurator(measurement.name, measurement).apply {
@@ -128,7 +128,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     }
 
-    private fun askAction(measurement: FAction) {
+    private fun askAction(measurement: FetChAction) {
 
         // Generate measurement parameter input GUI and make it remember values from last time
         val input = MeasurementConfigurator(measurement.name, measurement).apply {
@@ -151,7 +151,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     }
 
-    private fun <T> askSweep(measurement: Sweep<T>) {
+    private fun <T> askSweep(measurement: FetChSweep<T>) {
 
         // Generate measurement parameter input GUI and make it remember values from last time
         val input = MeasurementConfigurator(measurement.name, measurement).apply {

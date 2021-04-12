@@ -10,19 +10,34 @@ import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
 import jisa.gui.Series
 import jisa.maths.Range
-import org.oefet.fetch.action.FAction
+import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 
-class TemperatureSweep : Sweep<Double>("Temperature Sweep") {
+class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
-    val temperatures  by input ("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
+    val temperatures  by input("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
     val interval      by input("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val stabilityPct  by input("Temperature", "Stays within [%]", 1.0)
     val stabilityTime by input("Temperature", "For at least [s]", 600.0) map { it.toMSec().toLong() }
     val tControl      by optionalConfig("Temperature Controller", TC::class)
 
-    class SweepPoint(val temperature: Double, val interval: Long, val stabilityPct: Double, val stabilityTime: Long, val tControl: TC?) : FAction("Change Temperature") {
+    override fun getValues(): List<Double> = temperatures.array().toList()
+
+    override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {
+
+        val list = LinkedList<Action<*>>()
+
+        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime, tControl))
+        list += actions
+
+        return list
+
+    }
+
+    override fun formatValue(value: Double): String = "$value K"
+
+    class SweepPoint(val temperature: Double, val interval: Long, val stabilityPct: Double, val stabilityTime: Long, val tControl: TC?) : FetChAction("Change Temperature") {
 
         var task: RTask? = null
 
@@ -96,25 +111,5 @@ class TemperatureSweep : Sweep<Double>("Temperature Sweep") {
         }
 
     }
-
-    override fun getValues(): List<Double> = temperatures.array().toList()
-
-    override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {
-
-        val list = LinkedList<Action<*>>()
-
-        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime, tControl))
-        list += actions
-
-        list.forEach {
-            it.setAttribute("T", formatValue(value))
-            it.addTag("T = ${formatValue(value)}")
-        }
-
-        return list
-
-    }
-
-    override fun formatValue(value: Double): String = "$value K"
 
 }

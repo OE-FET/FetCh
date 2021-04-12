@@ -10,7 +10,7 @@ import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.OutputResult
 
-class Output : FMeasurement("Output Measurement", "Output", "Output") {
+class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
     // Parameters
     val delTime    by input("Basic", "Delay Time [s]", 0.5) map { it.toMSec() }

@@ -11,7 +11,7 @@ class LeftStripResistance(
     override val name   = "Strip Resistance"
     override val unit   = "Ohm"
     override val symbol = "Rs"
-    override val extra  = false
+    override val important  = false
 
 }
 
@@ -24,6 +24,6 @@ class RightStripResistance(
     override val name   = "Strip Resistance"
     override val unit   = "Ohm"
     override val symbol = "Rs"
-    override val extra  = false
+    override val important  = false
 
 }

@@ -12,6 +12,6 @@ class RMSField(
     override val name   = "RMS Field Strength"
     override val symbol = "B"
     override val unit   = "T"
-    override val extra  = false
+    override val important  = false
 
 }

@@ -12,6 +12,6 @@ class Temperature(
     override val name   = "Temperature"
     override val symbol = "T"
     override val unit   = "K"
-    override val extra  = true
+    override val important  = true
 
 }

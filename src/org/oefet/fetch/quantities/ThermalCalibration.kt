@@ -11,6 +11,6 @@ class ThermalCalibration(
     override val name   = "Thermal Power Coefficient"
     override val unit   = "W/K"
     override val symbol = "TPC"
-    override val extra  = false
+    override val important  = false
 
 }
