@@ -1,53 +1,22 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.experiment.ActionQueue
-import jisa.gui.ActionQueueDisplay
+import jisa.experiment.queue.ActionQueue
+import jisa.experiment.queue.MeasurementAction
 import jisa.gui.GUI
+import jisa.gui.Grid
 import jisa.gui.MeasurementConfigurator
+import jisa.gui.queue.ActionQueueDisplay
+import org.oefet.fetch.Actions
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.inputs.ActionInput
-import org.oefet.fetch.gui.inputs.InputAction
-import org.oefet.fetch.gui.inputs.SweepInput
+import org.oefet.fetch.Sweeps
+import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
-import org.oefet.fetch.measurement.FMeasurement
+import org.oefet.fetch.measurement.FetChMeasurement
+import org.oefet.fetch.sweep.FetChSweep
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
-
-    init {
-
-        setOnDoubleClick {
-
-            when (it) {
-
-                is ActionQueue.MeasureAction -> {
-
-                    val measurement = it.measurement
-
-                    val input = MeasurementConfigurator(measurement.name, measurement).apply {
-                        windowHeight = 750.0
-                        windowWidth = 1024.0
-                    }
-
-                    if (input.showInput()) {
-                        it.name = measurement.label
-                    }
-
-                }
-
-                is InputAction -> {
-
-                    if (it.input is ActionInput) {
-                        it.input.edit()
-                    }
-
-                }
-
-            }
-
-        }
-    }
 
     /**
      * Button for adding actions to the queue
@@ -60,47 +29,35 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
         addSeparator("Actions")
 
-        for (type in ActionInput.types) addItem(type.name) { type.create().ask(queue) }
+        for (type in Actions.types) addItem(type.name) { askAction(type.create()) }
 
         addSeparator("Sweeps")
 
-        for (type in SweepInput.types) addItem(type.name) { type.create().ask(queue) }
+        for (type in Sweeps.types) addItem(type.name) { askSweep(type.create()) }
 
     }
 
-    init { addToolbarSeparator() }
-
     private val upButton = addToolbarButton("▲") {
 
-        val indices = selectedIndices.sorted()
+        val selected = selectedIndices.sorted()
 
-        for (index in indices) {
-
-            if (index > 0) {
-                queue.swapOrder(index, index - 1)
-            }
-
+        for (index in selected) {
+            if (index > 0) queue.swapActions(index, index - 1)
         }
 
     }
 
     private val dnButton = addToolbarButton("▼") {
 
-        val indices = selectedIndices.sortedDescending()
+        val selected = selectedIndices.sortedDescending()
 
-        for (index in indices) {
-
-            if (index < queue.size - 1) {
-                queue.swapOrder(index, index + 1)
-            }
-
+        for (index in selected) {
+            if (index < queue.size() - 1) queue.swapActions(index, index + 1)
         }
 
     }
 
-    init { addToolbarSeparator() }
-
-    private val rmButton = addToolbarButton("X") {
+    private val rmButton = addToolbarButton("✕") {
 
         for (action in selectedActions) {
             queue.removeAction(action)
@@ -108,7 +65,9 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     }
 
-    init { addToolbarSeparator() }
+    init {
+        addToolbarSeparator()
+    }
 
     /**
      * Button for removing all actions from the queue
@@ -117,42 +76,130 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         if (GUI.confirmWindow("Clear Queue", "Clear Queue", "Are you sure?")) queue.clear()
     }
 
-    /**
-     * Whether the buttons for adding/clearing actions are enabled or not
-     */
+    init {
+        addToolbarSeparator()
+    }
+
+    private val displayType = addToolbarMenuButton("Display").apply {
+        addItem("Expand All") { setExpanded(true) }
+        addItem("Collapse All") { setExpanded(false) }
+    }
+
+
     var isDisabled: Boolean
-        get() = addButton.isDisabled
-        set(value) {
-            addButton.isDisabled  = value
-            clearQueue.isDisabled = value
-            upButton.isDisabled   = value
-            dnButton.isDisabled   = value
-            rmButton.isDisabled   = value
+        get() {
+            return addButton.isDisabled
         }
 
+        set(disabled) {
+            addButton.isDisabled = disabled
+            clearQueue.isDisabled = disabled
+            upButton.isDisabled = disabled
+            dnButton.isDisabled = disabled
+            rmButton.isDisabled = disabled
+        }
 
-    private fun askMeasurement(measurement: FMeasurement) {
+    private fun askMeasurement(measurement: FetChMeasurement) {
 
         // Generate measurement parameter input GUI and make it remember values from last time
         val input = MeasurementConfigurator(measurement.name, measurement).apply {
+            maxWindowHeight = 700.0
             linkToConfig(Settings.inputs)
-            windowHeight = 750.0
-            windowWidth  = 1024.0
         }
 
         if (input.showInput()) {
 
-            val action = queue.addMeasurement(measurement.label, measurement)
+            val action = queue.addAction(MeasurementAction(measurement))
 
-            action.setResultsPath { "${Measure.baseFile}-%s-${measurement.label}.csv" }
+            action.setFileNameGenerator { params, label -> "${Measure.baseFile}-$params-$label.csv" }
+            if (action is MeasurementAction) action.setOnMeasurementStart { Measure.display(it) }
 
-            action.setBefore { Measure.display(it) }
-
-            action.setAfter {
-                it.data.finalise()
+            action.setOnFinish {
                 FileLoad.addData(it.data)
                 System.gc()
             }
+
+            action.setOnEdit {
+                input.showInput()
+                it.name = "${measurement.name} (${measurement.label})"
+            }
+
+        }
+
+    }
+
+    private fun askAction(measurement: FetChAction) {
+
+        // Generate measurement parameter input GUI and make it remember values from last time
+        val input = MeasurementConfigurator(measurement.name, measurement).apply {
+            maxWindowHeight = 700.0
+            linkToConfig(Settings.inputs)
+        }
+
+        if (input.showInput()) {
+
+            val action = queue.addAction(MeasurementAction(measurement))
+
+            action.setOnMeasurementStart { Measure.display(it) }
+            action.setOnMeasurementFinish { System.gc() }
+            action.setOnEdit {
+                input.showInput()
+                it.name = "${measurement.name} (${measurement.label})"
+            }
+
+        }
+
+    }
+
+    private fun <T> askSweep(measurement: FetChSweep<T>) {
+
+        // Generate measurement parameter input GUI and make it remember values from last time
+        val input = MeasurementConfigurator(measurement.name, measurement).apply {
+            linkToConfig(Settings.inputs)
+        }
+
+        val sweepQueue = FetChQueue("Interval Actions", measurement.queue)
+
+        val grid = Grid(measurement.name, 2, input, sweepQueue).apply {
+            maxWindowHeight = 700.0
+        }
+
+        if (grid.showAsConfirmation()) {
+
+            input.update()
+            measurement.loadInstruments()
+
+            val multiAction = measurement.createSweepAction()
+            measurement.loadInstruments()
+            multiAction.setSweepValues(measurement.getValues())
+            multiAction.addActions(measurement.queue.actions)
+
+            multiAction.setOnEdit {
+
+                measurement.queue.clear()
+                measurement.queue.addActions(multiAction.actions)
+
+                if (grid.showAsConfirmation()) {
+
+                    input.update()
+                    measurement.loadInstruments()
+                    multiAction.clearActions()
+                    multiAction.addActions(measurement.queue.actions)
+                    multiAction.setSweepValues(measurement.getValues())
+
+                    multiAction.children.forEach {
+                        if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
+                    }
+
+                }
+
+            }
+
+            multiAction.children.forEach {
+                if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
+            }
+
+            queue.addAction(multiAction)
 
         }
 

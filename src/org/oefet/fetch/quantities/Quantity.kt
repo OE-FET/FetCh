@@ -15,7 +15,7 @@ interface Quantity {
     val unit: String
     val parameters: List<Quantity>
     val possibleParameters: List<KClass<out Quantity>>
-    val extra: Boolean
+    val important: Boolean
 
     fun isCompatibleWith(other: Quantity, excluded: List<KClass<out Quantity>> = emptyList()): Boolean {
 
@@ -26,8 +26,8 @@ interface Quantity {
 
         for (type in toCheck) {
 
-            val thisParam = this.parameters.find { it::class == type }
-            val otherParam = other.parameters.find { it::class == type }
+            val thisParam  = this.getParameter(type)
+            val otherParam = other.getParameter(type)
 
             if (thisParam == null && otherParam == null) {
                 continue
@@ -108,7 +108,7 @@ class SimpleQuantity(override val value: Double, override val error: Double) : Q
     override val unit = "-"
     override val parameters: List<Quantity> = emptyList()
     override val possibleParameters: List<KClass<out Quantity>> = emptyList()
-    override val extra: Boolean = false
+    override val important: Boolean = false
 
 }
 

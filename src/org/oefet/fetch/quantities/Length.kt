@@ -12,6 +12,6 @@ class Length(
     override val name   = "Channel Length"
     override val symbol = "lc"
     override val unit   = "m"
-    override val extra  = false
+    override val important  = false
 
 }

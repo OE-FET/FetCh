@@ -1,12 +1,20 @@
 package org.oefet.fetch.results
 
 import jisa.experiment.ResultTable
+import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.*
 import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVCalibration
 
-class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+class TVCResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+    FetChResult(
+        "Thermal Voltage Calibration",
+        "Thermal Voltage Calibration",
+        Images.getImage("calibration.png"),
+        data,
+        extraParams
+    ) {
 
     val SET_HEATER_VOLTAGE  = data.findColumn(TVCalibration.SET_HEATER_VOLTAGE)
     val GROUND_CURRENT      = data.findColumn(TVCalibration.GROUND_CURRENT)
@@ -14,24 +22,6 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
     val STRIP_VOLTAGE       = data.findColumn(TVCalibration.STRIP_VOLTAGE)
     val STRIP_CURRENT       = data.findColumn(TVCalibration.STRIP_CURRENT)
     val TEMPERATURE         = data.findColumn(TVCalibration.TEMPERATURE)
-
-    override val parameters = ArrayList<Quantity>()
-    override val quantities = ArrayList<Quantity>()
-    override val plot       = TVCResultPlot(data)
-    override val name       = "Thermal Voltage Calibration (${data.getAttribute("Name")})"
-    override val image      = Images.getImage("calibration.png")
-    override val label      = "Thermal Voltage Calibration"
-
-    override var length:       Double = 0.0
-    override var separation:   Double = 0.0
-    override var width:        Double = 0.0
-    override var thickness:    Double = 0.0
-    override var dielectric:   Double = 0.0
-    override var permittivity: Double = 0.0
-    override var temperature:  Double = Double.NaN
-    override var repeat:       Double = 0.0
-    override var stress:       Double = 0.0
-    override var field:        Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,
@@ -44,8 +34,6 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
     )
 
     init {
-
-        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         val probeNumber = data.getAttribute("Probe Number").toInt()
 
@@ -67,7 +55,7 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
                 RightStripResistance(fit.gradient, fit.gradientError, parameters, possibleParameters)
             }
 
-            quantities += resistance
+            addQuantity(resistance)
 
         }
 
@@ -75,6 +63,10 @@ class TVCResult(override val data: ResultTable, extraParams: List<Quantity> = em
 
     override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
         return emptyList()
+    }
+
+    override fun getPlot(): FetChPlot {
+        return TVCResultPlot(data)
     }
 
 }

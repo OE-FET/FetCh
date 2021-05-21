@@ -12,6 +12,6 @@ class Width(
     override val name   = "Channel Width"
     override val symbol = "wc"
     override val unit   = "m"
-    override val extra  = false
+    override val important  = false
 
 }

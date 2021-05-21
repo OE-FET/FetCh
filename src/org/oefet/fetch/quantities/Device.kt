@@ -13,6 +13,6 @@ class Device(
     override val name   = "Device"
     override val symbol = "Device"
     override val unit   = ""
-    override val extra  = true
+    override val important  = true
 
 }

@@ -12,6 +12,6 @@ class FPPSeparation(
     override val name   = "FPP Separation"
     override val symbol = "lf"
     override val unit   = "m"
-    override val extra  = false
+    override val important  = false
 
 }

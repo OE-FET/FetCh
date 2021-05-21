@@ -12,6 +12,6 @@ class Permittivity(
     override val name   = "Dielectric Permittivity"
     override val symbol = "ε"
     override val unit   = ""
-    override val extra  = false
+    override val important  = false
 
 }

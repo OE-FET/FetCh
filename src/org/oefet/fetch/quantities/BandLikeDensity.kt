@@ -11,6 +11,6 @@ class BandLikeDensity(
     override val name   = "Band-Like Carrier Density"
     override val unit   = "cm^-3"
     override val symbol = "n0"
-    override val extra  = false
+    override val important  = false
 
 }

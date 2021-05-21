@@ -2,18 +2,18 @@ package org.oefet.fetch.results
 
 import jisa.enums.Icon
 import jisa.experiment.ResultTable
-import jisa.gui.Plot
 import jisa.maths.Range
 import jisa.maths.fits.Fitting
 import jisa.maths.matrices.RealMatrix
 import org.oefet.fetch.gui.elements.ACHallPlot
+import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.measurement.ACHall
 import org.oefet.fetch.quantities.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.*
 
-class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+class ACHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+    FetChResult("AC Hall Measurement", "AC Hall", Icon.CIRCLES.blackImage, data, extraParams) {
 
     val FREQUENCY    = data.findColumn(ACHall.FREQUENCY)
     val HALL_VOLTAGE = data.findColumn(ACHall.HALL_VOLTAGE)
@@ -25,31 +25,9 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
     val Y_ERROR      = data.findColumn(ACHall.Y_ERROR)
     val Y_VOLTAGE    = data.findColumn(ACHall.Y_VOLTAGE)
 
-    override val parameters = ArrayList<Quantity>()
-    override val quantities = ArrayList<Quantity>()
-    override val name       = "AC Hall Measurement (${data.getAttribute("Name")})"
-    override val image      = Icon.CIRCLES.blackImage
-    override val label      = "AC Hall"
+    private var rotatedHall: RealMatrix?     = null
+    private var faradayVoltages: RealMatrix? = null
 
-    override var length: Double       = 0.0
-    override var separation: Double   = 0.0
-    override var width: Double        = 0.0
-    override var thickness: Double    = 0.0
-    override var dielectric: Double   = 0.0
-    override var permittivity: Double = 0.0
-    override var temperature: Double  = Double.NaN
-    override var repeat: Double       = 0.0
-    override var stress: Double       = 0.0
-    override var field: Double        = 0.0
-
-    override val plot: Plot
-
-    private val hallValue: Double
-    private val hallError: Double
-    private val densityValue: Double
-    private val densityError: Double
-    private val hallQuantity: Quantity
-    private val densityQuantity: Quantity
     private val possibleParameters = listOf(
         Device::class,
         Temperature::class,
@@ -67,17 +45,14 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
     init {
 
-        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
-
         val rmsField = data.getMean(RMS_FIELD)
         val voltages = data.getColumns(X_VOLTAGE, Y_VOLTAGE).transpose()
         val currents = data.getColumns(SD_CURRENT)
 
         field = rmsField
-        parameters.removeIf { it is BField }
-        parameters += BField(field, 0.0)
+        replaceParameter(BField(field, 0.0))
 
-        parameters += Frequency(data.getMean(FREQUENCY), 0.0, emptyList())
+        addParameter(Frequency(data.getMean(FREQUENCY), 0.0, emptyList()))
 
         var minVolts: RealMatrix? = null
         var minParam = Double.POSITIVE_INFINITY
@@ -99,14 +74,12 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
         }
 
-        quantities.add(HallPhase(minTheta, 0.0, parameters, possibleParameters))
+        addQuantity(HallPhase(minTheta, 0.0, parameters, possibleParameters))
 
         // Calculate error weightings
         val hallErrors = data.getColumns(X_ERROR, Y_ERROR).rowQuadratures
         val weights = hallErrors.map { x -> x.pow(-2) }
 
-        val rotatedHall: RealMatrix?
-        val faradayVoltages: RealMatrix?
         val vectorHall: RealMatrix = data.getColumns(HALL_VOLTAGE)
 
         // Determine whether to use the PO or VS hall fitting
@@ -122,47 +95,42 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
 
 
         // Calculate parameters from fitting
-        hallValue       = hallFit.gradient * thickness / rmsField
-        hallError       = hallFit.gradientError * thickness / rmsField
-        hallQuantity    = HallCoefficient(hallValue, hallError, parameters, possibleParameters)
-        val density     = hallQuantity.pow(-1) * (100.0).pow(-3)  / 1.6e-19
-        densityValue    = density.value
-        densityError    = density.error
-        densityQuantity = CarrierDensity(density.value, density.error, parameters, possibleParameters)
-        quantities     += hallQuantity
-        quantities     += densityQuantity
+        val hallValue       = hallFit.gradient * thickness / rmsField
+        val hallError       = hallFit.gradientError * thickness / rmsField
+        val hallQuantity    = HallCoefficient(hallValue, hallError, parameters, possibleParameters)
+        val density         = hallQuantity.pow(-1) * (100.0).pow(-3)  / 1.6e-19
+        val densityQuantity = CarrierDensity(density.value, density.error, parameters, possibleParameters)
 
-        // AC Hall - Plotting Everything
-        plot = ACHallPlot(data, rotatedHall, faradayVoltages)
+        addQuantities(hallQuantity, densityQuantity)
 
     }
 
     override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
 
+        val hall = findQuantity(HallCoefficient::class) ?: return emptyList()
+
         // Find all conductivities that are compatible with this Hall measurement
         val extras         = LinkedList<Quantity>()
-        val conductivities = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hallQuantity) }
+        val conductivities = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hall) }
 
         for (conductivity in conductivities) {
 
-            val condValue = conductivity.value
-            val condError = conductivity.error
-            val mobility  = hallValue * condValue * 100.0 * 10000.0
-            val error     = mobility * sqrt((hallError / hallValue).pow(2) + (condError / condValue).pow(2))
+            val mobility  = hall.value * conductivity.value * 100.0 * 10000.0
+            val error     = mobility * sqrt((hall.error / hall.value).pow(2) + (conductivity.error / conductivity.value).pow(2))
             extras       += HallMobility(mobility, error, parameters)
 
         }
 
         val excluded = listOf(Temperature::class, Frequency::class)
 
-        if (otherQuantities.find { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) } == null) {
+        if (otherQuantities.find { it is UnscreenedHall && it.isCompatibleWith(hall, excluded) } == null) {
 
-            val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hallQuantity, excluded) && it.hasParameter(Temperature::class) }
+            val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hall, excluded) && it.hasParameter(Temperature::class) }
             val lnrh  = halls.map { ln(it.value) }
             val rh05  = halls.map { it.value.pow(-0.5) }
             val t025  = halls.map { it.getParameter(Temperature::class)?.value?.pow(-0.25) ?: 0.0 }
 
-            val maxC  = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }.maxBy { it.value }
+            val maxC  = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hall, excluded) }.maxBy { it.value }
             val fit1  = Fitting.linearFit(t025, lnrh)
             val fit2  = Fitting.linearFit(t025, rh05)
 
@@ -189,6 +157,16 @@ class ACHallResult(override val data: ResultTable, extraParams: List<Quantity> =
         }
 
         return extras
+
+    }
+
+    override fun getPlot(): FetChPlot? {
+
+        return if (rotatedHall != null && faradayVoltages != null) {
+            ACHallPlot(data, rotatedHall, faradayVoltages)
+        } else {
+            null
+        }
 
     }
 

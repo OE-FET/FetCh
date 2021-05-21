@@ -1,22 +1,23 @@
 package org.oefet.fetch.gui.tabs
 
-import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ActionQueue
-import jisa.experiment.ActionQueue.Result.*
-import jisa.experiment.ResultStream
+import jisa.experiment.queue.ActionQueue.Result.*
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.ActionQueue
+import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
-import org.oefet.fetch.Measurements
+import org.oefet.fetch.FetChEntity
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.*
+import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
 import org.oefet.fetch.measurement.*
 
 object Measure : Grid("Measurement", 1) {
 
     val queue     = ActionQueue()
-    val queueList = FetChQueue("Measurements", queue)
+    val queueList = FetChQueue("Measurements", queue).apply { maxHeight = 500.0 }
+    val bigQueue  = FetChQueue("Measurements", queue)
     val basic     = Fields("Measurement Parameters")
     val name      = basic.addTextField("Name")
     val dir       = basic.addDirectorySelect("Output Directory")
@@ -32,6 +33,8 @@ object Measure : Grid("Measurement", 1) {
     val dThick     = basic.addDoubleField("Dielectric Thickness [m]")
     val dielectric = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
     val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
+
+    val bigQueueButton: Button
 
     val toolbarStart = addToolbarButton("Start", ::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", ::stopMeasurement)
@@ -59,9 +62,17 @@ object Measure : Grid("Measurement", 1) {
         dielectric.setOnChange(::setDielectric)
         setDielectric()
 
+        queueList.addToolbarSeparator()
+
+        bigQueueButton = queueList.addToolbarButton("⛶") {
+            bigQueue.close()
+            bigQueue.isMaximised = true
+            bigQueue.show()
+        }
+
     }
 
-    fun display(action: ActionQueue.MeasureAction) {
+    fun display(action: MeasurementAction) {
 
         action.data.setAttribute("Name", name.get())
         action.data.setAttribute("Length", "${length.value} m")
@@ -72,7 +83,7 @@ object Measure : Grid("Measurement", 1) {
         action.data.setAttribute("Dielectric Permittivity", dielConst.value)
 
         val table = Table("Data", action.data)
-        val plot  = Measurements.createPlot(action.measurement) ?: FetChPlot("Unknown Measurement Plot", "X", "Y")
+        val plot  = (action.measurement as FetChEntity).createPlot(action.data)
 
         topRow.remove(this.plot)
         bottomRow.remove(this.table)
@@ -89,12 +100,12 @@ object Measure : Grid("Measurement", 1) {
 
             0 -> {
                 dielConst.isDisabled = true
-                dielConst.value = 2.05
+                dielConst.value      = 2.05
             }
 
             1 -> {
                 dielConst.isDisabled = true
-                dielConst.value = 2.22
+                dielConst.value      = 2.22
             }
 
             2 -> {
@@ -107,27 +118,35 @@ object Measure : Grid("Measurement", 1) {
 
     private fun runMeasurement() {
 
-        if (queue.size < 1) {
+        if (name.value.trim() == "") {
+            GUI.errorAlert("Please enter a name for this measurement sequence.")
+            return
+        }
+
+        if (dir.value.trim() == "") {
+            GUI.errorAlert("Please select an output directory for this measurement sequence.")
+            return
+        }
+
+        if (queue.actions.size < 1) {
             GUI.errorAlert("Measurement sequence is empty!")
             return
         }
 
-        val last = queue.actions.find { it.status == ActionQueue.Status.INTERRUPTED }
+        queueList.setSelectedActions()
 
-        val from = if (last != null) {
+        val resume = if (queue.isInterrupted) {
 
-            val response = GUI.choiceWindow(
+            GUI.choiceWindow(
                 "Start Point Selection",
                 "Start Point Selection",
                 "The measurement sequence was previously interrupted.\n\nPlease select how you wish to proceed:",
                 "Start at the first item in the sequence",
                 "Start at the previously interrupted item"
-            )
-
-            if (response == 1) last else null
+            ) == 1
 
         } else {
-            null
+            false
         }
 
         disable(true)
@@ -136,17 +155,13 @@ object Measure : Grid("Measurement", 1) {
 
         try {
 
-            val result = if (from != null) {
-                queue.start(from)
-            } else {
-                queue.start()
-            }
+            val result = if (resume) queue.resume() else queue.start()
 
             Log.stop()
 
             when (result) {
 
-                COMPLETED   -> GUI.infoAlert("Measurement sequence completed successfully")
+                SUCCESS     -> GUI.infoAlert("Measurement sequence completed successfully")
                 INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
                 ERROR       -> GUI.errorAlert("Measurement sequence completed with error(s)")
                 else        -> GUI.errorAlert("Unknown queue result")
@@ -172,7 +187,8 @@ object Measure : Grid("Measurement", 1) {
 
         toolbarStart.isDisabled =  flag
         toolbarStop.isDisabled  = !flag
-        queueList.isDisabled    =  flag
+        queueList.isDisabled    = flag
+        bigQueue.isDisabled     = flag
 
         if (flag) {
 

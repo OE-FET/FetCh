@@ -14,26 +14,8 @@ import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.reflect.KClass
 
-class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
-
-    override val parameters = ArrayList<Quantity>()
-    override val quantities = ArrayList<Quantity>()
-    override val name       = "DC Hall Measurement (${data.getAttribute("Name")})"
-    override val image      = Images.getImage("hall.png")
-    override val label      = "DC Hall"
-
-    override var length:       Double = 0.0
-    override var separation:   Double = 0.0
-    override var width:        Double = 0.0
-    override var thickness:    Double = 0.0
-    override var dielectric:   Double = 0.0
-    override var permittivity: Double = 0.0
-    override var temperature:  Double = Double.NaN
-    override var repeat:       Double = 0.0
-    override var stress:       Double = 0.0
-    override var field:        Double = 0.0
-
-    override val plot: Plot = DCHallPlot(data)
+class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+    FetChResult("DC Hall Measurement", "DC Hall", Images.getImage("hall.png"), data, extraParams) {
 
     private val possibleParameters = listOf(
         Device::class,
@@ -57,12 +39,8 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
     val FPP_1          = data.findColumn(DCHall.FPP_1)
     val FPP_2          = data.findColumn(DCHall.FPP_2)
     val TEMPERATURE    = data.findColumn(DCHall.TEMPERATURE)
-    /**
-     * This is run on construction.
-     */
-    init {
 
-        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
+    init {
 
         // Split data-up into separate tables based on gate voltage
         for ((gate, data) in data.split(SET_SG_VOLTAGE)) {
@@ -75,11 +53,11 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
                 continue
             }
 
-            // Check which channels were used (if it contains a non-finite value, assume it weren't used)
-            val hvm1 = data.count { !it[HALL_1].isFinite() } == 0
-            val hvm2 = data.count { !it[HALL_2].isFinite() } == 0
-            val fpp1 = data.count { !it[FPP_1].isFinite()  } == 0
-            val fpp2 = data.count { !it[FPP_2].isFinite()  } == 0
+            // Check which channels were used (all values recorded from it must be finite (i.e. not Infinity or NaN)
+            val hvm1 = data.all { it[HALL_1].isFinite() }
+            val hvm2 = data.all { it[HALL_2].isFinite() }
+            val fpp1 = data.all { it[FPP_1].isFinite() }
+            val fpp2 = data.all { it[FPP_2].isFinite() }
 
             // If both current and field were swept, then we can perform a better analysis of the output
             if (data.getUniqueValues(FIELD).size > 1 && data.getUniqueValues(SET_SD_CURRENT).size > 1) {
@@ -179,7 +157,7 @@ class DCHallResult(override val data: ResultTable, extraParams: List<Quantity> =
                     mParameters    += BField(field, 0.0)
 
                     // Add the magneto-conductivity value to the list of calculated quantities
-                    quantities     += MConductivity(value, error, mParameters, possibleParameters)
+                    addQuantity(MConductivity(value, error, mParameters, possibleParameters))
 
                 }
 

@@ -11,6 +11,6 @@ class UnscreenedHall(
     override val name   = "Unscreened Hall Coefficient"
     override val unit   = "m^3/C"
     override val symbol = "RH0"
-    override val extra  = false
+    override val important  = false
 
 }

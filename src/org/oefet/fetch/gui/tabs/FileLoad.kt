@@ -2,14 +2,14 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ActionQueue
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.Action
 import jisa.gui.*
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.analysis.*
 import org.oefet.fetch.quantities.*
-import org.oefet.fetch.results.ResultFile
+import org.oefet.fetch.results.FetChResult
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
@@ -20,13 +20,13 @@ import kotlin.collections.HashMap
  */
 object FileLoad : BorderDisplay("Results") {
 
-    private val fileList = ListDisplay<ResultFile>("Loaded Results")
+    private val fileList = ListDisplay<FetChResult>("Loaded Results")
 
     private val progress = Progress("Loading Files").apply {
         status = "Reading and processing selected files, please wait..."
     }
 
-    private val results = LinkedList<ResultFile>()
+    private val results = LinkedList<FetChResult>()
     private val names   = LinkedList<String>()
 
     private val notDisplayed = listOf(
@@ -100,7 +100,7 @@ object FileLoad : BorderDisplay("Results") {
                 params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
             }
 
-            val row  = Grid(2, params, selected.plot)
+            val row  = Grid(2, params, selected?.getPlot() ?: Measurements.createPlot(selected.data))
             val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
 
             centreElement = grid
@@ -173,7 +173,7 @@ object FileLoad : BorderDisplay("Results") {
 
                 // Any other errors should be properly reported
                 e.printStackTrace()
-                fileList.add(null, e.message, path, ActionQueue.Status.ERROR.image)
+                fileList.add(null, e.message, path, Action.Status.ERROR.image)
 
             }
 

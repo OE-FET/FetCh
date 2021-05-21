@@ -11,6 +11,6 @@ class SeebeckPower(
     override val name   = "Seebeck Power Coefficient"
     override val unit   = "V/W"
     override val symbol = "SP"
-    override val extra  = false
+    override val important  = false
 
 }

@@ -13,7 +13,8 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class OutputResult(override val data: ResultTable, extraParams: List<Quantity> = emptyList()) : ResultFile {
+class OutputResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+    FetChResult("Output Measurement", "Output", Images.getImage("output.png"), data, extraParams) {
 
     val SET_SD_VOLTAGE = data.findColumn(Output.SET_SD_VOLTAGE)
     val SET_SG_VOLTAGE = data.findColumn(Output.SET_SG_VOLTAGE)
@@ -25,24 +26,6 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
     val FPP_2          = data.findColumn(Output.FPP_2)
     val TEMPERATURE    = data.findColumn(Output.TEMPERATURE)
     val GROUND_CURRENT = data.findColumn(Output.GROUND_CURRENT)
-
-    override val parameters = ArrayList<Quantity>()
-    override val quantities = ArrayList<Quantity>()
-    override val plot       = OutputPlot(data).apply { legendRows = data.getUniqueValues(SET_SG_VOLTAGE).size }
-    override val name       = "Output Measurement (${data.getAttribute("Name")})"
-    override val image      = Images.getImage("output.png")
-    override val label      = "Output"
-
-    override var length:       Double = 0.0
-    override var separation:   Double = 0.0
-    override var width:        Double = 0.0
-    override var thickness:    Double = 0.0
-    override var dielectric:   Double = 0.0
-    override var permittivity: Double = 0.0
-    override var temperature:  Double = Double.NaN
-    override var repeat:       Double = 0.0
-    override var stress:       Double = 0.0
-    override var field:        Double = 0.0
 
     private val possibleParameters = listOf(
         Device::class,
@@ -60,8 +43,6 @@ class OutputResult(override val data: ResultTable, extraParams: List<Quantity> =
     )
 
     init {
-
-        parseParameters(data, extraParams, data.getMean(TEMPERATURE))
 
         val capacitance = permittivity * EPSILON / dielectric
 

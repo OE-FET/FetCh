@@ -12,6 +12,6 @@ class Frequency(
     override val name   = "Frequency"
     override val symbol = "f"
     override val unit   = "Hz"
-    override val extra  = true
+    override val important  = true
 
 }

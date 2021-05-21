@@ -1,7 +1,6 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.Util.runRegardless
 import jisa.control.Repeat
 import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.SMU
@@ -9,34 +8,19 @@ import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
+import jisa.experiment.queue.Action
+import jisa.experiment.queue.MeasurementSubAction
 import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.DCHallPlot
-import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.results.CondResult
 import org.oefet.fetch.results.DCHallResult
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 /**
- * Measurement class for DC Hall measurements. Running the measurement generally goes like this:
- *
- * 1.   FetCh GUI asks the measurement for all "Parameters" and "Instruments" it has configured, so that it can draw
- *      the correct configuration window - these are defined at the top of this class and stored as private variables.
- *      e.g. DoubleParameter(sectionName, parameterName, units, defaultValue)
- * 2.   When it is time to run the measurement the loadInstruments() method is run first to load the instruments as
- *      as graphically configured by the user in the GUI.
- * 3.   Then checkForErrors() is run - if it returns anything other than an empty list of errors, the measurement will
- *      just return an error and not run any further.
- * 4.   A new ResultTable is generated based-off the columns returned by getColumns().
- * 5.   The measurement code in run() is called, being handed the new ResultTable generated in step 4.
- * 6.   The code in run() can either complete successfully, in error or be interrupted - if interrupted, the
- *      onInterrupt() method is called.
- * 7.   Regardless of how run() ended, the onFinish() method is then always called afterwards.
+ * Measurement class for DC Hall measurements.
  */
-class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
+class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     private val notice = Doc("Ramping Down").apply {
         addHeading("Ramping Down Magnet").setAlignment(Doc.Align.CENTRE).setColour(Colour.RED)
@@ -44,38 +28,27 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         addText("Please Wait...").setAlignment(Doc.Align.CENTRE)
     }
 
-
-    // Measurement parameters to ask user for when configuring measurement
-    private val delTimeParam = DoubleParameter("Basic", "Delay Time", "s", 0.5)
-    private val repeatsParam = IntegerParameter("Basic", "Repeats", null, 50)
-    private val repTimeParam = DoubleParameter("Basic", "Repeat Time", "s", 0.0)
-    private val fieldParam   = RangeParameter("Magnet", "Field", "T", -1.0, +1.0, 11, Range.Type.LINEAR, 1)
-    private val currentParam = RangeParameter("Source-Drain", "Current", "A", -50e-6, +50e-6, 11, Range.Type.LINEAR, 1)
-    private val gateParam    = RangeParameter("Source-Gate", "Voltage", "V", 0.0, 0.0, 1, Range.Type.LINEAR, 1)
+    // Parameter inputs to ask the user for
+    private val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
+    private val repTime  by input("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
+    private val repeats  by input("Basic", "Repeats", 50)
+    private val fields   by input("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
+    private val currents by input("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))
+    private val gates    by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
 
     // Instrument configurations to ask user for
-    private val magnetConfig = addInstrument("Magnet Controller", EMController::class)
-    private val gdSMUConfig  = addInstrument("Ground Channel (SPA)", SMU::class)
-    private val sdSMUConfig  = addInstrument("Source-Drain Channel", SMU::class)
-    private val sgSMUConfig  = addInstrument("Source-Gate Channel", SMU::class)
-    private val hvm1Config   = addInstrument("Hall Voltmeter 1", VMeter::class)
-    private val hvm2Config   = addInstrument("Hall Voltmeter 2", VMeter::class)
-    private val fpp1Config   = addInstrument("Four-Point Probe 1", VMeter::class)
-    private val fpp2Config   = addInstrument("Four-Point Probe 2", VMeter::class)
-    private val tMeterConfig = addInstrument("Thermometer", TMeter::class)
+    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
+    private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
+    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
+    private val hvm1   by requiredConfig("Hall Voltmeter 1", VMeter::class)
+    private val hvm2   by optionalConfig("Hall Voltmeter 2", VMeter::class)
+    private val fpp1   by optionalConfig("Four-Point Probe 1", VMeter::class)
+    private val fpp2   by optionalConfig("Four-Point Probe 2", VMeter::class)
+    private val tMeter by optionalConfig("Thermometer", TMeter::class)
+    private val magnet by optionalConfig("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
 
-    // Getters to quickly retrieve parameter values - nice-to-have but not necessary (just makes the code look cleaner)
-    private val delTime  get() = (1e3 * delTimeParam.value).toInt() // Convert to milliseconds
-    private val repTime  get() = (1e3 * repTimeParam.value).toInt() // Convert to milliseconds
-    private val repeats  get() = repeatsParam.value
-    private val fields   get() = fieldParam.value
-    private val currents get() = currentParam.value
-    private val gates    get() = gateParam.value
-
-    // Class variables/properties to hold onto hall voltmeters and em controller objects
-    private var hvm1:   VMeter?       = null
-    private var hvm2:   VMeter?       = null
-    private var magnet: EMController? = null
+    private val actionMagnet  = MeasurementSubAction("Ramp Magnet")
+    private val actionCurrent = MeasurementSubAction("Sweep Current")
 
     /**
      * Constants to refer to columns in this measurement's result table
@@ -107,57 +80,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     override fun processResults(data: ResultTable, extra: List<Quantity>): DCHallResult {
         return DCHallResult(data, extra)
-    }
-
-    /**
-     * Loads/applies all the needed instrument configurations just before the measurement is run
-     */
-    override fun loadInstruments() {
-
-        gdSMU  = gdSMUConfig.get()
-        sdSMU  = sdSMUConfig.get()
-        sgSMU  = sgSMUConfig.get()
-        hvm1   = hvm1Config.get()
-        hvm2   = hvm2Config.get()
-        fpp1   = fpp1Config.get()
-        fpp2   = fpp2Config.get()
-        tMeter = tMeterConfig.get()
-        magnet = magnetConfig.get()
-
-    }
-
-    /**
-     * Checks to see if anything is amiss before run(...) is called. If this returns anything other than an empty list
-     * the measurement will just return an error and not run. In this case, we are checking to make sure the needed
-     * instruments for the configured measurement are present (e.g. is there a source-gate channel if a gate sweep is
-     * configured - for instance).
-     */
-    override fun checkForErrors(): List<String> {
-
-        val errors = ArrayList<String>()
-
-        // Source-Drain channel is always required
-        if (sdSMU == null) {
-            errors += "Source-Drain channel is not configured"
-        }
-
-        // Source-Gate channel is required if a gate voltage is to be used
-        if (sgSMU == null && !(gates.min() == 0.0 && gates.max() == 0.0)) {
-            errors += "Source-Gate channel is not configured"
-        }
-
-        // We need at least one Hall voltmeter
-        if (hvm1 == null && hvm2 == null) {
-            errors += "No Hall voltmeters are configured"
-        }
-
-        // Electromagnet controller is needed if more than one field value is to be used
-        if (magnet == null && fields.min() != fields.max()) {
-            errors += "No electromagnet controller configured"
-        }
-
-        return errors
-
     }
 
     /**
@@ -193,11 +115,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun run(results: ResultTable) {
 
-        // Source-Drain channel MUST be present (cannot be null)
-        val sdSMU = sdSMU!!
-
         // Save measurement parameters to result file
-        results.setAttribute("Integration Time", "${hvm1?.integrationTime ?: hvm2?.integrationTime ?: "0.0"} s")
+        results.setAttribute("Integration Time", "${hvm1.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
         results.setAttribute("Averaging Count", repeats.toDouble())
         results.setAttribute("Averaging Delay", "$repTime ms")
@@ -206,7 +125,7 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         gdSMU?.turnOff()
         sdSMU.turnOff()
         sgSMU?.turnOff()
-        hvm1?.turnOff()
+        hvm1.turnOff()
         hvm2?.turnOff()
         fpp1?.turnOff()
         fpp2?.turnOff()
@@ -220,13 +139,13 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         gdSMU?.turnOn()
         sdSMU.turnOn()
         sgSMU?.turnOn()
-        hvm1?.turnOn()
+        hvm1.turnOn()
         hvm2?.turnOn()
         fpp1?.turnOn()
         fpp2?.turnOn()
 
         // Prepare repeat measurements
-        val hvm1Values = Repeat.prepare(repeats, repTime) { hvm1?.voltage ?: Double.NaN }
+        val hvm1Values = Repeat.prepare(repeats, repTime) { hvm1.voltage }
         val hvm2Values = Repeat.prepare(repeats, repTime) { hvm2?.voltage ?: Double.NaN }
         val fpp1Values = Repeat.prepare(repeats, repTime) { fpp1?.voltage ?: Double.NaN }
         val fpp2Values = Repeat.prepare(repeats, repTime) { fpp2?.voltage ?: Double.NaN }
@@ -237,7 +156,11 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
             for (field in fields) {
 
+                actionMagnet.start()
                 magnet?.field = field
+                actionMagnet.reset()
+
+                actionCurrent.start()
 
                 for (current in currents) {
 
@@ -268,6 +191,8 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
                 }
 
+                actionCurrent.reset()
+
             }
 
         }
@@ -287,10 +212,6 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     }
 
-    override fun onError() {
-
-    }
-
     /**
      * Code that always runs after the measurement has finished - this will always run regardless of whether the
      * measurement finished successfully, was interrupted or failed with an error. Generally used to make sure everything
@@ -298,18 +219,23 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun onFinish() {
 
+        actions.forEach { it.reset() }
+        actionMagnet.start()
+
         // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
         // failing would prevent the rest from running.
-        runRegardless { sdSMU?.turnOff() }
+        runRegardless { sdSMU.turnOff() }
         runRegardless { gdSMU?.turnOff() }
         runRegardless { sgSMU?.turnOff() }
-        runRegardless { hvm1?.turnOff() }
+        runRegardless { hvm1.turnOff() }
         runRegardless { hvm2?.turnOff() }
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
         runRegardless { magnet?.turnOff() }
 
         notice.close()
+
+        actionMagnet.reset()
 
     }
 
@@ -322,6 +248,10 @@ class DCHall : FMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         val results =  super.newResults(path)
         results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
         return results
+    }
+
+    override fun getActions(): List<Action<*>> {
+        return listOf(actionMagnet, actionCurrent)
     }
 
 }
