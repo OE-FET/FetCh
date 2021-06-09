@@ -4,11 +4,14 @@ import jisa.Util
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
+import jisa.enums.Icon
 import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.SyncPlot
 import org.oefet.fetch.quantities.Quantity
+import org.oefet.fetch.quantities.SimpleQuantity
+import org.oefet.fetch.results.FetChResult
 import org.oefet.fetch.results.OutputResult
 
 class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
@@ -44,8 +47,16 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         return SyncPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): OutputResult {
-        return OutputResult(data, extra)
+    override fun processResults(data: ResultTable, extra: List<Quantity>): FetChResult {
+
+        return object : FetChResult("Synced Voltage Measurement", "VSync", Icon.CLOCK.blackImage, data, extra) {
+
+            override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+                return emptyList()
+            }
+
+        }
+
     }
 
     override fun getColumns(): Array<Col> {

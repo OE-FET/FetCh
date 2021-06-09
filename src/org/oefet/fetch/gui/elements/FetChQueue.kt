@@ -92,11 +92,11 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         }
 
         set(disabled) {
-            addButton.isDisabled = disabled
+            addButton.isDisabled  = disabled
             clearQueue.isDisabled = disabled
-            upButton.isDisabled = disabled
-            dnButton.isDisabled = disabled
-            rmButton.isDisabled = disabled
+            upButton.isDisabled   = disabled
+            dnButton.isDisabled   = disabled
+            rmButton.isDisabled   = disabled
         }
 
     private fun askMeasurement(measurement: FetChMeasurement) {

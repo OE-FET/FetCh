@@ -15,6 +15,13 @@ import org.oefet.fetch.measurement.*
 
 object Measure : Grid("Measurement", 1) {
 
+    val materials = mapOf(
+        "CYTOP" to 2.05,
+        "PMMA"  to 2.22,
+        "SiO2"  to 3.9,
+        "Other" to Double.NaN
+    )
+
     val queue     = ActionQueue()
     val queueList = FetChQueue("Measurements", queue).apply { maxHeight = 500.0 }
     val bigQueue  = FetChQueue("Measurements", queue)
@@ -31,7 +38,7 @@ object Measure : Grid("Measurement", 1) {
     val width      = basic.addDoubleField("Channel Width [m]")
     val cThick     = basic.addDoubleField("Channel Thickness [m]")
     val dThick     = basic.addDoubleField("Dielectric Thickness [m]")
-    val dielectric = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
+    val dielectric = basic.addChoice("Dielectric Material", *materials.keys.toTypedArray())
     val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
 
     val bigQueueButton: Button
@@ -96,22 +103,13 @@ object Measure : Grid("Measurement", 1) {
 
     private fun setDielectric() {
 
-        when (dielectric.get()) {
+        val value = materials.values.toList()[dielectric.value]
 
-            0 -> {
-                dielConst.isDisabled = true
-                dielConst.value      = 2.05
-            }
-
-            1 -> {
-                dielConst.isDisabled = true
-                dielConst.value      = 2.22
-            }
-
-            2 -> {
-                dielConst.isDisabled = false
-            }
-
+        if (value.isFinite()) {
+            dielConst.isDisabled = true
+            dielConst.value      = value
+        } else {
+            dielConst.isDisabled = false
         }
 
     }
