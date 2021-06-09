@@ -17,12 +17,12 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
     var task: RTask? = null
 
-    val time by input("Basic", "Interval Time [s]", 600.0) map { it.toMSec() }
-    val count by input("Basic", "No. Intervals", 10)
-    val interval by input("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val useSD by input("Source-Drain", "Enabled", false)
+    val interval  by input("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val time      by input("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
+    val count     by input("Timing", "No. Stress Intervals", 10)
+    val useSD     by input("Source-Drain", "Enabled", false)
     val sdVoltage by input("Source-Drain", "Voltage [V]", 50.0)
-    val useSG by input("Source-Gate", "Enabled", false)
+    val useSG     by input("Source-Gate", "Enabled", false)
     val sgVoltage by input("Source-Gate", "Voltage [V]", 50.0)
 
     val sdSMU by optionalConfig("Source-Drain Channel", SMU::class) requiredIf { useSD }
@@ -44,6 +44,8 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
     }
 
     override fun formatValue(value: Int): String = Util.msToString(value.toLong())
+
+    override fun formatValueForAttribute(value: Int): String = "${value.toSeconds()} s"
 
     class SweepPoint(
         val time: Int,

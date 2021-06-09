@@ -170,10 +170,26 @@ object Log {
 
     }
 
+
+    var interval: Int
+
+        get() {
+            return logger.interval.toInt()
+        }
+
+        set(value) {
+            logger.interval = value.toLong()
+        }
+
+    val isRunning: Boolean
+        get() {
+            return logger.isRunning
+        }
+
     private fun log(log: ResultTable, task: RTask) {
 
         val data = DoubleArray(logTasks.size + 1)
-        data[0] = task.secFromStart
+        data[0]  = task.secFromStart
 
         for ((i, logTask) in logTasks.withIndex()) {
             data[i + 1] = try {
