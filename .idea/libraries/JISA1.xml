@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="JISA1">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../JISA" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://$PROJECT_DIR$/../JISA/docs" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../JISA/src" />
+      <root url="file://$PROJECT_DIR$/../JISA" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../JISA" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../JISA" recursive="false" type="SOURCES" />
+  </library>
+</component>

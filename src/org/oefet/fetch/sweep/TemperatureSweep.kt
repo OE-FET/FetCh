@@ -22,6 +22,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
     val stabilityTime by input("Temperature", "For at least [s]", 600.0) map { it.toMSec().toLong() }
     val tControl      by optionalConfig("Temperature Controller", TC::class)
 
+
     override fun getValues(): List<Double> = temperatures.array().toList()
 
     override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {
