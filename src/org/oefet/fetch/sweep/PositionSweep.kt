@@ -20,8 +20,9 @@ import java.util.*
 class PositionSweep : FetChSweep<Int>("Position Sweep", "P") {
     //TODO:change class
     val interval      by input("Sample Setup", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val xdistance      by input("Sample Setup", "x distance between devices [TBD]", 0.5)
-    val ydistance      by input("Sample Setup", "y distance between devices [TBD]", 0.5)
+    val xdistance      by input("Sample Setup", "x distance between devices [m]", 1e-3)
+    val ydistance      by input("Sample Setup", "y distance between devices [m]", 1e-3)
+    val moveheight      by input("Sample Setup", "z Movement height [m]", 0.0)
 
     //var xstart      by input("Position Control", "x start position [TBD]", 0.5)
     //val ystart      by input("Position Control", "y start position [TBD]", 0.5)
@@ -29,6 +30,7 @@ class PositionSweep : FetChSweep<Int>("Position Sweep", "P") {
     val positionControl by requiredConfig("Position Control", ProbeStation::class)
     var xstart: Double = 0.0
     var ystart: Double = 0.0
+    var grossup: Double = 0.0
 
     override fun getValues(): List<Int> {
         //return Range.step(0, +47, 1).array().toList()
@@ -37,7 +39,7 @@ class PositionSweep : FetChSweep<Int>("Position Sweep", "P") {
 
     override fun generateForValue(value: Int, actions: List<Action<*>>): List<Action<*>> {
         val list = LinkedList<Action<*>>()
-        list += MeasurementAction(SweepPoint(value,xstart,ystart,xdistance,ydistance,interval,positionControl))
+        list += MeasurementAction(SweepPoint(value,xstart,ystart,moveheight,grossup,xdistance,ydistance,interval,positionControl))
         list += actions
         return list
 
@@ -45,7 +47,7 @@ class PositionSweep : FetChSweep<Int>("Position Sweep", "P") {
     override fun formatValue(value: Int): String = "$value"
 
 
-    class SweepPoint(val position: Int, var xstart: Double,var ystart: Double,val xdistance: Double,val ydistance: Double, val interval: Long, val qControl: ProbeStation?) : FetChAction("Change Position") {
+    class SweepPoint(val position: Int, var xstart: Double,var ystart: Double,var moveheight: Double,var grossup: Double,val xdistance: Double,val ydistance: Double, val interval: Long, val qControl: ProbeStation?) : FetChAction("Change Position") {
         var task: RTask? = null
 
         override fun createPlot(data: ResultTable): FetChPlot {
@@ -77,25 +79,20 @@ class PositionSweep : FetChSweep<Int>("Position Sweep", "P") {
             }
 
             if(position==0){
-                xstart = qControl.xposition
-                ystart = qControl.yposition
+                xstart = qControl.xPosition
+                ystart = qControl.yPosition
+                grossup = qControl.zPosition
 
             }
 
             task = RTask(interval) { t -> results.addData(t.secFromStart, position.toDouble())}
-            //also with y-position? or everthing in one?
             task?.start()
 
-            qControl.ChuckFineUp()
-            qControl.ChuckGrossUp()
-            sleep(100)
-
-            qControl.xposition = xstart + (position % 8) * xdistance
-            qControl.yposition = ystart + ( position / 8 ) * ydistance
-            sleep(100)
-
-            qControl.ChuckGrossDown()
-            qControl.ChuckFineDown()
+            qControl.isLocked = false
+            qControl.zPosition = moveheight
+            qControl.setXYPosition(xstart + (position % 8) * xdistance, ystart + ( position / 8 ) * ydistance)
+            qControl.zPosition = grossup
+            qControl.isLocked = true
 
 
 

@@ -15,8 +15,9 @@ class PositionChange : FetChAction("Change Position") {
 
     val interval      by input("Position", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val pControl      by requiredConfig("Position Controller", ProbeStation::class)
-    val xposition    by input("Position", "x Position [TBD]", 1.0)
-    val yposition    by input("Position", "y Position [TBD]", 1.0)
+    val xposition    by input("Position", "x Position [m]", 1e-3)
+    val yposition    by input("Position", "y Position [m]", 1e-3)
+    val zposition    by input("Position", "z Position [m]", 1e-3)
 
     override fun createPlot(data: ResultTable): FetChPlot {
 
@@ -44,26 +45,15 @@ class PositionChange : FetChAction("Change Position") {
     override fun run(results: ResultTable) {
 
         task = RTask(interval) { t ->
-            results.addData(t.secFromStart, pControl.xposition)
+            results.addData(t.secFromStart, pControl.xPosition)
         }
 
         task?.start()
 
-
-        pControl.ChuckGrossDown()
-        pControl.ChuckFineDown()
-        sleep(100)
-
-        pControl.xposition = xposition
-        pControl.yposition = yposition
-
-        sleep(100)
-        pControl.ChuckFineUp()
-        pControl.ChuckGrossUp()
-
-
-
-
+        pControl.isLocked = false
+        pControl.zPosition = zposition
+        pControl.xPosition = xposition
+        pControl.yPosition = yposition
 
     }
 
