@@ -39,15 +39,11 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
     override fun getValues(): List<Position> {
         val list = ArrayList<Position>()
-        var xpos = 0.0
-        var ypos = 0.0
+
 
         for (i in 0 until countX) {
             for (j in 0 until countY) {
-
-                xpos = position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY
-                ypos = position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY
-                list += Position(xpos, ypos,measureHeightZ - fineLift)
+                list += Position(position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY, position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY,measureHeightZ - fineLift)
 
 
 
