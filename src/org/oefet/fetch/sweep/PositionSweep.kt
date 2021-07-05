@@ -45,8 +45,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         for (i in 0 until countX) {
             for (j in 0 until countY) {
 
-                var xpos = position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY
-                var ypos = position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY
+                xpos = position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY
+                ypos = position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY
                 list += Position(xpos, ypos,measureHeightZ - fineLift)
 
 
@@ -59,16 +59,17 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     }
 
     override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
-        val list = LinkedList<Action<*>>()
+        val list = ArrayList<Action<*>>()
 
         if(list.isNullOrEmpty()){
 
-            println("Start generateForValue")
+            //println("Start generateForValue")
+
             //pControl.zFineLift = fineLift
             //pControl.isLocked = false
             //pControl.zPosition = grossLift
         }
-        println("start action")
+        //println("start action")
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
                 //pControl.isLocked = false
                 println("setXY")
