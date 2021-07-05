@@ -1,122 +1,86 @@
 package org.oefet.fetch.sweep
 
 
-import jisa.control.RTask
 import jisa.devices.interfaces.ProbeStation
-//todo:remove
-import jisa.devices.interfaces.TC
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
-import jisa.gui.Colour
-import jisa.gui.Series
-import jisa.maths.Range
-import org.oefet.fetch.action.FetChAction
-import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.gui.tabs.Measure
+import jisa.experiment.queue.SimpleAction
 import java.util.*
 
-class PositionSweep : FetChSweep<Int>("Position Sweep", "P") {
+class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") {
     //TODO:change class
     val interval      by input("Sample Setup", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val xdistance      by input("Sample Setup", "x distance between devices [m]", 1e-3)
-    val ydistance      by input("Sample Setup", "y distance between devices [m]", 1e-3)
-    val moveheight      by input("Sample Setup", "z Movement height [m]", 0.0)
 
-    //var xstart      by input("Position Control", "x start position [TBD]", 0.5)
-    //val ystart      by input("Position Control", "y start position [TBD]", 0.5)
+    val moveheight    by input("Sample Setup", "z Movement Height [m]", 0.0)
 
-    val positionControl by requiredConfig("Position Control", ProbeStation::class)
-    var xstart: Double = 0.0
-    var ystart: Double = 0.0
-    var grossup: Double = 0.0
+    val countX    by input("Sample Setup", "Number of Devices in x Direction", 8)
+    val countY    by input("Sample Setup", "Number of Devices in y Direction", 6)
+    val fineLift    by input("Sample Setup", "Fine Lift [m]", 0.02)
+    //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
 
-    override fun getValues(): List<Int> {
-        //return Range.step(0, +47, 1).array().toList()
-        return (0..47).toList()
+
+    val position1X    by input("Start Position (top left)", "x start Position [m]", 0.0)
+    val position1Y    by input("Start Position (top left)", "y start position [m]", 0.0)
+    val measureHeightZ    by input("Start Position (top left)", "z Measurement height [m]", 0.0)
+
+    val position2X    by input("Position 2 (top right)", "x Position 2 [m]", 0.0)
+    val position2Y    by input("Position 2 (top right)", "y Position 2 [m]", 0.0)
+
+    val position3X    by input("Position 3 (bottom right)", "x Position 3 [m]", 0.0)
+    val position3Y    by input("Position 3 (bottom right)", "y Position 3 [m]", 0.0)
+
+    val directionHorizontalX = position2X - position1X
+    val directionHorizontalY = position2Y - position1Y
+    val directionVerticalX = position3X - position2X
+    val directionVerticalY = position3Y - position2Y
+
+    val pControl by requiredConfig("Position Control", ProbeStation::class)
+
+    var grossLift: Double = measureHeightZ - fineLift
+
+
+
+
+
+    override fun getValues(): List<Position> {
+        val list = ArrayList<Position>()
+
+        for (i in 0 until countX) {
+            for (j in 0 until countY) {
+
+                val x = position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY
+                val y = position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY
+                list += Position(x, y,measureHeightZ - fineLift)
+
+            }
+
+        }
+
+        return list
     }
 
-    override fun generateForValue(value: Int, actions: List<Action<*>>): List<Action<*>> {
+    override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
+
+
         val list = LinkedList<Action<*>>()
-        list += MeasurementAction(SweepPoint(value,xstart,ystart,moveheight,grossup,xdistance,ydistance,interval,positionControl))
+        if(list.isNullOrEmpty()){
+            println("Start generateForValue")
+            pControl.zFineLift = fineLift
+            pControl.isLocked = false
+            pControl.zPosition = grossLift
+        }
+
+        list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
+                pControl.isLocked =false
+                pControl.setXYPosition(value.x,value.y)
+                pControl.isLocked = true
+        }
         list += actions
         return list
 
     }
-    override fun formatValue(value: Int): String = "$value"
+    override fun formatValue(value: Position): String = "(${value.x},${value.y} )"
 
-
-    class SweepPoint(val position: Int, var xstart: Double,var ystart: Double,var moveheight: Double,var grossup: Double,val xdistance: Double,val ydistance: Double, val interval: Long, val qControl: ProbeStation?) : FetChAction("Change Position") {
-        var task: RTask? = null
-
-        override fun createPlot(data: ResultTable): FetChPlot {
-            println("start plot")
-            val plot = FetChPlot("Change position to index (${position%8}, ${position/8}) ", "Time [s]", "Index")
-
-            plot.createSeries()
-                .watch(data, { it[0] }, { position.toDouble() })
-                .setMarkerVisible(false)
-                .setLineWidth(1.0)
-                .setLineDash(Series.Dash.DASHED)
-                .setColour(Colour.GREY)
-
-            plot.createSeries()
-                .watch(data, 0, 1)
-                .setMarkerVisible(false)
-                .setColour(Colour.PURPLE)
-
-            plot.isLegendVisible = false
-
-            return plot
-
-        }
-
-        override fun run(results: ResultTable) {
-            println("run")
-            if (qControl == null) {
-                throw Exception("Station is not configured.")
-            }
-
-            if(position==0){
-                xstart = qControl.xPosition
-                ystart = qControl.yPosition
-                grossup = qControl.zPosition
-
-            }
-
-            task = RTask(interval) { t -> results.addData(t.secFromStart, position.toDouble())}
-            task?.start()
-
-            qControl.isLocked = false
-            qControl.zPosition = moveheight
-            qControl.setXYPosition(xstart + (position % 8) * xdistance, ystart + ( position / 8 ) * ydistance)
-            qControl.zPosition = grossup
-            qControl.isLocked = true
-
-
-
-        }
-
-        override fun onFinish() {
-            println("onFinish")
-            task?.stop()
-        }
-
-        override fun getColumns(): Array<Col> {
-            println("getColumns")
-            return arrayOf(
-                Col("Time", "s"),
-                Col("Index", " ")
-            )
-
-        }
-
-        override fun getLabel(): String {
-            return "${position%8}, ${position/8}"
-        }
-
-    }
-
+    class Position(val x: Double, val y: Double, val z: Double)
 
 }
