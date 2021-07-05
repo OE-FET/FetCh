@@ -8,11 +8,6 @@ import jisa.experiment.queue.SimpleAction
 import java.util.*
 
 class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") {
-    //TODO:change class
-    val interval      by input("Sample Setup", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-
-    val moveheight    by input("Sample Setup", "z Movement Height [m]", 0.0)
-
     val countX    by input("Sample Setup", "Number of Devices in x Direction", 6)
     val countY    by input("Sample Setup", "Number of Devices in y Direction", 8)
     val fineLift    by input("Sample Setup", "Fine Lift [m]", 0.02)
@@ -62,7 +57,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
 
 
-        val list = LinkedList<Action<*>>()
+        val list = ArrayList<Action<*>>()
 
         /*
         if(list.isNullOrEmpty()){
