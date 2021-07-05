@@ -39,7 +39,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         val directionHorizontalY = position2Y - position1Y
         val directionVerticalX = position3X - position2X
         val directionVerticalY = position3Y - position2Y
-        var grossLift: Double = measureHeightZ - fineLift
+
         print(directionHorizontalX)
 
         for (j in 0 until countY) {
@@ -58,6 +58,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
     override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
         val list = ArrayList<Action<*>>()
+        val grossLift: Double = measureHeightZ - fineLift
 
         if(list.isNullOrEmpty()){
 
@@ -65,13 +66,15 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
             pControl.zFineLift = fineLift
             pControl.isLocked = false
-            //pControl.zPosition = grossLift
+            pControl.zPosition = grossLift
         }
         //println("start action")
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
+                pControl.zPosition = 0.0
                 pControl.isLocked = false
                 println("setXY")
                 pControl.setXYPosition(value.x,value.y)
+                pControl.zPosition = grossLift
                 pControl.isLocked = true
         }
         list += actions
