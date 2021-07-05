@@ -60,19 +60,11 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         val list = ArrayList<Action<*>>()
         val grossLift: Double = measureHeightZ - fineLift
 
-        if(list.isNullOrEmpty()){
+        pControl.zFineLift = fineLift
 
-            println("Start generateForValue")
-
-            pControl.zFineLift = fineLift
-            pControl.isLocked = false
-            pControl.zPosition = grossLift
-        }
-        //println("start action")
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
-                pControl.zPosition = 0.0
                 pControl.isLocked = false
-                println("setXY")
+                pControl.zPosition = 0.0
                 pControl.setXYPosition(value.x,value.y)
                 pControl.zPosition = grossLift
                 pControl.isLocked = true
