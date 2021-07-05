@@ -55,10 +55,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     }
 
     override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
-
-
         val list = ArrayList<Action<*>>()
-
         /*
         if(list.isNullOrEmpty()){
 
@@ -67,16 +64,18 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
             pControl.isLocked = false
             pControl.zPosition = grossLift
         }
-        */
-
 
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
-                pControl.isLocked =false
+                pControl.isLocked = false
                 pControl.setXYPosition(value.x,value.y)
                 pControl.isLocked = true
         }
         list += actions
+
+         */
         return list
+
+
 
     }
     override fun formatValue(value: Position): String = "(${value.x},${value.y} )"
