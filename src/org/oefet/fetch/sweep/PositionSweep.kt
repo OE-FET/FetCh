@@ -46,6 +46,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
                 val x = position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY
                 val y = position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY
                 list += Position(x, y,measureHeightZ - fineLift)
+                println(list)
 
             }
 
