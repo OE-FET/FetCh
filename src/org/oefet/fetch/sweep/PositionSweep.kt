@@ -24,14 +24,10 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     val position3X    by input("Position 3 (bottom right)", "x Position 3 [m]", 0.0)
     val position3Y    by input("Position 3 (bottom right)", "y Position 3 [m]", 0.0)
 
-    val directionHorizontalX = position2X - position1X
-    val directionHorizontalY = position2Y - position1Y
-    val directionVerticalX = position3X - position2X
-    val directionVerticalY = position3Y - position2Y
+
 
     val pControl by requiredConfig("Position Control", ProbeStation::class)
 
-    var grossLift: Double = measureHeightZ - fineLift
 
 
 
@@ -39,6 +35,12 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
     override fun getValues(): List<Position> {
         val list = ArrayList<Position>()
+        val directionHorizontalX = position2X - position1X
+        val directionHorizontalY = position2Y - position1Y
+        val directionVerticalX = position3X - position2X
+        val directionVerticalY = position3Y - position2Y
+        var grossLift: Double = measureHeightZ - fineLift
+        print(directionHorizontalX)
 
 
         for (i in 0 until countX) {
