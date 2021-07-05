@@ -13,8 +13,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
     val moveheight    by input("Sample Setup", "z Movement Height [m]", 0.0)
 
-    val countX    by input("Sample Setup", "Number of Devices in x Direction", 8)
-    val countY    by input("Sample Setup", "Number of Devices in y Direction", 6)
+    val countX    by input("Sample Setup", "Number of Devices in x Direction", 6)
+    val countY    by input("Sample Setup", "Number of Devices in y Direction", 8)
     val fineLift    by input("Sample Setup", "Fine Lift [m]", 0.02)
     //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
 
@@ -63,12 +63,17 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
 
         val list = LinkedList<Action<*>>()
+
+        /*
         if(list.isNullOrEmpty()){
+
             println("Start generateForValue")
             pControl.zFineLift = fineLift
             pControl.isLocked = false
             pControl.zPosition = grossLift
         }
+        */
+
 
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
                 pControl.isLocked =false
