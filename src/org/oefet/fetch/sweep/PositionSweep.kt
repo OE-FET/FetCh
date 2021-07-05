@@ -56,23 +56,23 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
     override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
         val list = ArrayList<Action<*>>()
-        /*
+
         if(list.isNullOrEmpty()){
 
             println("Start generateForValue")
-            pControl.zFineLift = fineLift
+            //pControl.zFineLift = fineLift
             pControl.isLocked = false
-            pControl.zPosition = grossLift
+            //pControl.zPosition = grossLift
         }
 
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
-                pControl.isLocked = false
+                //pControl.isLocked = false
                 pControl.setXYPosition(value.x,value.y)
-                pControl.isLocked = true
+                //pControl.isLocked = true
         }
         list += actions
 
-         */
+
         return list
 
 
