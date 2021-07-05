@@ -66,7 +66,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         }
 
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
-                //pControl.isLocked = false
+                pControl.isLocked = false
+                println("setXY")
                 pControl.setXYPosition(value.x,value.y)
                 //pControl.isLocked = true
         }
