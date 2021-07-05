@@ -61,7 +61,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
             println("Start generateForValue")
             //pControl.zFineLift = fineLift
-            pControl.isLocked = false
+            //pControl.isLocked = false
             //pControl.zPosition = grossLift
         }
 
