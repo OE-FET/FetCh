@@ -43,10 +43,13 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         for (i in 0 until countX) {
             for (j in 0 until countY) {
 
-                val x = position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY
-                val y = position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY
-                list += Position(x, y,measureHeightZ - fineLift)
-                println(list)
+                val xpos = position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY
+                val ypos = position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY
+                print(xpos)
+                println(ypos)
+                list += Position(xpos, ypos,measureHeightZ - fineLift)
+
+
 
             }
 
@@ -56,7 +59,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     }
 
     override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
-        val list = ArrayList<Action<*>>()
+        val list = LinkedList<Action<*>>()
 
         if(list.isNullOrEmpty()){
 
