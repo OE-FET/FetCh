@@ -42,9 +42,9 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         var grossLift: Double = measureHeightZ - fineLift
         print(directionHorizontalX)
 
+        for (j in 0 until countY) {
+            for (i in 0 until countX) {
 
-        for (i in 0 until countX) {
-            for (j in 0 until countY) {
                 list += Position(position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY, position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY,measureHeightZ - fineLift)
 
 
@@ -61,18 +61,18 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
         if(list.isNullOrEmpty()){
 
-            //println("Start generateForValue")
+            println("Start generateForValue")
 
-            //pControl.zFineLift = fineLift
-            //pControl.isLocked = false
+            pControl.zFineLift = fineLift
+            pControl.isLocked = false
             //pControl.zPosition = grossLift
         }
         //println("start action")
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
-                //pControl.isLocked = false
+                pControl.isLocked = false
                 println("setXY")
                 pControl.setXYPosition(value.x,value.y)
-                //pControl.isLocked = true
+                pControl.isLocked = true
         }
         list += actions
 
