@@ -53,8 +53,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
             for (i in 0 until countX) {
 
                 list += Position(
-                    position1X + i * directionHorizontalX / countX + j * directionVerticalX / countY,
-                    position1Y + i * directionHorizontalY / countX + j * directionVerticalY / countY,
+                    position1X + i * directionHorizontalX / (countX-1) + j * directionVerticalX / (countY-1),
+                    position1Y + i * directionHorizontalY / (countX-1) + j * directionVerticalY / (countY-1),
                     measureHeightZ - fineLift
                 )
 
