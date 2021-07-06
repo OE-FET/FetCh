@@ -1,10 +1,13 @@
 package org.oefet.fetch.sweep
 
 
+import jisa.devices.interfaces.Camera
 import jisa.devices.interfaces.ProbeStation
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.experiment.queue.SimpleAction
+import jisa.gui.CameraFeed
+import jisa.gui.Element
 import java.util.*
 
 class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") {
@@ -27,10 +30,14 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
 
     val pControl by requiredConfig("Position Control", ProbeStation::class)
+    val camera   by optionalConfig("Camera", Camera::class)
 
 
-
-
+    override fun getExtraTabs(): List<Element> {
+        val feed = CameraFeed("Camera", camera)
+        feed.start()
+        return listOf(feed)
+    }
 
 
     override fun getValues(): List<Position> {
@@ -45,9 +52,11 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         for (j in 0 until countY) {
             for (i in 0 until countX) {
 
-                list += Position(position1X + i * directionHorizontalX / countX  + j * directionVerticalX / countY, position1Y + i * directionHorizontalY / countX  + j * directionVerticalY / countY,measureHeightZ - fineLift)
-
-
+                list += Position(
+                    position1X + i * directionHorizontalX / countX + j * directionVerticalX / countY,
+                    position1Y + i * directionHorizontalY / countX + j * directionVerticalY / countY,
+                    measureHeightZ - fineLift
+                )
 
             }
 

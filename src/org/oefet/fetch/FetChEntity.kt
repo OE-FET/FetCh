@@ -1,8 +1,10 @@
 package org.oefet.fetch
 
+import jisa.devices.Configuration
 import jisa.devices.interfaces.Instrument
 import jisa.experiment.Measurement
 import jisa.experiment.ResultTable
+import jisa.gui.Element
 import jisa.maths.Range
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
@@ -28,6 +30,10 @@ abstract class FetChEntity : Measurement() {
 
     open fun loadInstruments() {
         setters.forEach { it() }
+    }
+
+    open fun getExtraTabs(): List<Element> {
+        return emptyList()
     }
 
     override fun start() {
@@ -56,9 +62,9 @@ abstract class FetChEntity : Measurement() {
     fun <I: Instrument> optionalConfig(name: String, type: KClass<I>): ODelegate<I?> {
 
         val config = addInstrument(name, type.java)
-        val del    = ODelegate<I?>(name, errors)
+        val del    = ODelegate<I?>(name, errors, config)
 
-        setters += {del.setValue(config.instrument)}
+        setters   += { del.setValue(config.instrument) }
 
         return del
 
@@ -67,7 +73,7 @@ abstract class FetChEntity : Measurement() {
     fun <I: Instrument> requiredConfig(name: String, type: KClass<I>): RDelegate<I> {
 
         val config = addInstrument(name, type.java)
-        val del    = RDelegate<I>()
+        val del    = RDelegate<I>(config)
 
         setters += {
 
@@ -170,14 +176,17 @@ abstract class FetChEntity : Measurement() {
 
     }
 
-    class ODelegate<I: Instrument?>(private val name: String, private val errors: MutableList<String>) {
+    class ODelegate<I: Instrument?>(private val name: String, private val errors: MutableList<String>, private val inst: Configuration<I>) {
 
         private var instrument: I? = null
         private var condition: () -> Boolean = { false }
+        private var set: Boolean = false
 
         fun setValue(instrument: I?) {
 
             this.instrument = instrument
+
+            set = true
 
             if (condition() && instrument == null) {
                 errors.add("$name is not configured")
@@ -186,6 +195,7 @@ abstract class FetChEntity : Measurement() {
         }
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I? {
+            if (!set) setNow()
             return instrument
         }
 
@@ -194,9 +204,13 @@ abstract class FetChEntity : Measurement() {
             return this
         }
 
+        fun setNow() {
+            this.instrument = inst.instrument
+        }
+
     }
 
-    class RDelegate<I: Instrument> {
+    class RDelegate<I: Instrument>(private val inst: Configuration<I>) {
 
         private lateinit var instrument: I
 
@@ -206,6 +220,16 @@ abstract class FetChEntity : Measurement() {
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I {
             return instrument
+        }
+
+        fun setNow() {
+
+            val instrument = inst.instrument
+
+            if (instrument != null) {
+                setValue(instrument)
+            }
+
         }
 
     }

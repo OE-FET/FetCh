@@ -17,6 +17,10 @@ abstract class FetChAction(private val name: String) : FetChEntity() {
     override fun setLabel(value: String) {
     }
 
+    override fun onFinish() {
+
+    }
+
     override fun onError() {
 
     }

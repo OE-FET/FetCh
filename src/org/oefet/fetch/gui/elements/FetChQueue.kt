@@ -92,11 +92,11 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         }
 
         set(disabled) {
-            addButton.isDisabled = disabled
+            addButton.isDisabled  = disabled
             clearQueue.isDisabled = disabled
-            upButton.isDisabled = disabled
-            dnButton.isDisabled = disabled
-            rmButton.isDisabled = disabled
+            upButton.isDisabled   = disabled
+            dnButton.isDisabled   = disabled
+            rmButton.isDisabled   = disabled
         }
 
     private fun askMeasurement(measurement: FetChMeasurement) {
@@ -106,6 +106,8 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             maxWindowHeight = 700.0
             linkToConfig(Settings.inputs)
         }
+
+        input.addAll(measurement.getExtraTabs())
 
         if (input.showInput()) {
 
@@ -136,6 +138,8 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             linkToConfig(Settings.inputs)
         }
 
+        input.addAll(measurement.getExtraTabs())
+
         if (input.showInput()) {
 
             val action = queue.addAction(MeasurementAction(measurement))
@@ -157,6 +161,8 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         val input = MeasurementConfigurator(measurement.name, measurement).apply {
             linkToConfig(Settings.inputs)
         }
+
+        input.addAll(measurement.getExtraTabs())
 
         val sweepQueue = FetChQueue("Interval Actions", measurement.queue)
 

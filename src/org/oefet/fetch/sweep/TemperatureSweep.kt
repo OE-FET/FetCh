@@ -7,6 +7,7 @@ import jisa.experiment.Col
 import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
+import jisa.experiment.queue.SimpleAction
 import jisa.gui.Colour
 import jisa.gui.Series
 import jisa.maths.Range
@@ -20,7 +21,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
     val interval      by input("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val stabilityPct  by input("Temperature", "Stays within [%]", 1.0)
     val stabilityTime by input("Temperature", "For at least [s]", 600.0) map { it.toMSec().toLong() }
-    val tControl      by optionalConfig("Temperature Controller", TC::class)
+    val tControl      by requiredConfig("Temperature Controller", TC::class)
 
 
     override fun getValues(): List<Double> = temperatures.array().toList()
@@ -29,7 +30,13 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime, tControl))
+        list += SimpleAction("Change Temperature") {
+
+            tControl.temperature = value
+            tControl.waitForStableTemperature(value, stabilityPct, stabilityTime)
+
+        }
+
         list += actions
 
         return list
