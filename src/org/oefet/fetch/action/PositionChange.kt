@@ -29,6 +29,7 @@ class PositionChange : FetChAction("Change Position") {
     override fun run(results: ResultTable) {
 
         pControl.isLocked  = false
+        pControl.zPosition = 0.0
         pControl.setXYPosition(xposition, yposition)
         pControl.zPosition = zposition
 

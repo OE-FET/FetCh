@@ -1,14 +1,14 @@
 package org.oefet.fetch.sweep
 
 
+import javafx.scene.control.CheckBox
 import jisa.devices.interfaces.Camera
 import jisa.devices.interfaces.ProbeStation
 import jisa.experiment.queue.Action
-import jisa.experiment.queue.MeasurementAction
 import jisa.experiment.queue.SimpleAction
-import jisa.gui.CameraFeed
-import jisa.gui.Element
+import jisa.gui.*
 import java.util.*
+
 
 class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") {
     val countX    by input("Sample Setup", "Number of Devices in x Direction", 6)
@@ -17,28 +17,69 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
 
 
-    val position1X    by input("Start Position (top left)", "x start Position [m]", 0.0)
-    val position1Y    by input("Start Position (top left)", "y start position [m]", 0.0)
-    val measureHeightZ    by input("Start Position (top left)", "z Measurement height [m]", 0.0)
+    var position1X    by input("Start Position (top left)", "x start Position [m]", 0.0)
+    var position1Y    by input("Start Position (top left)", "y start position [m]", 0.0)
+    var measureHeightZ    by input("Start Position (top left)", "z Measurement height [m]", 0.0)
 
-    val position2X    by input("Position 2 (top right)", "x Position 2 [m]", 0.0)
-    val position2Y    by input("Position 2 (top right)", "y Position 2 [m]", 0.0)
+    var position2X    by input("Position 2 (top right)", "x Position 2 [m]", 0.0)
+    var position2Y    by input("Position 2 (top right)", "y Position 2 [m]", 0.0)
 
-    val position3X    by input("Position 3 (bottom right)", "x Position 3 [m]", 0.0)
-    val position3Y    by input("Position 3 (bottom right)", "y Position 3 [m]", 0.0)
+    var position3X    by input("Position 3 (bottom right)", "x Position 3 [m]", 0.0)
+    var position3Y    by input("Position 3 (bottom right)", "y Position 3 [m]", 0.0)
 
 
 
     val pControl by requiredConfig("Position Control", ProbeStation::class)
     val camera   by optionalConfig("Camera", Camera::class)
 
+    val fast = 100.0
+    val middle = 10.0
+    val slow = 1.0
+
 
     override fun getExtraTabs(): List<Element> {
         val feed = CameraFeed("Camera", camera)
         feed.start()
-        return listOf(feed)
+
+        val calibration = Fields("Calibration")
+
+        val leftContinFast  = calibration.addCheckBox("Left (fast)")
+        val leftContinMiddle  = calibration.addCheckBox("Left (fast)")
+        val leftContinSlow  = calibration.addCheckBox("Left (fast)")
+        calibration.addSeparator();
+
+        continControl(leftContinFast,"X", -1,fast)
+        continControl(leftContinMiddle,"X", -1,middle)
+        continControl(leftContinSlow,"X", -1,slow)
+
+
+        calibration.addToolbarButton("Calibrate as postion 1 (x,y,z), top left") {
+            position1X = pControl.xPosition
+            position1Y = pControl.yPosition
+            measureHeightZ = pControl.zPosition
+            println(position1X)
+        }
+
+        calibration.addToolbarButton("Calibrate as postion 2 (x,y), top right") {
+            position2X = pControl.xPosition
+            position2Y = pControl.yPosition
+        }
+
+        calibration.addToolbarButton("Calibrate as postion 3 (x,y), bottom right") {
+            position3X = pControl.xPosition
+            position3Y = pControl.yPosition
+        }
+
+        return listOf(feed,calibration)
     }
 
+    protected fun continControl(box: Field<Boolean>, axis: String, direction : Int,speed : Double){
+        box.setOnChange {
+            if (box.get()) {
+                pControl.continMovement(axis, speed * direction)
+            } else pControl.continMovement(axis, 0.0)
+        }
+    }
 
     override fun getValues(): List<Position> {
         val list = ArrayList<Position>()
