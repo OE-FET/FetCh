@@ -11,11 +11,11 @@ import org.oefet.fetch.gui.elements.FetChPlot
 
 class PositionChangeIndex : FetChAction("Change Position") {
 
-    val pControl      by requiredConfig("Position Controller", ProbeStation::class)
-    val countX    by input("Sample Setup", "Number of Devices in x Direction", 6)
-    val countY    by input("Sample Setup", "Number of Devices in y Direction", 8)
-    val i     by input("Position", "x Position (index)", 0)
-    val j     by input("Position", "y Position (index)", 0)
+    val pControl    by requiredConfig("Position Controller", ProbeStation::class)
+    val countX      by input("Sample Setup", "Number of Devices in x Direction", 6)
+    val countY      by input("Sample Setup", "Number of Devices in y Direction", 8)
+    val i           by input("Position", "x Position (index)", 0)
+    val j           by input("Position", "y Position (index)", 0)
     val fineLift    by input("Sample Setup", "Fine Lift [m]", 0.02)
 
 
