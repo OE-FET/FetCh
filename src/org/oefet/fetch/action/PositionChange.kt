@@ -16,15 +16,6 @@ class PositionChange : FetChAction("Change Position") {
     val yposition     by input("Position", "y Position [m]", 1e-3)
     val zposition     by input("Position", "z Position [m]", 1e-3)
 
-    override fun createPlot(data: ResultTable): FetChPlot {
-
-        val plot =  FetChPlot("Change Position to ($yposition m, $xposition m, $zposition m)")
-
-        plot.isLegendVisible = false
-
-        return plot
-
-    }
 
     override fun run(results: ResultTable) {
 

@@ -15,7 +15,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
 
     val pControl by requiredConfig("Position Control", ProbeStation::class)
 
-    val fast = 10000.0
+    val fast = 3000.0
     val middle = 500.0
     val slow = 10.0
 
@@ -43,13 +43,13 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         val rightContinMiddle  = calibration.addCheckBox("Right (medium)")
         val rightContinSlow  = calibration.addCheckBox("Right (slow)")
         calibration.addSeparator()
+        val upContinFast  = calibration.addCheckBox("Up (fast)")
+        val upContinMiddle  = calibration.addCheckBox("Up (medium)")
+        val upContinSlow  = calibration.addCheckBox("Up (slow)")
+        calibration.addSeparator()
         val downContinFast  = calibration.addCheckBox("Down (fast)")
         val downContinMiddle  = calibration.addCheckBox("Down (medium)")
         val downContinSlow  = calibration.addCheckBox("Down (slow)")
-        calibration.addSeparator()
-        val upContinFast  = calibration.addCheckBox("Down (fast)")
-        val upContinMiddle  = calibration.addCheckBox("Down (medium)")
-        val upContinSlow  = calibration.addCheckBox("Down (slow)")
 
 
         continControl(leftContinFast,"X", -1,fast)
@@ -61,6 +61,9 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         continControl(downContinFast,"Y", -1,fast)
         continControl(downContinMiddle,"Y", -1,middle)
         continControl(downContinSlow,"Y", -1,slow)
+        continControl(upContinFast,"Y", 1,fast)
+        continControl(upContinMiddle,"Y", 1,middle)
+        continControl(upContinSlow,"Y", 1,slow)
 
         calibration.addToolbarButton("Calibrate as postion 1 (x,y,z), top left") {
             position1X = pControl.xPosition

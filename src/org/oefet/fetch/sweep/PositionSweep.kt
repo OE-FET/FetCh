@@ -15,6 +15,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     val countX    by input("Sample Setup", "Number of Devices in x Direction", 6)
     val countY    by input("Sample Setup", "Number of Devices in y Direction", 8)
     val fineLift    by input("Sample Setup", "Fine Lift [m]", 0.02)
+    val useCalibration    by input("Sample Setup", "Use values from 3-point calibration", true)
     //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
 
 
@@ -45,8 +46,16 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
 
     override fun getValues(): List<Position> {
-        position1X = PositionCalibration.position1X
-        println(position1X)
+        if(useCalibration){
+            position1X = PositionCalibration.position1X
+            position1Y = PositionCalibration.position1Y
+            measureHeightZ = PositionCalibration.measureHeightZ
+            position2X = PositionCalibration.position2X
+            position2Y = PositionCalibration.position2Y
+            position3X = PositionCalibration.position3X
+            position3Y = PositionCalibration.position3Y
+        }
+
 
 
         val list = ArrayList<Position>()
@@ -55,7 +64,6 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         val directionVerticalX = position3X - position2X
         val directionVerticalY = position3Y - position2Y
 
-        print(directionHorizontalX)
 
         for (j in 0 until countY) {
             for (i in 0 until countX) {
