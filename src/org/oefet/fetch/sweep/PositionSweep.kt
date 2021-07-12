@@ -7,6 +7,7 @@ import jisa.devices.interfaces.ProbeStation
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.*
+import org.oefet.fetch.action.PositionCalibration
 import java.util.*
 
 
@@ -32,56 +33,22 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     val pControl by requiredConfig("Position Control", ProbeStation::class)
     val camera   by optionalConfig("Camera", Camera::class)
 
-    val fast = 100.0
-    val middle = 10.0
-    val slow = 1.0
+
 
 
     override fun getExtraTabs(): List<Element> {
         val feed = CameraFeed("Camera", camera)
         feed.start()
-
-        val calibration = Fields("Calibration")
-
-        val leftContinFast  = calibration.addCheckBox("Left (fast)")
-        val leftContinMiddle  = calibration.addCheckBox("Left (fast)")
-        val leftContinSlow  = calibration.addCheckBox("Left (fast)")
-        calibration.addSeparator();
-
-        continControl(leftContinFast,"X", -1,fast)
-        continControl(leftContinMiddle,"X", -1,middle)
-        continControl(leftContinSlow,"X", -1,slow)
-
-
-        calibration.addToolbarButton("Calibrate as postion 1 (x,y,z), top left") {
-            position1X = pControl.xPosition
-            position1Y = pControl.yPosition
-            measureHeightZ = pControl.zPosition
-            println(position1X)
-        }
-
-        calibration.addToolbarButton("Calibrate as postion 2 (x,y), top right") {
-            position2X = pControl.xPosition
-            position2Y = pControl.yPosition
-        }
-
-        calibration.addToolbarButton("Calibrate as postion 3 (x,y), bottom right") {
-            position3X = pControl.xPosition
-            position3Y = pControl.yPosition
-        }
-
-        return listOf(feed,calibration)
+        return listOf(feed)
     }
 
-    protected fun continControl(box: Field<Boolean>, axis: String, direction : Int,speed : Double){
-        box.setOnChange {
-            if (box.get()) {
-                pControl.continMovement(axis, speed * direction)
-            } else pControl.continMovement(axis, 0.0)
-        }
-    }
+
 
     override fun getValues(): List<Position> {
+        position1X = PositionCalibration.position1X
+        println(position1X)
+
+
         val list = ArrayList<Position>()
         val directionHorizontalX = position2X - position1X
         val directionHorizontalY = position2Y - position1Y
@@ -110,7 +77,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         val list = ArrayList<Action<*>>()
         val grossLift: Double = measureHeightZ - fineLift
 
-        pControl.zFineLift = fineLift
+        pControl.lockDistance = fineLift
 
         list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
                 pControl.isLocked = false
