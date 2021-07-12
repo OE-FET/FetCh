@@ -46,6 +46,10 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         val downContinFast  = calibration.addCheckBox("Down (fast)")
         val downContinMiddle  = calibration.addCheckBox("Down (medium)")
         val downContinSlow  = calibration.addCheckBox("Down (slow)")
+        calibration.addSeparator()
+        val upContinFast  = calibration.addCheckBox("Down (fast)")
+        val upContinMiddle  = calibration.addCheckBox("Down (medium)")
+        val upContinSlow  = calibration.addCheckBox("Down (slow)")
 
 
         continControl(leftContinFast,"X", -1,fast)
