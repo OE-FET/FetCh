@@ -52,15 +52,15 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         val upContinSlow  = calibration.addCheckBox("Down (slow)")
 
 
-        continControl(leftContinFast,"X", -1,fast)
-        continControl(leftContinMiddle,"X", -1,middle)
-        continControl(leftContinSlow,"X", -1,slow)
-        continControl(rightContinFast,"X", 1,fast)
-        continControl(rightContinMiddle,"X", 1,middle)
-        continControl(rightContinSlow,"X", 1,slow)
-        continControl(downContinFast,"Y", -1,fast)
-        continControl(downContinMiddle,"Y", -1,middle)
-        continControl(downContinSlow,"Y", -1,slow)
+//        continControl(leftContinFast,"X", -1,fast)
+//        continControl(leftContinMiddle,"X", -1,middle)
+//        continControl(leftContinSlow,"X", -1,slow)
+//        continControl(rightContinFast,"X", 1,fast)
+//        continControl(rightContinMiddle,"X", 1,middle)
+//        continControl(rightContinSlow,"X", 1,slow)
+//        continControl(downContinFast,"Y", -1,fast)
+//        continControl(downContinMiddle,"Y", -1,middle)
+//        continControl(downContinSlow,"Y", -1,slow)
 
         calibration.addToolbarButton("Calibrate as postion 1 (x,y,z), top left") {
             position1X = pControl.xPosition
@@ -81,12 +81,6 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         calibration.show()
     }
 
-    protected fun continControl(box: Field<Boolean>, axis: String, direction : Int, speed : Double){
-        box.setOnChange {
-            if (box.get()) {
-                pControl.continMovement(axis, speed * direction)
-            } else pControl.continMovement(axis, 0.0)
-        }
-    }
+
 
 }
