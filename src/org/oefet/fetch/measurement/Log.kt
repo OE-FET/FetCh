@@ -104,6 +104,15 @@ object Log {
 
                 }
 
+                is MSTMeter -> {
+
+                    for (tMeter in inst.sensors) {
+                        columns.add(Col("$name ${tMeter.sensorName} Temperature", "K"))
+                        logTasks.add { tMeter.temperature }
+                    }
+
+                }
+
                 is TMeter       -> {
 
                     columns.add(Col("$name Temperature", "K"))

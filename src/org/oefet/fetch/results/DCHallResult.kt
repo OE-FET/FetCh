@@ -2,9 +2,7 @@ package org.oefet.fetch.results
 
 import jisa.experiment.ResultList
 import jisa.experiment.ResultTable
-import jisa.gui.Plot
 import jisa.maths.fits.Fitting
-import org.oefet.fetch.gui.elements.DCHallPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.DCHall
 import org.oefet.fetch.quantities.*
@@ -14,8 +12,7 @@ import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.reflect.KClass
 
-class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("DC Hall Measurement", "DC Hall", Images.getImage("hall.png"), data, extraParams) {
+class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) : FetChResult("DC Hall Measurement", "DC Hall", Images.getImage("hall.png"), data, extraParams) {
 
     private val possibleParameters = listOf(
         Device::class,
@@ -54,10 +51,10 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
             }
 
             // Check which channels were used (all values recorded from it must be finite (i.e. not Infinity or NaN)
-            val hvm1 = data.all { it[HALL_1].isFinite() }
-            val hvm2 = data.all { it[HALL_2].isFinite() }
-            val fpp1 = data.all { it[FPP_1].isFinite() }
-            val fpp2 = data.all { it[FPP_2].isFinite() }
+            val usedHVM1 = data.all { it[HALL_1].isFinite() }
+            val usedHVM2 = data.all { it[HALL_2].isFinite() }
+            val usedFPP1 = data.all { it[FPP_1].isFinite() }
+            val usedFPP2 = data.all { it[FPP_2].isFinite() }
 
             // If both current and field were swept, then we can perform a better analysis of the output
             if (data.getUniqueValues(FIELD).size > 1 && data.getUniqueValues(SET_SD_CURRENT).size > 1) {
@@ -68,9 +65,9 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                 for ((current, currData) in data.split(SET_SD_CURRENT)) {
 
                     // Determine the Hall voltages (was it channel 1, 2 or the difference between them?)
-                    val hallVoltage = if (hvm1 && hvm2) {
+                    val hallVoltage = if (usedHVM1 && usedHVM2) {
                         currData.getColumns(HALL_2) - currData.getColumns(HALL_1)
-                    } else if (hvm1) {
+                    } else if (usedHVM1) {
                         currData.getColumns(HALL_1)
                     } else {
                         currData.getColumns(HALL_2)
@@ -105,9 +102,9 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
 
                 // If only one parameter was swept, then just fit VH to I*B/t
 
-                val hallVoltage = if (hvm1 && hvm2) {
+                val hallVoltage = if (usedHVM1 && usedHVM2) {
                     data.getColumns(HALL_2) - data.getColumns(HALL_1)
-                } else if (hvm1) {
+                } else if (usedHVM1) {
                     data.getColumns(HALL_1)
                 } else {
                     data.getColumns(HALL_2)
@@ -130,7 +127,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
             possibleParameters    += BField::class
 
             // If either of the FPP channels were used then try to calculate magneto-conductivity
-            if (fpp1 || fpp2) {
+            if (usedFPP1 || usedFPP2) {
 
                 // Split the data-up based on field strength
                 for ((field, condData) in data.split(FIELD)) {
@@ -138,9 +135,9 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                     val current = condData.getColumns(SD_CURRENT)
 
                     // Determine whether to use FPP1, FPP2 or FPP2 - FPP1 based on which channels were used
-                    val voltage = if (fpp1 && fpp2) {
+                    val voltage = if (usedFPP1 && usedFPP2) {
                         condData.getColumns(FPP_2) - condData.getColumns(FPP_1)
-                    } else if (fpp1) {
+                    } else if (usedFPP1) {
                         condData.getColumns(FPP_1)
                     } else {
                         condData.getColumns(FPP_2)
@@ -184,7 +181,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                                      .map    { HallMobility(it.value, it.error, hallQuantity.parameters) }
 
             // Check to see if fitting has already been done for extracting un-screened Hall coefficient
-            if (otherQuantities.find { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) } == null) {
+            if (otherQuantities.none { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) }) {
 
                 // Find all Hall coefficients in the same temperature sweep
                 val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hallQuantity, excluded) && it.hasParameter(Temperature::class) }
@@ -196,8 +193,8 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
 
                 // Find peak conductivity value from corresponding conductivity data
                 val maxC  = otherQuantities
-                            .filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }
-                            .maxBy  { it.value }
+                    .filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }
+                    .maxByOrNull { it.value }
 
                 // Do the two fits for extracting T0 and RH0
                 val fit1  = Fitting.linearFit(t025, lnrh)

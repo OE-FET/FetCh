@@ -14,8 +14,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
     // Parameters
     val delTime    by input("Basic", "Delay Time [s]", 0.5) map { it.toMSec() }
-    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1)) map { if (symVSD) it.mirror() else it }
-    val symVSD     by input("Source-Drain", "Sweep Both Ways", true)
+    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1).mirror())
     val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 10))
 
     // Instruments

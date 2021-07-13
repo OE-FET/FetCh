@@ -86,13 +86,16 @@ object FileLoad : BorderDisplay("Results") {
 
                 val filtered = selected.quantities.filter { it::class == type }
                 val instance = filtered.first()
-                val unit     = instance.unit
-                val name     = instance.name
-                val values   = filtered.map{ it.value }
-                val min      = values.min()
-                val max      = values.max()
+                val unit = instance.unit
+                val name = instance.name
+                val values = filtered.map { it.value }
+                val min = values.minOrNull()
+                val max = values.maxOrNull()
 
-                params.addParameter(name, if (min == max) "%.03g %s".format(min, unit) else "%.03g to %.03g %s".format(min, max, unit))
+                params.addParameter(
+                    name,
+                    if (min == max) "%.03g %s".format(min, unit) else "%.03g to %.03g %s".format(min, max, unit)
+                )
 
             }
 

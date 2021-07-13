@@ -22,10 +22,19 @@ import org.oefet.fetch.results.DCHallResult
  */
 class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
+    // Notice display to show when magnet is ramping down
     private val notice = Doc("Ramping Down").apply {
-        addHeading("Ramping Down Magnet").setAlignment(Doc.Align.CENTRE).setColour(Colour.RED)
-        addText("This measurement has been interrupted and so the electromagnet\nis now safely returning itself to a zero current state.").setAlignment(Doc.Align.CENTRE)
-        addText("Please Wait...").setAlignment(Doc.Align.CENTRE)
+
+        addHeading("Ramping Down Magnet")
+            .setAlignment(Doc.Align.CENTRE)
+            .setColour(Colour.RED)
+
+        addText("This measurement has been interrupted and so the electromagnet\nis now safely returning itself to a zero current state.")
+            .setAlignment(Doc.Align.CENTRE)
+
+        addText("Please Wait...")
+            .setAlignment(Doc.Align.CENTRE)
+
     }
 
     // Parameter inputs to ask the user for
@@ -74,10 +83,16 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     }
 
+    /**
+     * This method defines what plot should be made from a given set of DC Hall data.
+     */
     override fun createPlot(data: ResultTable): DCHallPlot {
         return DCHallPlot(data)
     }
 
+    /**
+     * This method defined how to process a given set of DC Hall data.
+     */
     override fun processResults(data: ResultTable, extra: List<Quantity>): DCHallResult {
         return DCHallResult(data, extra)
     }
@@ -246,7 +261,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun newResults(path: String?): ResultTable {
         val results =  super.newResults(path)
-        results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
+        results.setAttribute("Field Sweep", if (fields.maxOrNull() != fields.minOrNull()) "true" else "false")
         return results
     }
 
