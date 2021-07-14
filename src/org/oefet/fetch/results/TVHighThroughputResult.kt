@@ -1,13 +1,11 @@
 package org.oefet.fetch.results
 
-import com.sun.org.apache.xalan.internal.lib.ExsltMath.abs
 import jisa.experiment.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.quantities.*
 import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.measurement.TVCalibration
 import org.oefet.fetch.measurement.TVHighThroughput
+import org.oefet.fetch.quantities.*
 
 class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
     FetChResult(
