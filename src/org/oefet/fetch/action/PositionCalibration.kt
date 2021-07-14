@@ -69,7 +69,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
             position1X = pControl.xPosition
             position1Y = pControl.yPosition
             measureHeightZ = pControl.zPosition
-            println(position1X)
+
         }
 
         calibration.addToolbarButton("Calibrate as postion 2 (x,y), top right") {
@@ -80,6 +80,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         calibration.addToolbarButton("Calibrate as postion 3 (x,y), bottom right") {
             position3X = pControl.xPosition
             position3Y = pControl.yPosition
+
         }
         calibration.show()
     }
@@ -88,7 +89,8 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         box.setOnChange {
             if (box.get()) {
                 pControl.continMovement(axis, speed * direction)
-            } else pControl.continMovement(axis, 0.0)
+            }
+            else pControl.continMovement(axis, 0.0)
         }
     }
 
