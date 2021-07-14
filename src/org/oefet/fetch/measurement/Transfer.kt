@@ -16,8 +16,7 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
     // Parameters
     val delTime    by input("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }
     val sdVoltages by input("Source-Drain", "Voltage [V]", Range.manual(6, 60))
-    val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 1)) map { if (symVSG) it.mirror() else it }
-    val symVSG     by input("Source-Gate", "Sweep Both Ways", true)
+    val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 1).mirror())
 
     // Instruments
     val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)

@@ -130,7 +130,8 @@ class ACHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
             val rh05  = halls.map { it.value.pow(-0.5) }
             val t025  = halls.map { it.getParameter(Temperature::class)?.value?.pow(-0.25) ?: 0.0 }
 
-            val maxC  = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hall, excluded) }.maxBy { it.value }
+            val maxC  = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hall, excluded) }
+                .maxByOrNull { it: Quantity -> it.value }
             val fit1  = Fitting.linearFit(t025, lnrh)
             val fit2  = Fitting.linearFit(t025, rh05)
 
