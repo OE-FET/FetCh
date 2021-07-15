@@ -6,6 +6,7 @@ import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVHighThroughput
+import org.oefet.fetch.measurement.TVHighThroughput.Companion.VOLTAGE
 import org.oefet.fetch.quantities.*
 
 class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
@@ -17,8 +18,7 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
         extraParams
     ) {
 
-    val VOLTAGE1  = data.findColumn(TVHighThroughput.VOLTAGE1)
-    val VOLTAGE2  = data.findColumn(TVHighThroughput.VOLTAGE1)
+    val VOLTAGE  = data.findColumn(TVHighThroughput.VOLTAGE)
     val TEMPERATURE1  = data.findColumn(TVHighThroughput.TEMPERATURE1)
     val TEMPERATURE2  = data.findColumn(TVHighThroughput.TEMPERATURE2)
 
@@ -33,12 +33,11 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
     )
 
     init {
-        val voltage1 = data.getMean(VOLTAGE1)
-        val voltage2 = data.getMean(VOLTAGE2)
+        val voltage = data.getMean(VOLTAGE)
         val temperature1 = data.getMean(TEMPERATURE1)
         val temperature2 = data.getMean(TEMPERATURE2)
 
-        addQuantity(SeebeckCoefficient(abs((voltage1 - voltage2)/(temperature1 - temperature2)), 0.0, parameters, possibleParameters))
+        addQuantity(SeebeckCoefficient(abs((voltage)/(temperature1 - temperature2)), 0.0, parameters, possibleParameters))
     }
 
     override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
