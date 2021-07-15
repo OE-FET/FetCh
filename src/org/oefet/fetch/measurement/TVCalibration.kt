@@ -5,11 +5,12 @@ import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVCResult
@@ -38,16 +39,16 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
     companion object {
 
-        val SET_HEATER_VOLTAGE  = Col("Set Heater Voltage", "V")
-        val SET_STRIP_CURRENT   = Col("Set Strip Current", "A")
-        val GROUND_CURRENT      = Col("Ground Current", "A")
-        val HEATER_VOLTAGE      = Col("Heater Voltage", "V")
-        val HEATER_CURRENT      = Col("Heater Current", "A")
-        val HEATER_POWER        = Col("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] }
-        val STRIP_VOLTAGE       = Col("Strip Voltage", "V")
-        val STRIP_VOLTAGE_ERROR = Col("Strip Voltage Error", "V")
-        val STRIP_CURRENT       = Col("Strip Current", "A")
-        val TEMPERATURE         = Col("Temperature", "K")
+        val SET_HEATER_VOLTAGE  = DoubleColumn("Set Heater Voltage", "V")
+        val SET_STRIP_CURRENT   = DoubleColumn("Set Strip Current", "A")
+        val GROUND_CURRENT      = DoubleColumn("Ground Current", "A")
+        val HEATER_VOLTAGE      = DoubleColumn("Heater Voltage", "V")
+        val HEATER_CURRENT      = DoubleColumn("Heater Current", "A")
+        val HEATER_POWER        = DoubleColumn("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] }
+        val STRIP_VOLTAGE       = DoubleColumn("Strip Voltage", "V")
+        val STRIP_VOLTAGE_ERROR = DoubleColumn("Strip Voltage Error", "V")
+        val STRIP_CURRENT       = DoubleColumn("Strip Current", "A")
+        val TEMPERATURE         = DoubleColumn("Temperature", "K")
 
     }
 
@@ -150,7 +151,7 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         actions.forEach { it.reset() }
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SET_HEATER_VOLTAGE,

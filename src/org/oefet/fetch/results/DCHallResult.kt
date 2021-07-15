@@ -1,13 +1,13 @@
 package org.oefet.fetch.results
 
-import jisa.experiment.ResultList
-import jisa.experiment.ResultTable
 import jisa.maths.fits.Fitting
+import jisa.results.DoubleColumn
+import jisa.results.ResultList
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.DCHall
 import org.oefet.fetch.quantities.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.reflect.KClass
@@ -46,7 +46,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
             parameters    += Gate(gate, 0.0)
 
             // Don't bother with this gate voltage if there's fewer than 2 data-points in it
-            if (data.numRows < 2) {
+            if (data.rowCount < 2) {
                 continue
             }
 
@@ -59,21 +59,24 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
             // If both current and field were swept, then we can perform a better analysis of the output
             if (data.getUniqueValues(FIELD).size > 1 && data.getUniqueValues(SET_SD_CURRENT).size > 1) {
 
-                val gradients = ResultList("Current", "Gradient", "Error")
+                val CURRENT  = DoubleColumn("Current")
+                val GRADIENT = DoubleColumn("Gradient")
+                val ERROR    = DoubleColumn("Error")
+                val gradients = ResultList(CURRENT, GRADIENT, ERROR)
 
                 // Split the data up based on source-drain current value
                 for ((current, currData) in data.split(SET_SD_CURRENT)) {
 
                     // Determine the Hall voltages (was it channel 1, 2 or the difference between them?)
                     val hallVoltage = if (usedHVM1 && usedHVM2) {
-                        currData.getColumns(HALL_2) - currData.getColumns(HALL_1)
+                        currData.toMatrix(HALL_2) - currData.toMatrix(HALL_1)
                     } else if (usedHVM1) {
-                        currData.getColumns(HALL_1)
+                        currData.toMatrix(HALL_1)
                     } else {
-                        currData.getColumns(HALL_2)
+                        currData.toMatrix(HALL_2)
                     }
 
-                    val gradFit = Fitting.linearFit(currData.getColumns(FIELD), hallVoltage)
+                    val gradFit = Fitting.linearFit(currData.toMatrix(FIELD), hallVoltage)
 
                     if (gradFit != null) {
                         gradients.addData(current, gradFit.gradient, gradFit.gradientError)
@@ -82,7 +85,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                 }
 
                 // Fit the gradients of the V_H vs B fits to their corresponding value of I
-                val currFit = gradients.linearFit(0, 1)
+                val currFit = Fitting.linearFit(gradients, CURRENT, GRADIENT);
 
                 if (currFit != null) {
 
@@ -103,14 +106,14 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                 // If only one parameter was swept, then just fit VH to I*B/t
 
                 val hallVoltage = if (usedHVM1 && usedHVM2) {
-                    data.getColumns(HALL_2) - data.getColumns(HALL_1)
+                    data.toMatrix(HALL_2) - data.toMatrix(HALL_1)
                 } else if (usedHVM1) {
-                    data.getColumns(HALL_1)
+                    data.toMatrix(HALL_1)
                 } else {
-                    data.getColumns(HALL_2)
+                    data.toMatrix(HALL_2)
                 }
 
-                val xValues = data.getColumns(SD_CURRENT).elementMultiply(data.getColumns(FIELD)) / thickness
+                val xValues = data.toMatrix(SD_CURRENT).elementMultiply(data.toMatrix(FIELD)) / thickness
                 val fit     = Fitting.linearFit(xValues, hallVoltage)
                 val hall    = fit.gradient
                 val hallE   = fit.gradientError
@@ -132,15 +135,15 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                 // Split the data-up based on field strength
                 for ((field, condData) in data.split(FIELD)) {
 
-                    val current = condData.getColumns(SD_CURRENT)
+                    val current = condData.toMatrix(SD_CURRENT)
 
                     // Determine whether to use FPP1, FPP2 or FPP2 - FPP1 based on which channels were used
                     val voltage = if (usedFPP1 && usedFPP2) {
-                        condData.getColumns(FPP_2) - condData.getColumns(FPP_1)
+                        condData.toMatrix(FPP_2) - condData.toMatrix(FPP_1)
                     } else if (usedFPP1) {
-                        condData.getColumns(FPP_1)
+                        condData.toMatrix(FPP_1)
                     } else {
-                        condData.getColumns(FPP_2)
+                        condData.toMatrix(FPP_2)
                     }
 
                     // Perform a linear fit to find conductivity for this value of magnetic field strength

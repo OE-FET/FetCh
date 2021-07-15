@@ -3,12 +3,11 @@ package org.oefet.fetch
 import jisa.devices.Configuration
 import jisa.devices.interfaces.Instrument
 import jisa.experiment.Measurement
-import jisa.experiment.ResultTable
 import jisa.gui.Element
 import jisa.maths.Range
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 

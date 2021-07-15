@@ -2,7 +2,8 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
+import jisa.results.DoubleColumn
 import jisa.gui.*
 import org.oefet.fetch.analysis.*
 import org.oefet.fetch.analysis.Analysis

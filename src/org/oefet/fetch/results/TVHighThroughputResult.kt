@@ -1,6 +1,8 @@
 package org.oefet.fetch.results
 
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
+import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVHighThroughput
 import org.oefet.fetch.quantities.*

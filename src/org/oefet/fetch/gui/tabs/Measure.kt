@@ -2,16 +2,15 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.queue.ActionQueue.Result.*
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.ActionQueue
+import jisa.experiment.queue.ActionQueue.Result.*
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
+import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
 import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.elements.*
-import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
-import org.oefet.fetch.measurement.*
+import org.oefet.fetch.gui.elements.FetChQueue
+import org.oefet.fetch.measurement.Log
 
 object Measure : Grid("Measurement", 1) {
 

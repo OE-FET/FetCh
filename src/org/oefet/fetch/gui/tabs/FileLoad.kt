@@ -2,18 +2,19 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ResultList
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.gui.*
+import jisa.results.ResultList
+import jisa.results.ResultTable
 import org.oefet.fetch.Measurements
-import org.oefet.fetch.analysis.*
-import org.oefet.fetch.quantities.*
+import org.oefet.fetch.analysis.UnknownResultException
+import org.oefet.fetch.quantities.Device
+import org.oefet.fetch.quantities.MaxLinMobility
+import org.oefet.fetch.quantities.MaxSatMobility
+import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.FetChResult
 import java.io.File
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * Page for loading in and viewing previous results

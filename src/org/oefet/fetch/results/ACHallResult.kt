@@ -1,10 +1,10 @@
 package org.oefet.fetch.results
 
 import jisa.enums.Icon
-import jisa.experiment.ResultTable
 import jisa.maths.Range
 import jisa.maths.fits.Fitting
 import jisa.maths.matrices.RealMatrix
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.measurement.ACHall
@@ -46,8 +46,8 @@ class ACHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
     init {
 
         val rmsField = data.getMean(RMS_FIELD)
-        val voltages = data.getColumns(X_VOLTAGE, Y_VOLTAGE).transpose()
-        val currents = data.getColumns(SD_CURRENT)
+        val voltages = data.toMatrix(X_VOLTAGE, Y_VOLTAGE).transpose()
+        val currents = data.toMatrix(SD_CURRENT)
 
         field = rmsField
         replaceParameter(BField(field, 0.0))
@@ -77,10 +77,10 @@ class ACHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
         addQuantity(HallPhase(minTheta, 0.0, parameters, possibleParameters))
 
         // Calculate error weightings
-        val hallErrors = data.getColumns(X_ERROR, Y_ERROR).rowQuadratures
+        val hallErrors = data.toMatrix(X_ERROR, Y_ERROR).rowQuadratures
         val weights = hallErrors.map { x -> x.pow(-2) }
 
-        val vectorHall: RealMatrix = data.getColumns(HALL_VOLTAGE)
+        val vectorHall: RealMatrix = data.toMatrix(HALL_VOLTAGE)
 
         // Determine whether to use the PO or VS hall fitting
         val hallFit = if (minVolts != null) {

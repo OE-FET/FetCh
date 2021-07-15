@@ -3,7 +3,8 @@ package org.oefet.fetch.action
 import jisa.control.RTask
 import jisa.devices.interfaces.EMController
 import jisa.devices.power.IPS120
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
+import jisa.results.DoubleColumn
 import jisa.gui.Colour
 import jisa.gui.Plot
 import org.oefet.fetch.gui.elements.FetChPlot

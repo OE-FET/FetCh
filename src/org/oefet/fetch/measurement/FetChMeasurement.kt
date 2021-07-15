@@ -1,6 +1,6 @@
 package org.oefet.fetch.measurement
 
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.FetChResult

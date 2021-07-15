@@ -1,21 +1,13 @@
 package org.oefet.fetch.measurement
 
-import jisa.Util
-import jisa.control.Repeat
-import jisa.devices.interfaces.IMeter
-import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
-import jisa.experiment.queue.Action
-import jisa.experiment.queue.MeasurementSubAction
-import jisa.maths.Range
-import org.oefet.fetch.gui.elements.TVPlot
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVHighThroughputResult
-import org.oefet.fetch.results.TVResult
 
 class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput") {
 
@@ -23,14 +15,14 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val duration by input("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0, ) map { (it * 1e3).toLong() }
 
     // Instruments
-    private val vMeter by requiredConfig("Thermal Voltage Meter", VMeter::class)
+    private val vMeter   by requiredConfig("Thermal Voltage Meter", VMeter::class)
     private val tMeter1  by requiredConfig("Thermometer 1", TMeter::class)
     private val tMeter2  by requiredConfig("Thermometer 2", TMeter::class)
 
     companion object {
-        val VOLTAGE     = Col("Voltage ", "V")
-        val TEMPERATURE1    = Col("Temperature 1", "K")
-        val TEMPERATURE2    = Col("Temperature 2", "K")
+        val VOLTAGE      = DoubleColumn("Voltage", "V")
+        val TEMPERATURE1 = DoubleColumn("Temperature 1", "K")
+        val TEMPERATURE2 = DoubleColumn("Temperature 2", "K")
 
     }
 
@@ -39,7 +31,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
 
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             VOLTAGE,

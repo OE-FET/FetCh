@@ -4,9 +4,10 @@ import jisa.Util
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.SyncPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.OutputResult
@@ -28,16 +29,16 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
     val tMeter by optionalConfig("Thermometer", TMeter::class)
 
     companion object {
-        val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
-        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
-        val SD_VOLTAGE     = Col("SD Voltage", "V")
-        val SD_CURRENT     = Col("SD Current", "A")
-        val SG_VOLTAGE     = Col("SG Voltage", "V")
-        val SG_CURRENT     = Col("SG Current", "A")
-        val FPP_1          = Col("Four Point Probe 1", "V")
-        val FPP_2          = Col("Four Point Probe 2", "V")
-        val TEMPERATURE    = Col("Temperature", "K")
-        val GROUND_CURRENT = Col("Ground Current", "A")
+        val SET_SD_VOLTAGE = DoubleColumn("Set SD Voltage", "V")
+        val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
+        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT     = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT     = DoubleColumn("SG Current", "A")
+        val FPP_1          = DoubleColumn("Four Point Probe 1", "V")
+        val FPP_2          = DoubleColumn("Four Point Probe 2", "V")
+        val TEMPERATURE    = DoubleColumn("Temperature", "K")
+        val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
     override fun createPlot(data: ResultTable): SyncPlot {
@@ -48,7 +49,7 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         return OutputResult(data, extra)
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SET_SD_VOLTAGE,

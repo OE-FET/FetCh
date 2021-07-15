@@ -1,7 +1,7 @@
 package org.oefet.fetch.results
 
 import javafx.scene.image.Image
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.*
 import java.util.*
@@ -71,13 +71,13 @@ abstract class FetChResult(name: String, val tag: String, val image: Image, val 
     private fun determineTemperature(): Double {
 
         val attributes = data.attributes
-        val column     = data.findColumn("Temperature")
+        val column     = data.findColumn("Temperature", Double::class.java)
 
         return when {
 
             attributes.containsKey("T")           -> data.getAttribute("T").removeSuffix("K").toDouble()
             attributes.containsKey("Temperature") -> data.getAttribute("Temperature").removeSuffix("K").toDouble()
-            column > -1                           -> data.getMean(column)
+            column != null                        -> data.getMean(column)
             else                                  -> Double.NaN
 
         }

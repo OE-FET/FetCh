@@ -1,9 +1,11 @@
 package org.oefet.fetch.analysis
 
-import jisa.experiment.Col
+
 import jisa.experiment.Combination
-import jisa.experiment.ResultList
 import jisa.gui.Plot
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultList
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.*
 import java.util.*
@@ -22,12 +24,17 @@ object HallAnalysis : Analysis {
             val valueIndex = table.parameters.size
             val errorIndex = valueIndex + 1
 
+            val value = table.table.getColumn(valueIndex) as Column<Double>
+            val error = table.table.getColumn(errorIndex) as Column<Double>
+
             // Loop over all the parameter columns in the table
             for ((paramIndex, parameter) in table.parameters.withIndex()) {
 
+                val param = table.table.getColumn(paramIndex) as Column<Double>
+
                 // If the quantity isn't varied or is not meant to be displayed as a number, then skip it
                 if (labels.containsKey(parameter::class)) continue
-                if (table.table.getUniqueValues(paramIndex).size < 2) continue
+                if (table.table.getUniqueValues(param).size < 2) continue
 
                 val splits     = LinkedList<Int>()
                 val names      = LinkedHashMap<Int, Quantity>()
@@ -36,22 +43,24 @@ object HallAnalysis : Analysis {
                 // Loop over all other varied parameters in the table
                 for ((splitIndex, splitParam) in table.parameters.withIndex()) {
 
-                    if (splitIndex != paramIndex && table.table.getUniqueValues(splitIndex).size > 1) {
+                    val split = table.table.getColumn(splitIndex)
+
+                    if (splitIndex != paramIndex && table.table.getUniqueValues(split).size > 1) {
                         splits            += splitIndex
                         names[splitIndex]  = splitParam
-                        splitCount        *= table.table.getUniqueValues(splitIndex).size
+                        splitCount        *= table.table.getUniqueValues(split).size
                     }
 
                 }
 
                 // Don't plot if more values in legend than x-axis
-                if ((table.table.getUniqueValues(paramIndex).size) < splitCount) continue
+                if ((table.table.getUniqueValues(param).size) < splitCount) continue
 
                 // Create the plot and the data series
-                val line   = table.table.getUniqueValues(paramIndex).size > 20
+                val line   = table.table.getUniqueValues(param).size > 20
                 val plot   = FetChPlot("${table.quantity.name} vs ${parameter.name}")
                 val series = plot.createSeries()
-                    .watch(table.table, paramIndex, valueIndex, errorIndex)
+                    .watch(table.table, param, value, error)
                     .setColour(AutoAnalysis.colours[plots.size % AutoAnalysis.colours.size])
                     .setMarkerVisible(!line)
                     .setLineVisible(line)
@@ -101,12 +110,12 @@ object HallAnalysis : Analysis {
             val instance     = filtered.first()
 
             val table = ResultList(
-                Col("Temperature", "K"),
-                Col("Conductivity", "S/cm"),
-                Col("Gate", "V"),
-                Col("Device"),
-                Col(instance.name, instance.unit),
-                Col("${instance.name} Error", instance.unit)
+                DoubleColumn("Temperature", "K"),
+                DoubleColumn("Conductivity", "S/cm"),
+                DoubleColumn("Gate", "V"),
+                DoubleColumn("Device"),
+                DoubleColumn(instance.name, instance.unit),
+                DoubleColumn("${instance.name} Error", instance.unit)
             )
 
             for (value in filtered) {
@@ -141,12 +150,12 @@ object HallAnalysis : Analysis {
         if (magnetoConductivities.isNotEmpty()) {
 
             val table = ResultList(
-                Col("Field", "T"),
-                Col("Temperature", "K"),
-                Col("Gate", "V"),
-                Col("Device"),
-                Col("Magneto-Conductivity", "S/cm"),
-                Col("Error", "S/cm")
+                DoubleColumn("Field", "T"),
+                DoubleColumn("Temperature", "K"),
+                DoubleColumn("Gate", "V"),
+                DoubleColumn("Device"),
+                DoubleColumn("Magneto-Conductivity", "S/cm"),
+                DoubleColumn("Error", "S/cm")
             )
 
             for (value in magnetoConductivities) {

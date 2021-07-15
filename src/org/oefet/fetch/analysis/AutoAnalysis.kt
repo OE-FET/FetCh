@@ -1,15 +1,16 @@
 package org.oefet.fetch.analysis
 
-import jisa.experiment.Col
+
 import jisa.experiment.Combination
-import jisa.experiment.ResultList
 import jisa.gui.Plot
 import jisa.gui.Series
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultList
 import org.oefet.fetch.analysis.Analysis.Tabulated
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.quantities.Quantity
 import java.util.*
-import kotlin.collections.LinkedHashMap
 import kotlin.reflect.KClass
 
 object AutoAnalysis : Analysis {
@@ -29,11 +30,11 @@ object AutoAnalysis : Analysis {
             val parameters   = filtered.flatMap { it.parameters }
             val parameterSet = parameters.map { it::class }.toSet()
             val pColumns     = parameterSet.map { c -> parameters.first { p -> p::class == c } }
-            val columns      = pColumns.map { Col(it.name, it.unit) }.toMutableList()
+            val columns      = pColumns.map { DoubleColumn(it.name, it.unit) }.toMutableList()
 
             // Define the final two columns as being for the quantity values and their error values
-            columns += Col(instance.name, instance.unit)
-            columns += Col("${instance.name} Error", instance.unit)
+            columns += DoubleColumn(instance.name, instance.unit)
+            columns += DoubleColumn("${instance.name} Error", instance.unit)
 
             val table = ResultList(*columns.toTypedArray())
 
@@ -50,7 +51,7 @@ object AutoAnalysis : Analysis {
                 row += value.error
 
                 // Add row to the table
-                table.addData(*row.toDoubleArray())
+                table.addData(*row.toTypedArray())
 
             }
 
@@ -73,12 +74,17 @@ object AutoAnalysis : Analysis {
             val valueIndex = table.parameters.size
             val errorIndex = valueIndex + 1
 
+            val value = table.table.getColumn(valueIndex) as Column<Double>
+            val error = table.table.getColumn(errorIndex) as Column<Double>
+
             // Loop over all the parameter columns in the table
             for ((paramIndex, parameter) in table.parameters.withIndex()) {
 
+                val param = table.table.getColumn(paramIndex) as Column<Double>
+
                 // If the quantity isn't varied or is not meant to be displayed as a number, then skip it
                 if (labels.containsKey(parameter::class)) continue
-                if (table.table.getUniqueValues(paramIndex).size < 2) continue
+                if (table.table.getUniqueValues(param).size < 2) continue
 
                 val splits     = LinkedList<Int>()
                 val names      = LinkedHashMap<Int, Quantity>()
@@ -87,22 +93,24 @@ object AutoAnalysis : Analysis {
                 // Loop over all other varied parameters in the table
                 for ((splitIndex, splitParam) in table.parameters.withIndex()) {
 
-                    if (splitIndex != paramIndex && table.table.getUniqueValues(splitIndex).size > 1) {
+                    val split = table.table.getColumn(splitIndex)
+
+                    if (splitIndex != paramIndex && table.table.getUniqueValues(split).size > 1) {
                         splits            += splitIndex
                         names[splitIndex]  = splitParam
-                        splitCount        *= table.table.getUniqueValues(splitIndex).size
+                        splitCount        *= table.table.getUniqueValues(split).size
                     }
 
                 }
 
                 // Don't plot if more values in legend than x-axis
-                if ((table.table.getUniqueValues(paramIndex).size) < splitCount) continue
+                if ((table.table.getUniqueValues(param).size) < splitCount) continue
 
                 // Create the plot and the data series
-                val line   = table.table.getUniqueValues(paramIndex).size > 20
+                val line   = table.table.getUniqueValues(param).size > 20
                 val plot   = FetChPlot("${table.quantity.name} vs ${parameter.name}")
                 val series = plot.createSeries()
-                    .watch(table.table, paramIndex, valueIndex, errorIndex)
+                    .watch(table.table, param, value, error)
                     .setColour(colours[plots.size % colours.size])
                     .setMarkerVisible(!line)
                     .setLineVisible(line)

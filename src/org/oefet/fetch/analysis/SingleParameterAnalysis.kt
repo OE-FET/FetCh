@@ -1,14 +1,15 @@
 package org.oefet.fetch.analysis
 
-import jisa.experiment.Col
-import jisa.experiment.ResultList
+
 import jisa.gui.Plot
 import jisa.gui.Series
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultList
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.quantities.Temperature
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 
 open class SingleParameterAnalysis(val parameterExample: Quantity) : Analysis {
@@ -26,7 +27,7 @@ open class SingleParameterAnalysis(val parameterExample: Quantity) : Analysis {
             val filtered = quantities.filter { it::class == quantityClass }
             val instance = filtered.first()
 
-            val table = ResultList(Col(name, unit), Col(instance.name, instance.unit), Col("${instance.name} Error", instance.unit))
+            val table = ResultList(DoubleColumn(name, unit), DoubleColumn(instance.name, instance.unit), DoubleColumn("${instance.name} Error", instance.unit))
 
             for (value in filtered) {
 
@@ -54,11 +55,15 @@ open class SingleParameterAnalysis(val parameterExample: Quantity) : Analysis {
             val name = table.quantity.name
             val plot = FetChPlot("$name vs ${parameterExample.name}")
 
+            val x = table.table.getColumn(0) as Column<Double>
+            val y = table.table.getColumn(1) as Column<Double>
+            val e = table.table.getColumn(2) as Column<Double>
+
             plot.createSeries()
-                .watch(table.table, 0, 1, 2)
+                .watch(table.table, x, y, e)
                 .setColour(Series.defaultColours[plots.size % Series.defaultColours.size])
-                .setMarkerVisible(table.table.numRows <= 20)
-                .setLineVisible(table.table.numRows > 20)
+                .setMarkerVisible(table.table.rowCount <= 20)
+                .setLineVisible(table.table.rowCount > 20)
 
             plot.isLegendVisible = false
             plot.isMouseEnabled  = true
