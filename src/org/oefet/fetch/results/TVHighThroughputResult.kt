@@ -1,12 +1,8 @@
 package org.oefet.fetch.results
 
-import com.sun.org.apache.xalan.internal.lib.ExsltMath.abs
 import jisa.experiment.ResultTable
-import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVHighThroughput
-import org.oefet.fetch.measurement.TVHighThroughput.Companion.VOLTAGE
 import org.oefet.fetch.quantities.*
 
 class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
@@ -37,15 +33,13 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
         val temperature1 = data.getMean(TEMPERATURE1)
         val temperature2 = data.getMean(TEMPERATURE2)
 
-        addQuantity(SeebeckCoefficient(abs((voltage)/(temperature1 - temperature2)), 0.0, parameters, possibleParameters))
+        addQuantity(SeebeckCoefficient((voltage)/(temperature1 - temperature2), 0.0, parameters, possibleParameters))
     }
 
     override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
         return emptyList()
     }
 
-    override fun getPlot(): FetChPlot {
-        return TVCResultPlot(data)
-    }
+
 
 }
