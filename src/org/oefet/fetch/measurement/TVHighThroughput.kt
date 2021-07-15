@@ -25,8 +25,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage Measurement", "TV", "
     // Instruments
     private val vMeter1 by requiredConfig("Thermal Voltage Meter", VMeter::class)
     private val vMeter2 by requiredConfig("Thermal Voltage Meter", VMeter::class)
-    private val tMeter1  by requiredConfig("Thermometer", TMeter::class)
-    private val tMeter2  by requiredConfig("Thermometer", TMeter::class)
+    private val tMeter1  by requiredConfig("Thermometer 1", TMeter::class)
+    private val tMeter2  by requiredConfig("Thermometer 2", TMeter::class)
 
     companion object {
         val VOLTAGE1     = Col("Voltage 1", "V")
@@ -38,7 +38,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage Measurement", "TV", "
 
     override fun processResults(data: ResultTable, extra: List<Quantity>): TVHighThroughputResult {
         return TVHighThroughputResult(data, extra)
-        //TODO
+
     }
 
     override fun getColumns(): Array<Col> {
@@ -81,7 +81,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage Measurement", "TV", "
 
     override fun onFinish() {
         runRegardless { vMeter1.turnOff() }
-        runRegardless { vMeter1.turnOff() }
+        runRegardless { vMeter2.turnOff() }
     }
 
 

@@ -71,7 +71,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
                 list += Position(
                     position1X + i * directionHorizontalX / (countX-1) + j * directionVerticalX / (countY-1),
                     position1Y + i * directionHorizontalY / (countX-1) + j * directionVerticalY / (countY-1),
-                    measureHeightZ - fineLift
+                    measureHeightZ - fineLift,
+                    j * countX + i
                 )
 
             }
@@ -104,6 +105,6 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     }
     override fun formatValue(value: Position): String = "(${value.x},${value.y} )"
 
-    class Position(val x: Double, val y: Double, val z: Double)
+    class Position(val x: Double, val y: Double, val z: Double, val index: Int)
 
 }

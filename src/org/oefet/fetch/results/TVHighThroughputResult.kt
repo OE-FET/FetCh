@@ -33,7 +33,6 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
     )
 
     init {
-        //TODO
         val voltage1 = data.getMean(VOLTAGE1)
         val voltage2 = data.getMean(VOLTAGE2)
         val temperature1 = data.getMean(TEMPERATURE1)
