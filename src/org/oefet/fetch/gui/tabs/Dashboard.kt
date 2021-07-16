@@ -43,6 +43,21 @@ object Dashboard : Grid("Dashboard", 3) {
             editVisible()
         }
 
+        addToolbarButton("Interval") {
+
+            if (!Log.isRunning) {
+
+                val input = Fields("Change Logging Interval")
+                val interval = input.addIntegerField("Interval [ms]", Log.interval)
+
+                if (input.showAsConfirmation()) {
+                    Log.interval = interval.value
+                }
+
+            }
+
+        }
+
         addToolbarSeparator()
 
         addToolbarButton("Open Log File") {
@@ -85,7 +100,8 @@ object Dashboard : Grid("Dashboard", 3) {
                 fullPlot.createSeries()
                     .watch(log, 0, i)
                     .setMarkerVisible(false)
-                    .setLineVisible(true).colour = Series.defaultColours[(i-1) % Series.defaultColours.size]
+                    .setLineVisible(true)
+                    .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
 
                 fullPlot.show()
 
@@ -94,8 +110,8 @@ object Dashboard : Grid("Dashboard", 3) {
             if (log.getName(i).contains("ILM200")) {
 
                 plot.addToolbarMenuButton("Sample Rate").apply {
-                    addItem("Fast") {(Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, true)}
-                    addItem("Slow") {(Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, false)}
+                    addItem("Fast") { (Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, true) }
+                    addItem("Slow")  {(Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, false) }
                 }
 
             }
