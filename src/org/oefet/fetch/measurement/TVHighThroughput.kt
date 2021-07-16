@@ -31,6 +31,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     }
 
     override fun processResults(data: ResultTable, extra: List<Quantity>): TVHighThroughputResult {
+        print("processResult")
         return TVHighThroughputResult(data, extra)
     }
 
@@ -50,18 +51,23 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         //results.setAttribute("Hot Peltier set temperature")
 
         // Start with everything turned-off
+
         vMeter1.turnOff()
         vMeter2.turnOff()
         ground?.turnOff()
+        print("turn off")
 
         // We don't want the instruments to do any averaging - we're doing that ourselves
         vMeter1.averageMode = AMode.NONE
         vMeter2.averageMode = AMode.NONE
+        print("no averaging")
 
         ground?.voltage = 0.0
+        print("setground")
 
         tMeter1.waitForStableTemperature(pctMargin,duration)
         tMeter2.waitForStableTemperature(pctMargin,duration)
+        print("waiting done")
         vMeter1.turnOn()
         vMeter2.turnOn()
         ground?.turnOn()
@@ -71,6 +77,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             tMeter1.temperature,
             tMeter2.temperature
         )
+        print("added data")
     }
 
     override fun onFinish() {
