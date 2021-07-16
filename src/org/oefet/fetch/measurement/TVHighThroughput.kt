@@ -12,8 +12,8 @@ import org.oefet.fetch.results.TVHighThroughputResult
 
 class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput") {
 
-    private val pctMargin by input("Temperature Stabilization", "Percentage range for temperature to stay within",0.3, )
-    private val duration by input("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0, ) map { (it * 1e3).toLong() }
+    private val pctMargin by input("Temperature Stabilization", "Percentage range for temperature to stay within",0.3 )
+    private val duration by input("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0 ) map { (it * 1e3).toLong() }
 
     // Instruments
     private val vMeter1   by requiredConfig("Thermal Voltage Meter 1", VMeter::class)
