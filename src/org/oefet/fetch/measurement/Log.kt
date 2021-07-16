@@ -7,6 +7,7 @@ import jisa.devices.interfaces.*
 import jisa.experiment.Col
 import jisa.experiment.ResultStream
 import jisa.experiment.ResultTable
+import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Dashboard
 import java.util.*
 import kotlin.collections.ArrayList
@@ -14,7 +15,7 @@ import kotlin.collections.ArrayList
 object Log {
 
     private val logTasks: MutableList<() -> Double> = ArrayList()
-    private val logger: RTask = RTask(2500) { it -> log(log!!, it) }
+    private val logger: RTask = RTask(Settings.intValue("loggerInterval").getOrDefault(2500).toLong()) { it -> log(log!!, it) }
     private var log: ResultTable? = null
 
     fun start(path: String) {
@@ -38,8 +39,8 @@ object Log {
                     for (smu in inst.channels) {
                         columns.add(Col("$name ${smu.channelName} Voltage", "V"))
                         columns.add(Col("$name ${smu.channelName} Current", "A"))
-                        logTasks.add { smu.getVoltage(2e-3) }
-                        logTasks.add { smu.getCurrent(2e-3) }
+                        logTasks.add { smu.voltage }
+                        logTasks.add { smu.current }
                     }
 
                 }
@@ -48,8 +49,8 @@ object Log {
 
                     columns.add(Col("$name Voltage", "V"))
                     columns.add(Col("$name Current", "A"))
-                    logTasks.add { inst.getVoltage(2e-3) }
-                    logTasks.add { inst.getCurrent(2e-3) }
+                    logTasks.add { inst.voltage }
+                    logTasks.add { inst.current }
 
                 }
 
@@ -65,7 +66,7 @@ object Log {
                 is VMeter       -> {
 
                     columns.add(Col("$name Voltage", "V"))
-                    logTasks.add { inst.getVoltage(2e-3) }
+                    logTasks.add { inst.voltage }
 
                 }
 
@@ -179,6 +180,7 @@ object Log {
 
         set(value) {
             logger.interval = value.toLong()
+            Settings.intValue("loggerInterval").set(value)
         }
 
     val isRunning: Boolean
