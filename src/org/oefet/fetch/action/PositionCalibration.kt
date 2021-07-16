@@ -44,13 +44,26 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         val rightContinMiddle  = calibration.addCheckBox("Right (medium)")
         val rightContinSlow  = calibration.addCheckBox("Right (slow)")
         calibration.addSeparator()
-        val upContinFast  = calibration.addCheckBox("Up (fast)")
-        val upContinMiddle  = calibration.addCheckBox("Up (medium)")
-        val upContinSlow  = calibration.addCheckBox("Up (slow)")
+        val forwardContinFast  = calibration.addCheckBox("Forward (fast)")
+        val forwardContinMiddle  = calibration.addCheckBox("forward (medium)")
+        val forwardContinSlow  = calibration.addCheckBox("Forward (slow)")
         calibration.addSeparator()
-        val downContinFast  = calibration.addCheckBox("Down (fast)")
-        val downContinMiddle  = calibration.addCheckBox("Down (medium)")
-        val downContinSlow  = calibration.addCheckBox("Down (slow)")
+        val backwardContinFast  = calibration.addCheckBox("Backward (fast)")
+        val backContinMiddle  = calibration.addCheckBox("Backward (medium)")
+        val backContinSlow  = calibration.addCheckBox("Backward (slow)")
+
+        val FineUp  = calibration.addDialogButton("Fine Up"){
+            pControl.setLocked(true)
+        }
+        val FineDown  = calibration.addDialogButton("Fine Down"){
+            pControl.setLocked(false)
+        }
+        val GrossUp  = calibration.addDialogButton("Gross Up"){
+            //pControl.setGrossLocked(true)
+        }
+        val GrossDown  = calibration.addDialogButton("Gross Down"){
+            //pControl.setGrossLocked(false)
+        }
 
 
         continControl(leftContinFast,"X", -1,fast)
@@ -59,12 +72,13 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         continControl(rightContinFast,"X", 1,fast)
         continControl(rightContinMiddle,"X", 1,middle)
         continControl(rightContinSlow,"X", 1,slow)
-        continControl(downContinFast,"Y", -1,fast)
-        continControl(downContinMiddle,"Y", -1,middle)
-        continControl(downContinSlow,"Y", -1,slow)
-        continControl(upContinFast,"Y", 1,fast)
-        continControl(upContinMiddle,"Y", 1,middle)
-        continControl(upContinSlow,"Y", 1,slow)
+        continControl(forwardContinFast,"Y", 1,fast)
+        continControl(forwardContinMiddle,"Y", 1,middle)
+        continControl(forwardContinSlow,"Y", 1,slow)
+        continControl(backwardContinFast,"Y", -1,fast)
+        continControl(backContinMiddle,"Y", -1,middle)
+        continControl(backContinSlow,"Y", -1,slow)
+
 
         calibration.addToolbarButton("Calibrate as postion 1 (x,y,z), top left") {
             position1X = pControl.xPosition
