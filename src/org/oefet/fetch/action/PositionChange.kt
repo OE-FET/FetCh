@@ -17,13 +17,20 @@ class PositionChange : FetChAction("Change Position") {
     val yposition     by input("Position", "y Position [m]", 1e-3)
     val zposition     by input("Position", "z Position [m]", 1e-3)
 
+    val safetyMargin = 6e-3
+
 
     override fun run(results: ResultTable) {
 
         pControl.isLocked  = false
         pControl.zPosition = 0.0
         pControl.setXYPosition(xposition, yposition)
-        pControl.zPosition = zposition
+        if(zposition > safetyMargin) {
+            throw Exception("Larger than safety margin")
+        }
+        else{
+            pControl.zPosition = zposition
+        }
 
     }
 

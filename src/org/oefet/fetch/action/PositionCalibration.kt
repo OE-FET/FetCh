@@ -14,7 +14,10 @@ import org.oefet.fetch.gui.elements.FetChPlot
 
 class PositionCalibration : FetChAction("3-point Position Calibration") {
 
-    val pControl by requiredConfig("Position Control", ProbeStation::class)
+    private val grossLift    by input("Setup", "Gross Distance [m]", 3e-3)
+    private val fineLift    by input("Setup", "Fine Distance [m]", 3e-4)
+
+    private val pControl by requiredConfig("Position Control", ProbeStation::class)
 
     val fast = 3000.0
     val middle = 500.0
@@ -33,6 +36,9 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
     }
 
     override fun run(results: ResultTable) {
+
+        pControl.setGrossUpDistance(grossLift)
+        pControl.lockDistance = fineLift
 
         val calibration = Fields("Calibration")
 
@@ -59,10 +65,10 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
             pControl.setLocked(false)
         }
         val GrossUp  = calibration.addDialogButton("Gross Up"){
-            //pControl.setGrossLocked(true)
+            pControl.setGrossUp(true)
         }
         val GrossDown  = calibration.addDialogButton("Gross Down"){
-            //pControl.setGrossLocked(false)
+            pControl.setGrossUp(false)
         }
 
 
