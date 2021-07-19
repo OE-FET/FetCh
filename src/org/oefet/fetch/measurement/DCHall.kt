@@ -37,7 +37,6 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
             .setAlignment(Doc.Align.CENTRE)
 
     }
-
     // Parameter inputs to ask the user for
     private val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
     private val repTime  by input("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
