@@ -16,8 +16,6 @@ class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Tem
     }
 
     override fun getColumns(): Array<Col> {
-        tMeter.waitForStableTemperature(pctMargin,duration)
-        results.addData(tMeter.temperature)
 
 
         return arrayOf(
@@ -25,6 +23,8 @@ class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Tem
         )
     }
     override fun run(results: ResultTable) {
+        tMeter.waitForStableTemperature(pctMargin,duration)
+        results.addData(tMeter.temperature)
 
     }
 

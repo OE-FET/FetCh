@@ -49,6 +49,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         val TEMPARTURE1STDDEVIATION = DoubleColumn("Temperature 1 Std. Dev.", "K")
         val TEMPERATURE2 = DoubleColumn("Temperature 2", "K")
         val TEMPARTURE2STDDEVIATION = DoubleColumn("Temperature 2 Std. Dev.", "K")
+        val TEMPERATURE_DIFFERENCE = DoubleColumn("Temperature Difference", "K")
 
     }
 
@@ -66,6 +67,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             TEMPARTURE1STDDEVIATION,
             TEMPERATURE2,
             TEMPARTURE2STDDEVIATION,
+            TEMPERATURE_DIFFERENCE
         )
 
     }
@@ -142,7 +144,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
                 tMeter1Values.mean,
                 tMeter1Values.standardDeviation,
                 tMeter2Values.mean,
-                tMeter2Values.standardDeviation
+                tMeter2Values.standardDeviation,
+                tMeter1Values.mean - tMeter2Values.mean
             )
 
         }

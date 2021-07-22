@@ -88,7 +88,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
         pControl.lockDistance = fineLift
 
-        list += SimpleAction("Change Position to ${value.x}, ${value.y} m") {
+        list += SimpleAction("Change Position to ${value.x}, ${value.y} m, index ${value.index}") {
                 pControl.isLocked = false
                 pControl.zPosition = 0.0
                 pControl.setXYPosition(value.x,value.y)
@@ -103,7 +103,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
 
     }
-    override fun formatValue(value: Position): String = "(${value.x},${value.y} )"
+    override fun formatValue(value: Position): String = "(${value.x} m ,${value.y} m, index ${value.index} )"
 
     class Position(val x: Double, val y: Double, val z: Double, val index: Int)
 
