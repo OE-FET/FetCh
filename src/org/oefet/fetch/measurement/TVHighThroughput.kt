@@ -25,8 +25,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val duration by input("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0 ) map { (it * 1e3).toLong() }
 
 
-    private val coldTemps by input("Temperature", "Current [A]", Range.linear(295.15, 274, 3))
-    private val hotTemps by input("Temperature", "Current [A]", Range.linear(295.15, 312, 3))
+    private val coldTemps by input("Temperature", "Temperature [K]", Range.linear(295.15, 274, 3))
+    private val hotTemps by input("Temperature", "Temperature [K]", Range.linear(295.15, 312, 3))
 
     // Instruments
     private val vMeter1   by requiredConfig("Thermal Voltage Meter 1", VMeter::class)
@@ -37,7 +37,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val tMeter2  by requiredConfig("Thermometer 2", TMeter::class)
 
     private val hotPeltier  by requiredConfig("Hot Peltier", TC::class)
-    private val coldPeltier  by requiredConfig("Hot Peltier", TC::class)
+    private val coldPeltier  by requiredConfig("Cold Peltier", TC::class)
 
 
     val list = ArrayList<Temperature>()
