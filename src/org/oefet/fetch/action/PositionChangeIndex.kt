@@ -10,7 +10,7 @@ import jisa.gui.Colour
 import jisa.gui.Series
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class PositionChangeIndex : FetChAction("Change Position") {
+class PositionChangeIndex : FetChAction("Change Position to Index") {
 
     val pControl    by requiredConfig("Position Controller", ProbeStation::class)
     val countX      by input("Sample Setup", "Number of Devices in x Direction", 6)

@@ -51,7 +51,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         val rightContinSlow  = calibration.addCheckBox("Right (slow)")
         calibration.addSeparator()
         val forwardContinFast  = calibration.addCheckBox("Forward (fast)")
-        val forwardContinMiddle  = calibration.addCheckBox("forward (medium)")
+        val forwardContinMiddle  = calibration.addCheckBox("Forward (medium)")
         val forwardContinSlow  = calibration.addCheckBox("Forward (slow)")
         calibration.addSeparator()
         val backwardContinFast  = calibration.addCheckBox("Backward (fast)")
@@ -78,12 +78,12 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         continControl(rightContinFast,"X", 1,fast)
         continControl(rightContinMiddle,"X", 1,middle)
         continControl(rightContinSlow,"X", 1,slow)
-        continControl(forwardContinFast,"Y", 1,fast)
-        continControl(forwardContinMiddle,"Y", 1,middle)
-        continControl(forwardContinSlow,"Y", 1,slow)
-        continControl(backwardContinFast,"Y", -1,fast)
-        continControl(backContinMiddle,"Y", -1,middle)
-        continControl(backContinSlow,"Y", -1,slow)
+        continControl(forwardContinFast,"Y", -1,fast)
+        continControl(forwardContinMiddle,"Y", -1,middle)
+        continControl(forwardContinSlow,"Y", -1,slow)
+        continControl(backwardContinFast,"Y", 1,fast)
+        continControl(backContinMiddle,"Y", 1,middle)
+        continControl(backContinSlow,"Y", 1,slow)
 
 
         calibration.addToolbarButton("Calibrate as postion 1 (x,y,z), top left") {
