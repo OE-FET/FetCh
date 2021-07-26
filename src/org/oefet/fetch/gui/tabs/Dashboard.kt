@@ -1,7 +1,6 @@
 package org.oefet.fetch.gui.tabs
 
 import jisa.control.Connection
-import jisa.devices.interfaces.Instrument
 import jisa.devices.level.ILM200
 import jisa.enums.Icon
 import jisa.experiment.ResultList
@@ -9,13 +8,14 @@ import jisa.experiment.ResultTable
 import jisa.gui.*
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.gui.tabs.Dashboard.addToolbarButton
 import org.oefet.fetch.measurement.Log
-import kotlin.collections.ArrayList
 
 object Dashboard : Grid("Dashboard", 3) {
 
-    private val plots = ArrayList<Plot>()
-    private val shown = ArrayList<Boolean>()
+    private val plots  = ArrayList<Plot>()
+    private val shown  = ArrayList<Boolean>()
+    private val logged = ArrayList<Boolean>()
 
     init {
 
@@ -41,6 +41,10 @@ object Dashboard : Grid("Dashboard", 3) {
 
         addToolbarButton("Configure Visible Plots") {
             editVisible()
+        }
+
+        addToolbarButton("Configure Logged Values") {
+            editLogged()
         }
 
         addToolbarButton("Interval") {
@@ -72,11 +76,22 @@ object Dashboard : Grid("Dashboard", 3) {
 
     }
 
+    fun isLogged(index: Int): Boolean {
+
+        return try {
+            logged[index]
+        } catch (e: IndexOutOfBoundsException) {
+            true
+        }
+
+    }
+
     fun watchLog(log: ResultTable) {
 
         clear()
         plots.clear()
         shown.clear()
+        logged.clear()
 
         for (i in 1 until log.numCols) {
 
@@ -110,8 +125,8 @@ object Dashboard : Grid("Dashboard", 3) {
             if (log.getName(i).contains("ILM200")) {
 
                 plot.addToolbarMenuButton("Sample Rate").apply {
-                    addItem("Fast") { (Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, true) }
-                    addItem("Slow")  {(Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, false) }
+                    addItem("Fast") { (Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, true)  }
+                    addItem("Slow") { (Connection.getConnectionsOf(ILM200::class.java).first()?.instrument as ILM200).setFastRate(0, false) }
                 }
 
             }
@@ -119,11 +134,13 @@ object Dashboard : Grid("Dashboard", 3) {
             plot.isSliderVisible = true
 
             val show = !Settings.dashboard.hasValue(plot.title) || Settings.dashboard.booleanValue(plot.title).get()
+            val log  = !Settings.logged.hasValue(plot.title)    || Settings.logged.booleanValue(plot.title).get()
 
             plots.add(plot)
             shown.add(show)
+            logged.add(log)
 
-            if (show) add(plot)
+            if (show && log) add(plot)
 
         }
 
@@ -165,13 +182,61 @@ object Dashboard : Grid("Dashboard", 3) {
 
                 Settings.dashboard.booleanValue(plots[i].title).set(field.value)
 
-                if (field.value) {
+                if (field.value && logged[i]) {
                     add(plots[i])
                 }
 
             }
 
             Settings.dashboard.save()
+
+        }
+
+    }
+
+    fun editLogged() {
+
+        val input = Fields("Logged Values")
+        val grid  = Grid("Logged Values", input)
+        val ticks = ArrayList<Field<Boolean>>()
+
+        for ((i, plot) in plots.withIndex()) {
+            ticks.add(input.addCheckBox(plot.title, logged[i]))
+        }
+
+        grid.windowHeight = 500.0
+        grid.windowWidth  = 350.0
+
+        grid.addToolbarButton("Select All") {
+            ticks.forEach { it.value = true }
+        }
+
+        grid.addToolbarButton("Deselect All") {
+            ticks.forEach { it.value = false }
+        }
+
+        grid.addToolbarButton("Toggle All") {
+            ticks.forEach { it.value = !it.value }
+        }
+
+        if (grid.showAsConfirmation()) {
+
+            clear()
+            Settings.logged.clear()
+
+            for ((i, field) in ticks.withIndex()) {
+
+                logged[i] = field.value
+
+                Settings.logged.booleanValue(plots[i].title).set(field.value)
+
+                if (field.value && shown[i]) {
+                    add(plots[i])
+                }
+
+            }
+
+            Settings.logged.save()
 
         }
 

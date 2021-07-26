@@ -7,15 +7,18 @@ import jisa.devices.interfaces.*
 import jisa.experiment.Col
 import jisa.experiment.ResultStream
 import jisa.experiment.ResultTable
+import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Dashboard
 import java.util.*
-import kotlin.collections.ArrayList
 
 object Log {
 
     private val logTasks: MutableList<() -> Double> = ArrayList()
-    private val logger: RTask = RTask(2500) { it -> log(log!!, it) }
+    private val logger: RTask = RTask(
+        if (Settings.hasValue("loggerInterval")) Settings.intValue("loggerInterval").get().toLong() else 2500
+    ) { it -> log(log!!, it) }
     private var log: ResultTable? = null
+    private val map: Map<String, Boolean> = HashMap()
 
     fun start(path: String) {
 
@@ -38,8 +41,8 @@ object Log {
                     for (smu in inst.channels) {
                         columns.add(Col("$name ${smu.channelName} Voltage", "V"))
                         columns.add(Col("$name ${smu.channelName} Current", "A"))
-                        logTasks.add { smu.getVoltage(2e-3) }
-                        logTasks.add { smu.getCurrent(2e-3) }
+                        logTasks.add { smu.voltage }
+                        logTasks.add { smu.current }
                     }
 
                 }
@@ -48,8 +51,8 @@ object Log {
 
                     columns.add(Col("$name Voltage", "V"))
                     columns.add(Col("$name Current", "A"))
-                    logTasks.add { inst.getVoltage(2e-3) }
-                    logTasks.add { inst.getCurrent(2e-3) }
+                    logTasks.add { inst.voltage }
+                    logTasks.add { inst.current }
 
                 }
 
@@ -65,7 +68,7 @@ object Log {
                 is VMeter       -> {
 
                     columns.add(Col("$name Voltage", "V"))
-                    logTasks.add { inst.getVoltage(2e-3) }
+                    logTasks.add { inst.voltage }
 
                 }
 
@@ -101,6 +104,15 @@ object Log {
                     columns.add(Col("$name Heater Power", "%"))
                     logTasks.add { inst.temperature }
                     logTasks.add { inst.heaterPower }
+
+                }
+
+                is MSTMeter     -> {
+
+                    for (tMeter in inst.sensors) {
+                        columns.add(Col("$name ${tMeter.sensorName} Temperature", "K"))
+                        logTasks.add { tMeter.temperature }
+                    }
 
                 }
 
@@ -172,13 +184,12 @@ object Log {
 
 
     var interval: Int
-
         get() {
             return logger.interval.toInt()
         }
-
         set(value) {
             logger.interval = value.toLong()
+            Settings.intValue("loggerInterval").set(value)
         }
 
     val isRunning: Boolean
@@ -192,11 +203,21 @@ object Log {
         data[0]  = task.secFromStart
 
         for ((i, logTask) in logTasks.withIndex()) {
-            data[i + 1] = try {
-                logTask()
-            } catch (e: Exception) {
-                Double.NaN
+
+            if (Dashboard.isLogged(i)) {
+
+                data[i + 1] = try {
+                    logTask()
+                } catch (e: Exception) {
+                    Double.NaN
+                }
+
+            } else {
+
+                data[i + 1] = Double.NaN
+
             }
+
         }
 
         log.addData(*data)

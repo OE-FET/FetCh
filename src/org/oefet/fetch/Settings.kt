@@ -22,8 +22,9 @@ object Settings : ConfigFile("FetCh") {
     val tempSingleConfig  = subBlock("tempSingleConfig")
     val fieldSingleBasic  = subBlock("fieldSingleBasic")
     val fieldSingleConfig = subBlock("fieldSingleConfig")
-    val fieldSweepBasic  = subBlock("fieldSweepBasic")
-    val fieldSweepConfig = subBlock("fieldSweepConfig")
+    val fieldSweepBasic   = subBlock("fieldSweepBasic")
+    val fieldSweepConfig  = subBlock("fieldSweepConfig")
     val dashboard         = subBlock("dashboard")
+    val logged            = subBlock("logged")
 
 }
