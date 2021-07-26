@@ -1,7 +1,8 @@
 package org.oefet.fetch.measurement
 
-import jisa.control.RTask
+import jisa.Util
 import jisa.control.Repeat
+import jisa.control.Returnable
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TC
 import jisa.devices.interfaces.TMeter
@@ -13,8 +14,6 @@ import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVHighThroughputResult
-import org.oefet.fetch.sweep.PositionSweep
-import java.util.ArrayList
 
 class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput") {
 
@@ -123,13 +122,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             coldPeltier.useAutoHeater()
             hotPeltier.useAutoHeater()
 
-
-            coldPeltier.waitForStableTemperature(temperatures.cold,pctMargin,duration)
-            hotPeltier.waitForStableTemperature(temperatures.hot,pctMargin,duration)
-
-            tMeter1.waitForStableTemperature(pctMargin,duration)
-            tMeter2.waitForStableTemperature(pctMargin,duration)
-
+            WaitForStableTemperatureMultiple(coldPeltier::getTemperature,hotPeltier::getTemperature,temperatures.cold,temperatures.hot,pctMargin,duration)
+            WaitForStableTemperatureMultiple(tMeter1::getTemperature,tMeter2::getTemperature,tMeter1.temperature,tMeter2.temperature ,pctMargin,duration)
 
             val vMeter1Values = Repeat.prepare(repeats, repTime) { vMeter1.voltage }
             val vMeter2Values = Repeat.prepare(repeats, repTime) { vMeter2?.voltage ?: Double.NaN}
@@ -166,5 +160,37 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
 
     }
 
+
+    fun WaitForStableTemperatureMultiple(valueToCheckTMeter1 : Returnable<Double> ,valueToCheckTMeter2 : Returnable<Double>,target1 : Double, target2 : Double,  pctMargin : Double, duration : Long){
+        var time: Long = 0
+        var min1: Double = target1 * (1 - pctMargin / 100.0)
+        var max1: Double = target1 * (1 + pctMargin / 100.0)
+        var min2: Double = target2 * (1 - pctMargin / 100.0)
+        var max2: Double = target2 * (1 + pctMargin / 100.0)
+
+        while (time < duration)
+        {
+            if (Thread.currentThread().isInterrupted) {
+                throw InterruptedException("Interrupted")
+            }
+            val valueTMeter1: Double = valueToCheckTMeter1.get()
+            val valueTMeter2: Double = valueToCheckTMeter2.get()
+
+
+
+            if (Util.isBetween(valueTMeter1, min1, max1) && Util.isBetween(valueTMeter2, min2, max2) ) {
+                time += 1000
+            } else {
+                time = 0
+            }
+            Thread.sleep(1000)
+        }
+
+    }
+
     class Temperature(val cold: Double, val hot: Double)
+
+
+
+
 }
