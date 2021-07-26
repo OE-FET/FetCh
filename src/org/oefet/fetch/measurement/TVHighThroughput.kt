@@ -12,6 +12,7 @@ import jisa.maths.Range
 import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
+import org.oefet.fetch.gui.elements.TVHTPlot
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVHighThroughputResult
 
@@ -50,7 +51,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         val TEMPERATURE1 = DoubleColumn("Temperature 1", "K")
         val TEMPERATURE2 = DoubleColumn("Temperature 2", "K")
         val TEMPERATURE_DIFFERENCE = DoubleColumn("Temperature Difference", "K")
-        val TEMPERATURE_DIFFERENCE_DISTR = DoubleColumn("Temperature Difference", "K")
+        //val TEMPERATURE_DIFFERENCE_DISTR = DoubleColumn("Temperature Difference", "K")
 
     }
 
@@ -133,16 +134,16 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             val tMeter1Values = Repeat.prepare(repeats, repTime) { tMeter1.temperature }
             val tMeter2Values = Repeat.prepare(repeats, repTime) { tMeter2.temperature }
 
+
             Repeat.runTogether(vMeter1Values,vMeter2Values,tMeter1Values,tMeter2Values)
+
 
             results.addData(
                 determineVoltage(vMeter1Values.mean,vMeter2Values.mean,ground?.voltage  ?: Double.NaN),
                 determineVoltageStdDeviation(vMeter1Values.standardDeviation,vMeter2Values.standardDeviation,ground?.voltage  ?: Double.NaN),
                 tMeter1Values.mean,
                 tMeter2Values.mean,
-                tMeter1Values.mean - tMeter2Values.mean,
-                //tMeter1Values - tMeter2Values
-
+                tMeter1Values.mean - tMeter2Values.mean
             )
 
         }
@@ -162,6 +163,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         runRegardless { coldPeltier.setHeaterPower(0.0) }
 
     }
+
 
 
     fun WaitForStableTemperatureMultiple(valueToCheckTMeter1 : Returnable<Double> ,valueToCheckTMeter2 : Returnable<Double>,target1 : Double, target2 : Double,  pctMargin : Double, duration : Long){
@@ -189,6 +191,10 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             Thread.sleep(1000)
         }
 
+    }
+
+    override fun createPlot(data: ResultTable): TVHTPlot {
+        return TVHTPlot(data)
     }
 
     class Temperature(val cold: Double, val hot: Double)

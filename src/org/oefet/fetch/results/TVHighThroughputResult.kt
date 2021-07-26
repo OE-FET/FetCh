@@ -32,7 +32,7 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
     )
 
     init {
-        val fit   = Fitting.linearFit(data.toMatrix(VOLTAGE), data.toMatrix(TEMPERATURE_DIFFERENCE))
+        val fit   = Fitting.linearFit(data.toMatrix(TEMPERATURE_DIFFERENCE), data.toMatrix(VOLTAGE))
         val value = abs(fit.gradient)
         val error = abs(fit.gradientError)
         addQuantity(SeebeckCoefficient(value, error, parameters, possibleParameters))
