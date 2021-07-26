@@ -25,8 +25,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val duration by input("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0 ) map { (it * 1e3).toLong() }
 
 
-    private val coldTemps by input("Temperature", "Temperature [K]", Range.linear(295.15, 274, 3))
-    private val hotTemps by input("Temperature", "Temperature [K]", Range.linear(295.15, 312, 3))
+    private val coldTemps by input("Temperature", "Cold Side Temperature [K]", Range.linear(295.15, 274, 3))
+    private val hotTemps by input("Temperature", "Hot Side Temperature [K]", Range.linear(295.15, 312, 3))
 
     // Instruments
     private val vMeter1   by requiredConfig("Thermal Voltage Meter 1", VMeter::class)
@@ -40,16 +40,15 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val coldPeltier  by requiredConfig("Cold Peltier", TC::class)
 
 
-    val list = ArrayList<Temperature>()
+
 
     companion object {
         val VOLTAGE      = DoubleColumn("Voltage", "V")
         val VOLTAGESTDDEVIATION = DoubleColumn("Voltage Std. Deviation", "V")
         val TEMPERATURE1 = DoubleColumn("Temperature 1", "K")
-        val TEMPARTURE1STDDEVIATION = DoubleColumn("Temperature 1 Std. Dev.", "K")
         val TEMPERATURE2 = DoubleColumn("Temperature 2", "K")
-        val TEMPARTURE2STDDEVIATION = DoubleColumn("Temperature 2 Std. Dev.", "K")
         val TEMPERATURE_DIFFERENCE = DoubleColumn("Temperature Difference", "K")
+        val TEMPERATURE_DIFFERENCE_DISTR = DoubleColumn("Temperature Difference", "K")
 
     }
 
@@ -64,10 +63,9 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             VOLTAGE,
             VOLTAGESTDDEVIATION,
             TEMPERATURE1,
-            TEMPARTURE1STDDEVIATION,
             TEMPERATURE2,
-            TEMPARTURE2STDDEVIATION,
-            TEMPERATURE_DIFFERENCE
+            TEMPERATURE_DIFFERENCE,
+            TEMPERATURE_DIFFERENCE_DISTR
         )
 
     }
@@ -77,6 +75,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             throw Exception ("Temperature Arrays have different size")
         }
 
+        val list = ArrayList<Temperature>()
         for (i in 0 until coldTemps.size()) {
                 list += Temperature(coldTemps[i],hotTemps[i])
         }
@@ -123,6 +122,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             hotPeltier.temperature = temperatures.hot
             coldPeltier.useAutoHeater()
             hotPeltier.useAutoHeater()
+
+
             coldPeltier.waitForStableTemperature(temperatures.cold,pctMargin,duration)
             hotPeltier.waitForStableTemperature(temperatures.hot,pctMargin,duration)
 
@@ -130,22 +131,21 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             tMeter2.waitForStableTemperature(pctMargin,duration)
 
 
-
             val vMeter1Values = Repeat.prepare(repeats, repTime) { vMeter1.voltage }
             val vMeter2Values = Repeat.prepare(repeats, repTime) { vMeter2?.voltage ?: Double.NaN}
             val tMeter1Values = Repeat.prepare(repeats, repTime) { tMeter1.temperature }
-            val tMeter2Values = Repeat.prepare(repeats, repTime) { tMeter1.temperature }
+            val tMeter2Values = Repeat.prepare(repeats, repTime) { tMeter2.temperature }
 
-            Repeat.runTogether(vMeter1Values,vMeter2Values)
+            Repeat.runTogether(vMeter1Values,vMeter2Values,tMeter1Values,tMeter2Values)
 
             results.addData(
                 determineVoltage(vMeter1Values.mean,vMeter2Values.mean,ground?.voltage  ?: Double.NaN),
                 determineVoltageStdDeviation(vMeter1Values.standardDeviation,vMeter2Values.standardDeviation,ground?.voltage  ?: Double.NaN),
                 tMeter1Values.mean,
-                tMeter1Values.standardDeviation,
                 tMeter2Values.mean,
-                tMeter2Values.standardDeviation,
-                tMeter1Values.mean - tMeter2Values.mean
+                tMeter1Values.mean - tMeter2Values.mean,
+                tMeter1Values - tMeter2Values
+
             )
 
         }
