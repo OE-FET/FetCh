@@ -2,7 +2,6 @@ package org.oefet.fetch.gui.elements
 
 import jisa.gui.Series.Dash.DOTTED
 import jisa.results.ResultTable
-import org.oefet.fetch.measurement.Conductivity
 import org.oefet.fetch.measurement.TVHighThroughput
 
 class TVHTPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Temperature Difference [K]", "Voltage [V]") {
@@ -22,6 +21,7 @@ class TVHTPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Temperature Di
             .setName("FPP Difference")
             .polyFit(1)
             .watch(data, TEMPERATURE_DIFFERENCE, VOLTAGE, VOLTAGESTDDEVIATION)
+
 
 
     }

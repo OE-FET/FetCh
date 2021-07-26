@@ -1,7 +1,5 @@
 package org.oefet.fetch.sweep
 
-
-import javafx.scene.control.CheckBox
 import jisa.devices.interfaces.Camera
 import jisa.devices.interfaces.ProbeStation
 import jisa.experiment.queue.Action
@@ -17,6 +15,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     val fineLift    by input("Sample Setup", "Fine Lift [m]", 0.02)
     val useCalibration    by input("Sample Setup", "Use values from 3-point calibration", true)
     //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
+
 
 
     var position1X    by input("Start Position (top left)", "x start Position [m]", 0.0)
@@ -35,17 +34,20 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     val camera   by optionalConfig("Camera", Camera::class)
 
 
+    var checkGrid = CheckGrid("Select active devices",countX,countY)
 
 
     override fun getExtraTabs(): List<Element> {
         val feed = CameraFeed("Camera", camera)
+        checkGrid = CheckGrid("Select active devices",countX,countY)
         feed.start()
-        return listOf(feed)
+        return listOf(feed,checkGrid)
     }
 
 
 
     override fun getValues(): List<Position> {
+
         if(useCalibration){
             position1X = PositionCalibration.position1X
             position1Y = PositionCalibration.position1Y
@@ -67,14 +69,15 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
         for (j in 0 until countY) {
             for (i in 0 until countX) {
-
-                list += Position(
-                    position1X + i * directionHorizontalX / (countX-1) + j * directionVerticalX / (countY-1),
-                    position1Y + i * directionHorizontalY / (countX-1) + j * directionVerticalY / (countY-1),
-                    measureHeightZ - fineLift,
-                    j * countX + i
-                )
-
+            if(checkGrid.isChecked(i,j)) {
+                    list += Position(
+                        position1X + i * directionHorizontalX / (countX - 1) + j * directionVerticalX / (countY - 1),
+                        position1Y + i * directionHorizontalY / (countX - 1) + j * directionVerticalY / (countY - 1),
+                        measureHeightZ - fineLift,
+                        j * countX + i
+                    )
+                    println(j * countX + i)
+                }
             }
 
         }

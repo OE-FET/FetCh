@@ -1,6 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
+import jisa.Util.runInParallel
 import jisa.control.Repeat
 import jisa.control.Returnable
 import jisa.devices.interfaces.SMU
@@ -22,12 +23,12 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val repeats  by input("Basic", "Repeats", 50)
 
     private val pctMarginPeltiers by input("Temperature Stabilization: Peltiers", "Percentage range for temperature to stay within",0.3 )
-    private val durationPeltiers by input("Temperature Stabilization: Peltiers", "Duration of temperature stabilization [s]",60.0 ) map { it.toLong() }
-    private val maxTimePeltiers by input("Temperature Stabilization: Peltiers", "Maximum Duration of temperature stabilization [s]",180.0 ) map { it.toLong() }
+    private val durationPeltiers by input("Temperature Stabilization: Peltiers", "Duration of temperature stabilization [s]",60.0 ) map { (it * 1e3).toLong() }
+    private val maxTimePeltiers by input("Temperature Stabilization: Peltiers", "Maximum Duration of temperature stabilization [s]",180.0 ) map { (it * 1e3).toLong() }
 
     private val pctMarginOnChip by input("Temperature Stabilization: On chip", "Percentage range for temperature to stay within",1.0 )
-    private val durationOnChip by input("Temperature Stabilization: On chip", "Duration of temperature stabilization [s]",10 ) map { it.toLong() }
-    private val maxTimeOnChip by input("Temperature Stabilization: On chip", "Maximum Duration of temperature stabilization [s]",180.0 ) map { it.toLong() }
+    private val durationOnChip by input("Temperature Stabilization: On chip", "Duration of temperature stabilization [s]",10 ) map { (it * 1e3).toLong() }
+    private val maxTimeOnChip by input("Temperature Stabilization: On chip", "Maximum Duration of temperature stabilization [s]",180.0 ) map { (it * 1e3).toLong() }
 
 
     private val coldTemps by input("Temperature", "Cold Side Temperature [K]", Range.linear(295.15, 274, 3))
@@ -53,7 +54,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         val TEMPERATURE1 = DoubleColumn("Temperature 1", "K")
         val TEMPERATURE2 = DoubleColumn("Temperature 2", "K")
         val TEMPERATURE_DIFFERENCE = DoubleColumn("Temperature Difference", "K")
-        val TEMPERATURE_DIFFERENCE_DISTR = DoubleColumn("Temperature Difference", "K")
+        val TEMPERATURE_DIFFERENCE_DISTR = DoubleColumn("Temperature Difference Std. Deviation", "K")
 
     }
 
@@ -88,6 +89,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         // Record measurement parameters into result file
         results.setAttribute("Cold Temperatures", "$coldTemps K")
         results.setAttribute("Hot Temperatures", "$hotTemps K")
+
 
         // Start with everything turned-off
 
@@ -128,8 +130,19 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             coldPeltier.useAutoHeater()
             hotPeltier.useAutoHeater()
 
-            WaitForStableTemperatureMultiple(coldPeltier::getTemperature,hotPeltier::getTemperature,temperatures.cold,temperatures.hot,pctMarginPeltiers,durationPeltiers,maxTimePeltiers)
-            WaitForStableTemperatureMultiple(tMeter1::getTemperature,tMeter2::getTemperature,tMeter1.temperature,tMeter2.temperature ,pctMarginOnChip,durationOnChip,maxTimeOnChip)
+            //WaitForStableTemperatureMultiple(coldPeltier::getTemperature,hotPeltier::getTemperature,temperatures.cold,temperatures.hot,pctMarginPeltiers,durationPeltiers,maxTimePeltiers)
+            //WaitForStableTemperatureMultiple(tMeter1::getTemperature,tMeter2::getTemperature,tMeter1.temperature,tMeter2.temperature ,pctMarginOnChip,durationOnChip,maxTimeOnChip)
+
+            /*
+            runInParallel(
+                () -> (
+                coldPeltier.waitForStableTemperature(temperatures.cold,pctMarginPeltiers,durationPeltiers),
+                hotPeltier.waitForStableTemperature(temperatures.hot,pctMarginPeltiers,durationPeltiers),
+                tMeter1.waitForStableTemperature(pctMarginOnChip,durationOnChip),
+                tMeter1.waitForStableTemperature(pctMarginOnChip,durationOnChip),
+            )
+
+             */
 
             val vMeter1Values = Repeat.prepare(repeats, repTime) { vMeter1.voltage }
             val vMeter2Values = Repeat.prepare(repeats, repTime) { vMeter2?.voltage ?: Double.NaN}
@@ -168,7 +181,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     }
 
 
-
+/*
     fun WaitForStableTemperatureMultiple(valueToCheckTMeter1 : Returnable<Double> ,valueToCheckTMeter2 : Returnable<Double>,target1 : Double, target2 : Double,  pctMargin : Double, duration : Long, maxTime: Long){
         var time: Long = 0
         var absolutTime: Long = 0
@@ -198,6 +211,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         }
 
     }
+*/
 
     override fun createPlot(data: ResultTable): TVHTPlot {
         return TVHTPlot(data)

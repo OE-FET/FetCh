@@ -36,6 +36,8 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
         val value = abs(fit.gradient)
         val error = abs(fit.gradientError)
         addQuantity(SeebeckCoefficient(value, error, parameters, possibleParameters))
+
+
     }
 
     override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
