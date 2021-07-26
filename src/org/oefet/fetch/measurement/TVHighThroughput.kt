@@ -133,16 +133,16 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             //WaitForStableTemperatureMultiple(coldPeltier::getTemperature,hotPeltier::getTemperature,temperatures.cold,temperatures.hot,pctMarginPeltiers,durationPeltiers,maxTimePeltiers)
             //WaitForStableTemperatureMultiple(tMeter1::getTemperature,tMeter2::getTemperature,tMeter1.temperature,tMeter2.temperature ,pctMarginOnChip,durationOnChip,maxTimeOnChip)
 
-            /*
-            runInParallel(
-                () -> (
-                coldPeltier.waitForStableTemperature(temperatures.cold,pctMarginPeltiers,durationPeltiers),
-                hotPeltier.waitForStableTemperature(temperatures.hot,pctMarginPeltiers,durationPeltiers),
-                tMeter1.waitForStableTemperature(pctMarginOnChip,durationOnChip),
-                tMeter1.waitForStableTemperature(pctMarginOnChip,durationOnChip),
-            )
 
-             */
+            runInParallel(
+                { ->
+                coldPeltier.waitForStableTemperature(temperatures.cold, pctMarginPeltiers, durationPeltiers)
+                hotPeltier.waitForStableTemperature(temperatures.hot, pctMarginPeltiers, durationPeltiers)
+                tMeter1.waitForStableTemperature(pctMarginOnChip, durationOnChip)
+                tMeter1.waitForStableTemperature(pctMarginOnChip, durationOnChip)
+            })
+
+
 
             val vMeter1Values = Repeat.prepare(repeats, repTime) { vMeter1.voltage }
             val vMeter2Values = Repeat.prepare(repeats, repTime) { vMeter2?.voltage ?: Double.NaN}
