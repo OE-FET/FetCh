@@ -2,8 +2,6 @@ package org.oefet.fetch.results
 
 import jisa.maths.fits.Fitting
 import jisa.results.ResultTable
-import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVHighThroughput
 import org.oefet.fetch.quantities.*
@@ -36,8 +34,6 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
         val value = abs(fit.gradient)
         val error = abs(fit.gradientError)
         addQuantity(SeebeckCoefficient(value, error, parameters, possibleParameters))
-
-
     }
 
     override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {

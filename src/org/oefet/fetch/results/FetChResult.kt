@@ -26,6 +26,8 @@ abstract class FetChResult(name: String, val tag: String, val image: Image, val 
     var repeat       = data.getAttribute("N")?.toDouble() ?: 0.0
     var stress       = data.getAttribute("S")?.removeSuffix("s")?.toDouble() ?: 0.0
     var field        = data.getAttribute("B")?.removeSuffix("T")?.toDouble() ?: 0.0
+    var positionX    = data.getAttribute("P")?.trim('(', ')')?.split(",")?.get(0)?.toDouble() ?: 0.0
+    var positionY    = data.getAttribute("P")?.trim('(', ')')?.split(",")?.get(1)?.toDouble() ?: 0.0
 
     init {
 
@@ -43,6 +45,8 @@ abstract class FetChResult(name: String, val tag: String, val image: Image, val 
         parameters += Repeat(repeat)
         parameters += Time(stress, 0.0)
         parameters += BField(field, 0.0)
+        parameters += XPosition(positionX, 0.0)
+        parameters += YPosition(positionY, 0.0)
 
         if (temperature.isFinite()) {
             parameters += Temperature(temperature, 0.0)

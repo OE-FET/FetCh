@@ -42,6 +42,10 @@ abstract class FetChEntity : Measurement() {
         return emptyList()
     }
 
+    open fun getCustomParams(): List<Element> {
+        return emptyList()
+    }
+
     override fun start() {
 
         errors.clear()

@@ -108,6 +108,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         }
 
         input.addAll(measurement.getExtraTabs())
+        (input.elements.first() as Grid).addAll(measurement.getCustomParams())
 
         if (input.showInput()) {
 
@@ -139,6 +140,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         }
 
         input.addAll(measurement.getExtraTabs())
+        (input.elements.first() as Grid).addAll(measurement.getCustomParams())
 
         if (input.showInput()) {
 
@@ -163,6 +165,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         }
 
         input.addAll(measurement.getExtraTabs())
+        (input.elements.first() as Grid).addAll(measurement.getCustomParams())
 
         val sweepQueue = FetChQueue("Interval Actions", measurement.queue)
 
