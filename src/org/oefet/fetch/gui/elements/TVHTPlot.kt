@@ -9,7 +9,9 @@ class TVHTPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Temperature Di
 
     val VOLTAGE  = data.findColumn(TVHighThroughput.VOLTAGE)
     val TEMPERATURE_DIFFERENCE = data.findColumn(TVHighThroughput.TEMPERATURE_DIFFERENCE)
-    
+    val VOLTAGESTDDEVIATION = data.findColumn(TVHighThroughput.VOLTAGESTDDEVIATION)
+
+
     init {
 
         isMouseEnabled = true
@@ -19,7 +21,7 @@ class TVHTPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Temperature Di
         createSeries()
             .setName("FPP Difference")
             .polyFit(1)
-            .watch(data, TEMPERATURE_DIFFERENCE, VOLTAGE)
+            .watch(data, TEMPERATURE_DIFFERENCE, VOLTAGE, VOLTAGESTDDEVIATION)
 
 
     }
