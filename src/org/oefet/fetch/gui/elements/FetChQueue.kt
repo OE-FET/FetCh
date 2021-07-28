@@ -25,15 +25,15 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
         addSeparator("Measurements")
 
-        for (type in Measurements.types) addItem(type.name) { askMeasurement(type.createMeasurement()) }
+        for (type in Measurements.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addItem(type.name) { askMeasurement(type.createMeasurement()) }
 
         addSeparator("Actions")
 
-        for (type in Actions.types) addItem(type.name) { askAction(type.create()) }
+        for (type in Actions.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addItem(type.name) { askAction(type.create()) }
 
         addSeparator("Sweeps")
 
-        for (type in Sweeps.types) addItem(type.name) { askSweep(type.create()) }
+        for (type in Sweeps.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addItem(type.name) { askSweep(type.create()) }
 
     }
 

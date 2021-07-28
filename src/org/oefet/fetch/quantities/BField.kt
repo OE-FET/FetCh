@@ -9,9 +9,9 @@ open class BField (
     override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
 ) : DoubleQuantity {
 
-    override val name   = "Magnetic Field"
-    override val symbol = "B"
-    override val unit   = "T"
+    override val name       = "Magnetic Field"
+    override val symbol     = "B"
+    override val unit       = "T"
     override val important  = true
 
 }

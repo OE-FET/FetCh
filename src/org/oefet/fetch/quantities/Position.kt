@@ -9,9 +9,9 @@ class XPosition(
     override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
 ) : DoubleQuantity {
 
-    override val name = "X Position"
-    override val symbol = "x"
-    override val unit = ""
+    override val name      = "X Position"
+    override val symbol    = "x"
+    override val unit      = ""
     override val important = true
 
 }
@@ -23,9 +23,9 @@ class YPosition(
     override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
 ) : DoubleQuantity {
 
-    override val name = "Y Position"
-    override val symbol = "y"
-    override val unit = ""
+    override val name      = "Y Position"
+    override val symbol    = "y"
+    override val unit      = ""
     override val important = true
 
 }

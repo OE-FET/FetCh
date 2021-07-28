@@ -107,12 +107,12 @@ class SimpleQuantity(override val value: Double, override val error: Double) : D
 
     constructor(quantity: Quantity<Double>) : this(quantity.value, quantity.error)
 
-    override val name = "Simple Quantity"
-    override val symbol = "x"
-    override val unit = "-"
-    override val parameters: List<Quantity<*>> = emptyList()
+    override val name                                              = "Simple Quantity"
+    override val symbol                                            = "x"
+    override val unit                                              = "-"
+    override val parameters: List<Quantity<*>>                     = emptyList()
     override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
-    override val important: Boolean = false
+    override val important                                         = false
 
 }
 
