@@ -1,15 +1,13 @@
 package org.oefet.fetch.results
 
 import jisa.enums.Icon
-import jisa.experiment.ResultTable
 import jisa.maths.fits.Fitting
-import org.oefet.fetch.gui.elements.FPPPlot
+import jisa.results.ResultTable
 import org.oefet.fetch.measurement.Conductivity
 import org.oefet.fetch.quantities.*
 import kotlin.math.abs
 
-class CondResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("Conductivity Measurement", "FPP Conductivity", Icon.ELECTRICITY.blackImage, data, extraParams) {
+class CondResult(data: ResultTable) : FetChResult("Conductivity Measurement", "FPP Conductivity", Icon.ELECTRICITY.blackImage, data) {
 
     val SD_VOLTAGE     = data.findColumn(Conductivity.SD_VOLTAGE)
     val SD_CURRENT     = data.findColumn(Conductivity.SD_CURRENT)
@@ -36,7 +34,7 @@ class CondResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
     init {
 
-        val fit   = Fitting.linearFit(data.getColumns(FPP_VOLTAGE), data.getColumns(SD_CURRENT))
+        val fit   = Fitting.linearFit(data.toMatrix(FPP_VOLTAGE), data.toMatrix(SD_CURRENT))
         val value = abs(fit.gradient * separation / (width * thickness) / 100.0)
         val error = abs(fit.gradientError * separation / (width * thickness) / 100.0)
 
@@ -44,7 +42,7 @@ class CondResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
         return emptyList()
     }
 

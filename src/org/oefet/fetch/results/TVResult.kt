@@ -1,17 +1,17 @@
 package org.oefet.fetch.results
 
-import jisa.experiment.ResultList
-import jisa.experiment.ResultTable
 import jisa.maths.fits.Fitting
-import org.oefet.fetch.gui.elements.TVPlot
+import jisa.results.DoubleColumn
+import jisa.results.ResultList
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVMeasurement
 import org.oefet.fetch.quantities.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("Thermal Voltage Measurement", "Thermal Voltage", Images.getImage("fire.png"), data, extraParams) {
+class TVResult(data: ResultTable) :
+    FetChResult("Thermal Voltage Measurement", "Thermal Voltage", Images.getImage("fire.png"), data) {
 
     val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
     val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
@@ -35,7 +35,7 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
             val params = ArrayList(parameters)
             params    += Gate(gate, 0.0)
 
-            val fit = data.linearFit(HEATER_POWER, THERMAL_VOLTAGE)
+            val fit = Fitting.linearFit(data, HEATER_POWER, THERMAL_VOLTAGE)
 
             if (fit != null) addQuantity(SeebeckPower(fit.gradient, fit.gradientError, params, possibleParameters))
 
@@ -43,7 +43,7 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
 
         val calibrationLeft = otherQuantities.filter {
             it is LeftStripResistance
@@ -61,8 +61,11 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
             return emptyList()
         }
 
-        val left  = ResultList("Resistance", "Temperature")
-        val right = ResultList("Resistance", "Temperature")
+        val R = DoubleColumn("R")
+        val T = DoubleColumn("T")
+
+        val left  = ResultList(R, T)
+        val right = ResultList(R, T)
 
         for (resistance in calibrationLeft) {
 
@@ -78,25 +81,29 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
         }
 
-        val leftFit  = left.linearFit(0, 1)
-        val rightFit = right.linearFit(0, 1)
+        val leftFit  = Fitting.linearFit(left, R, T)
+        val rightFit = Fitting.linearFit(right, R, T)
 
-        val temperature = parameters.find { it is Temperature }?.value
+        val temperature = findParameter(Temperature::class)?.value
 
         val powerLeft = otherQuantities.filter {
             it is LeftStripResistance
             && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
-        }
+        }.map { it as LeftStripResistance }
 
         val powerRight = otherQuantities.filter {
             it is RightStripResistance
             && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
-        }
+        }.map { it as RightStripResistance }
 
-        val dataLeft  = ResultList("Power", "Temperature", "Error")
-        val dataRight = ResultList("Power", "Temperature", "Error")
+        val POWER = DoubleColumn("Power")
+        val TEMP  = DoubleColumn("Temperature")
+        val ERROR = DoubleColumn("Error")
+
+        val dataLeft  = ResultList(POWER, TEMP, ERROR)
+        val dataRight = ResultList(POWER, TEMP, ERROR)
 
         for (resistance in powerLeft) {
 
@@ -120,17 +127,17 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
         }
 
-        val leftPowerFit  = dataLeft.linearFit(0, 1).function
-        val rightPowerFit = dataRight.linearFit(0, 1).function
+        val leftPowerFit  = Fitting.linearFit(dataLeft, POWER, TEMP).function
+        val rightPowerFit = Fitting.linearFit(dataRight, POWER, TEMP).function
 
-        val extras = ArrayList<Quantity>()
+        val extras = ArrayList<Quantity<*>>()
 
         for ((gate, data) in data.split(SET_GATE)) {
 
             val params = ArrayList(parameters)
             params    += Gate(gate, 0.0)
-            val dT     = rightPowerFit.value(data.getColumns(HEATER_POWER)) - leftPowerFit.value(data.getColumns(HEATER_POWER))
-            val fit    = Fitting.linearFit(dT, data.getColumns(THERMAL_VOLTAGE))
+            val dT     = rightPowerFit.value(data.toMatrix(HEATER_POWER)) - leftPowerFit.value(data.toMatrix(HEATER_POWER))
+            val fit    = Fitting.linearFit(dT, data.toMatrix(THERMAL_VOLTAGE))
 
             if (fit != null) extras += SeebeckCoefficient(fit.gradient, fit.gradientError, params, possibleParameters)
 

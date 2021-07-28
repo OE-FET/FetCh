@@ -3,9 +3,11 @@ package org.oefet.fetch.action
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.SMU
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
+
+import jisa.results.ResultTable
+import jisa.results.DoubleColumn
 import jisa.gui.Colour
+import jisa.results.Column
 import org.oefet.fetch.gui.elements.FetChPlot
 
 class VoltageHold : FetChAction("Hold") {
@@ -22,11 +24,17 @@ class VoltageHold : FetChAction("Hold") {
     val sdSMU by optionalConfig("Source-Drain Channel", SMU::class) requiredIf { useSD }
     val sgSMU by optionalConfig("Source-Gate Channel", SMU::class)  requiredIf { useSG }
 
+    companion object {
+        val TIME       = DoubleColumn("Time","s")
+        val SD_VOLTAGE = DoubleColumn("Source-Drain Voltage", "V")
+        val SG_VOLTAGE = DoubleColumn("Source-Gate Voltage", "V")
+    }
+
     override fun createPlot(data: ResultTable): FetChPlot {
 
         return FetChPlot("Hold Voltages", "Time [s]", "Voltage [V]").apply {
-            createSeries().watch(data, 0, 1).setName("Source-Drain").setMarkerVisible(false).setColour(Colour.ORANGERED)
-            createSeries().watch(data, 0, 2).setName("Source-Gate").setMarkerVisible(false).setColour(Colour.CORNFLOWERBLUE)
+            createSeries().watch(data, TIME, SD_VOLTAGE).setName("Source-Drain").setMarkerVisible(false).setColour(Colour.ORANGERED)
+            createSeries().watch(data, TIME, SG_VOLTAGE).setName("Source-Gate").setMarkerVisible(false).setColour(Colour.CORNFLOWERBLUE)
             isLegendVisible = true
         }
 
@@ -72,14 +80,8 @@ class VoltageHold : FetChAction("Hold") {
         task?.stop()
     }
 
-    override fun getColumns(): Array<Col> {
-
-        return arrayOf(
-            Col("Time","s"),
-            Col("Source-Drain Voltage", "V"),
-            Col("Source-Gate Voltage", "V")
-        )
-
+    override fun getColumns(): Array<Column<*>> {
+        return arrayOf(TIME, SD_VOLTAGE, SG_VOLTAGE)
     }
 
     override fun getLabel(): String {

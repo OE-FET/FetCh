@@ -2,16 +2,14 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.queue.ActionQueue.Result.*
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.ActionQueue
+import jisa.experiment.queue.ActionQueue.Result.*
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
-import org.oefet.fetch.FetChEntity
-import org.oefet.fetch.Settings
-import org.oefet.fetch.gui.elements.*
-import org.oefet.fetch.gui.tabs.Measure.addToolbarButton
-import org.oefet.fetch.measurement.*
+import jisa.results.ResultTable
+import org.oefet.fetch.*
+import org.oefet.fetch.gui.elements.FetChQueue
+import org.oefet.fetch.measurement.Log
 
 object Measure : Grid("Measurement", 1) {
 
@@ -46,6 +44,10 @@ object Measure : Grid("Measurement", 1) {
     val toolbarStart = addToolbarButton("Start", ::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", ::stopMeasurement)
 
+    init { addToolbarSeparator() }
+
+    val hidden = addToolbarButton("Hidden Actions", ::editHidden)
+
     val baseFile: String get() = Util.joinPath(dir.get(), name.get())
     var table:    Table?       = null
     var plot:     Plot?        = null
@@ -75,6 +77,58 @@ object Measure : Grid("Measurement", 1) {
             bigQueue.close()
             bigQueue.isMaximised = true
             bigQueue.show()
+        }
+
+    }
+
+    fun editHidden() {
+
+        val measurements = Fields("Hidden Measurements")
+        val actions      = Fields("Hidden Actions")
+        val sweeps       = Fields("Hidden Sweeps")
+
+        for (type in Measurements.types) {
+            measurements.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
+        }
+
+        for (type in Actions.types) {
+            actions.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
+        }
+
+        for (type in Sweeps.types) {
+            sweeps.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
+        }
+
+        val grid = Grid("Configure Hidden Types", 3, measurements, actions, sweeps)
+
+        if (grid.showAsConfirmation()) {
+
+            for (field in measurements) {
+
+                if (field.value is Boolean) {
+                    Settings.hidden.booleanValue(field.text).set(field.value)
+                }
+
+            }
+
+            for (field in actions) {
+
+                if (field.value is Boolean) {
+                    Settings.hidden.booleanValue(field.text).set(field.value)
+                }
+
+            }
+
+            for (field in sweeps) {
+
+                if (field.value is Boolean) {
+                    Settings.hidden.booleanValue(field.text).set(field.value)
+                }
+
+            }
+
+
+
         }
 
     }

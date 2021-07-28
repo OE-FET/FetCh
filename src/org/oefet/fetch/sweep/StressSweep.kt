@@ -3,13 +3,16 @@ package org.oefet.fetch.sweep
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.SMU
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.ResultTable
 import org.oefet.fetch.action.FetChAction
+import org.oefet.fetch.action.VoltageHold.Companion.SD_VOLTAGE
+import org.oefet.fetch.action.VoltageHold.Companion.SG_VOLTAGE
+import org.oefet.fetch.action.VoltageHold.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 
@@ -63,9 +66,9 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         override fun createPlot(data: ResultTable): FetChPlot {
 
             return FetChPlot("Hold Voltages", "Time [s]", "Voltage [V]").apply {
-                createSeries().watch(data, 0, 1).setName("Source-Drain").setMarkerVisible(false)
+                createSeries().watch(data, TIME, SD_VOLTAGE).setName("Source-Drain").setMarkerVisible(false)
                     .setColour(Colour.ORANGERED)
-                createSeries().watch(data, 0, 2).setName("Source-Gate").setMarkerVisible(false)
+                createSeries().watch(data, TIME, SG_VOLTAGE).setName("Source-Gate").setMarkerVisible(false)
                     .setColour(Colour.CORNFLOWERBLUE)
                 isLegendVisible = true
             }
@@ -126,12 +129,12 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
             task?.stop()
         }
 
-        override fun getColumns(): Array<Col> {
+        override fun getColumns(): Array<Column<*>> {
 
             return arrayOf(
-                Col("Time", "s"),
-                Col("Source-Drain Voltage", "V"),
-                Col("Source-Gate Voltage", "V")
+                TIME,
+                SD_VOLTAGE,
+                SG_VOLTAGE
             )
 
         }

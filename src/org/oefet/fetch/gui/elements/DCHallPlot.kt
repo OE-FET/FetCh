@@ -1,8 +1,8 @@
 package org.oefet.fetch.gui.elements
 
 import jisa.experiment.Combination
-import jisa.experiment.Result
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
+import jisa.results.Row
 import org.oefet.fetch.measurement.DCHall
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -24,7 +24,7 @@ class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Vo
 
         val noField = (data.getUniqueValues(FIELD).size == 0 && data.getUniqueValues(SET_SD_CURRENT).size > 0) || data.getAttribute("Field Sweep") == "false"
 
-        val xValue: (Result) -> Double = if (noField) {
+        val xValue: (Row) -> Double = if (noField) {
             xLabel = "Source-Drain Current [A]"
             { it[SET_SD_CURRENT] }
         } else {
@@ -32,7 +32,7 @@ class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Vo
             { it[FIELD] }
         }
 
-        val yValue: (Result) -> Double = {
+        val yValue: (Row) -> Double = {
 
             if (it[HALL_1].isFinite() && it[HALL_2].isFinite()) {
                 it[HALL_2] - it[HALL_1]
@@ -44,7 +44,7 @@ class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Vo
 
         }
 
-        val eValue: (Result) -> Double = {
+        val eValue: (Row) -> Double = {
 
             if (it[HALL_1].isFinite() && it[HALL_2].isFinite()) {
                 sqrt(it[HALL_1_ERROR].pow(2) + it[HALL_2_ERROR].pow(2))
@@ -56,13 +56,13 @@ class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Vo
 
         }
 
-        val splitter: (Result) -> Combination = if(noField) {
+        val splitter: (Row) -> Combination = if(noField) {
             { Combination(it[SET_SG_VOLTAGE]) }
         } else {
             { Combination(it[SET_SD_CURRENT], it[SET_SG_VOLTAGE]) }
         }
 
-        val splitNamer: (Result) -> String = if (noField) {
+        val splitNamer: (Row) -> String = if (noField) {
 
             { "SG = %+.02e V".format(it[SET_SG_VOLTAGE]) }
 

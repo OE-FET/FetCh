@@ -1,14 +1,30 @@
 package org.oefet.fetch
 
 import jisa.Util
-import jisa.addresses.TCPIPSocketAddress
 import jisa.control.Connection
 import jisa.gui.GUI
 import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.Splash
 import org.oefet.fetch.gui.tabs.Connections
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.io.PrintStream
 
 fun main() {
+
+    val sysOut = System.out
+    val filOut = FileOutputStream(Util.joinPath(System.getProperty("user.home"), "FetChLog.txt"))
+
+    val stream = object: OutputStream() {
+
+        override fun write(b: Int) {
+            sysOut.write(b)
+            filOut.write(b)
+        }
+
+    }
+
+    System.setErr(PrintStream(stream))
 
     Splash.show()
     MainWindow.select(0)

@@ -3,11 +3,11 @@ package org.oefet.fetch.measurement
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FPPPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.CondResult
 import java.lang.Double.min
 
@@ -29,26 +29,26 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
     private val tMeter by optionalConfig("Thermometer", TMeter::class)
 
     companion object {
-        val SD_VOLTAGE     = Col("SD Voltage", "V")
-        val SD_CURRENT     = Col("SD Current", "A")
-        val SG_VOLTAGE     = Col("SG Voltage", "V")
-        val SG_CURRENT     = Col("SG Current", "A")
-        val FPP1_VOLTAGE   = Col("FPP 1 Voltage", "V")
-        val FPP2_VOLTAGE   = Col("FPP 2 Voltage", "V")
-        val FPP_VOLTAGE    = Col("FPP Voltage", "V")
-        val TEMPERATURE    = Col("Temperature", "K")
-        val GROUND_CURRENT = Col("Ground Current", "A")
+        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT     = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT     = DoubleColumn("SG Current", "A")
+        val FPP1_VOLTAGE   = DoubleColumn("FPP 1 Voltage", "V")
+        val FPP2_VOLTAGE   = DoubleColumn("FPP 2 Voltage", "V")
+        val FPP_VOLTAGE    = DoubleColumn("FPP Voltage", "V")
+        val TEMPERATURE    = DoubleColumn("Temperature", "K")
+        val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
     override fun createPlot(data: ResultTable): FPPPlot {
         return FPPPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): CondResult {
-        return CondResult(data, extra)
+    override fun processResults(data: ResultTable): CondResult {
+        return CondResult(data)
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SD_VOLTAGE,

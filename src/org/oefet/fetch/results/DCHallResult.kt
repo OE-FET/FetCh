@@ -1,21 +1,18 @@
 package org.oefet.fetch.results
 
-import jisa.experiment.ResultList
-import jisa.experiment.ResultTable
-import jisa.gui.Plot
 import jisa.maths.fits.Fitting
-import org.oefet.fetch.gui.elements.DCHallPlot
+import jisa.results.DoubleColumn
+import jisa.results.ResultList
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.DCHall
 import org.oefet.fetch.quantities.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.reflect.KClass
 
-class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("DC Hall Measurement", "DC Hall", Images.getImage("hall.png"), data, extraParams) {
+class DCHallResult(data: ResultTable) : FetChResult("DC Hall Measurement", "DC Hall", Images.getImage("hall.png"), data) {
 
     private val possibleParameters = listOf(
         Device::class,
@@ -45,38 +42,41 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
         // Split data-up into separate tables based on gate voltage
         for ((gate, data) in data.split(SET_SG_VOLTAGE)) {
 
-            val parameters = ArrayList<Quantity>(parameters)
+            val parameters = ArrayList<Quantity<*>>(parameters)
             parameters    += Gate(gate, 0.0)
 
             // Don't bother with this gate voltage if there's fewer than 2 data-points in it
-            if (data.numRows < 2) {
+            if (data.rowCount < 2) {
                 continue
             }
 
             // Check which channels were used (all values recorded from it must be finite (i.e. not Infinity or NaN)
-            val hvm1 = data.all { it[HALL_1].isFinite() }
-            val hvm2 = data.all { it[HALL_2].isFinite() }
-            val fpp1 = data.all { it[FPP_1].isFinite() }
-            val fpp2 = data.all { it[FPP_2].isFinite() }
+            val usedHVM1 = data.all { it[HALL_1].isFinite() }
+            val usedHVM2 = data.all { it[HALL_2].isFinite() }
+            val usedFPP1 = data.all { it[FPP_1].isFinite() }
+            val usedFPP2 = data.all { it[FPP_2].isFinite() }
 
             // If both current and field were swept, then we can perform a better analysis of the output
             if (data.getUniqueValues(FIELD).size > 1 && data.getUniqueValues(SET_SD_CURRENT).size > 1) {
 
-                val gradients = ResultList("Current", "Gradient", "Error")
+                val CURRENT   = DoubleColumn("Current")
+                val GRADIENT  = DoubleColumn("Gradient")
+                val ERROR     = DoubleColumn("Error")
+                val gradients = ResultList(CURRENT, GRADIENT, ERROR)
 
                 // Split the data up based on source-drain current value
                 for ((current, currData) in data.split(SET_SD_CURRENT)) {
 
                     // Determine the Hall voltages (was it channel 1, 2 or the difference between them?)
-                    val hallVoltage = if (hvm1 && hvm2) {
-                        currData.getColumns(HALL_2) - currData.getColumns(HALL_1)
-                    } else if (hvm1) {
-                        currData.getColumns(HALL_1)
+                    val hallVoltage = if (usedHVM1 && usedHVM2) {
+                        currData.toMatrix(HALL_2) - currData.toMatrix(HALL_1)
+                    } else if (usedHVM1) {
+                        currData.toMatrix(HALL_1)
                     } else {
-                        currData.getColumns(HALL_2)
+                        currData.toMatrix(HALL_2)
                     }
 
-                    val gradFit = Fitting.linearFit(currData.getColumns(FIELD), hallVoltage)
+                    val gradFit = Fitting.linearFit(currData.toMatrix(FIELD), hallVoltage)
 
                     if (gradFit != null) {
                         gradients.addData(current, gradFit.gradient, gradFit.gradientError)
@@ -85,7 +85,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                 }
 
                 // Fit the gradients of the V_H vs B fits to their corresponding value of I
-                val currFit = gradients.linearFit(0, 1)
+                val currFit = Fitting.linearFit(gradients, CURRENT, GRADIENT);
 
                 if (currFit != null) {
 
@@ -96,8 +96,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                     val density = hallQ.pow(-1) * (100.0).pow(-3)  / 1.6e-19
 
                     // Add both the Hall and carrier density quantities to the list of calculated quantities
-                    quantities += hallQ
-                    quantities += CarrierDensity(density.value, density.error, parameters, possibleParameters)
+                    addQuantities(hallQ, CarrierDensity(density.value, density.error, parameters, possibleParameters))
 
                 }
 
@@ -105,15 +104,15 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
 
                 // If only one parameter was swept, then just fit VH to I*B/t
 
-                val hallVoltage = if (hvm1 && hvm2) {
-                    data.getColumns(HALL_2) - data.getColumns(HALL_1)
-                } else if (hvm1) {
-                    data.getColumns(HALL_1)
+                val hallVoltage = if (usedHVM1 && usedHVM2) {
+                    data.toMatrix(HALL_2) - data.toMatrix(HALL_1)
+                } else if (usedHVM1) {
+                    data.toMatrix(HALL_1)
                 } else {
-                    data.getColumns(HALL_2)
+                    data.toMatrix(HALL_2)
                 }
 
-                val xValues = data.getColumns(SD_CURRENT).elementMultiply(data.getColumns(FIELD)) / thickness
+                val xValues = data.toMatrix(SD_CURRENT).elementMultiply(data.toMatrix(FIELD)) / thickness
                 val fit     = Fitting.linearFit(xValues, hallVoltage)
                 val hall    = fit.gradient
                 val hallE   = fit.gradientError
@@ -121,29 +120,28 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                 val density = hallQ.pow(-1) * (100.0).pow(-3)  / 1.6e-19
 
                 // Add both the Hall and carrier density quantities to the list of calculated quantities
-                quantities += hallQ
-                quantities += CarrierDensity(density.value, density.error, parameters, possibleParameters)
+                addQuantities(hallQ, CarrierDensity(density.value, density.error, parameters, possibleParameters))
 
             }
 
-            val possibleParameters = ArrayList<KClass<out Quantity>>(possibleParameters)
+            val possibleParameters = ArrayList<KClass<out Quantity<*>>>(possibleParameters)
             possibleParameters    += BField::class
 
             // If either of the FPP channels were used then try to calculate magneto-conductivity
-            if (fpp1 || fpp2) {
+            if (usedFPP1 || usedFPP2) {
 
                 // Split the data-up based on field strength
                 for ((field, condData) in data.split(FIELD)) {
 
-                    val current = condData.getColumns(SD_CURRENT)
+                    val current = condData.toMatrix(SD_CURRENT)
 
                     // Determine whether to use FPP1, FPP2 or FPP2 - FPP1 based on which channels were used
-                    val voltage = if (fpp1 && fpp2) {
-                        condData.getColumns(FPP_2) - condData.getColumns(FPP_1)
-                    } else if (fpp1) {
-                        condData.getColumns(FPP_1)
+                    val voltage = if (usedFPP1 && usedFPP2) {
+                        condData.toMatrix(FPP_2) - condData.toMatrix(FPP_1)
+                    } else if (usedFPP1) {
+                        condData.toMatrix(FPP_1)
                     } else {
-                        condData.getColumns(FPP_2)
+                        condData.toMatrix(FPP_2)
                     }
 
                     // Perform a linear fit to find conductivity for this value of magnetic field strength
@@ -170,24 +168,25 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
     /**
      * Calculates any extra quantities that can only be calculated by combining quantities from multiple result files
      */
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
 
-        val extras   = LinkedList<Quantity>()
+        val extras   = LinkedList<Quantity<*>>()
         val excluded = listOf(Temperature::class, Frequency::class)
 
         // Look over all values of the Hall coefficient that were calculated above
-        for (hallQuantity in quantities.filter { it is HallCoefficient }) {
+        for (hallQuantity in quantities.filter { it is HallCoefficient }.map { it as HallCoefficient }) {
 
             // Find compatible values of conductivity for this Hall measurement and multiply to get mobility
             extras += otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hallQuantity) }
+                                     .map    { it as Conductivity }
                                      .map    { hallQuantity * it * 1e6 }
                                      .map    { HallMobility(it.value, it.error, hallQuantity.parameters) }
 
             // Check to see if fitting has already been done for extracting un-screened Hall coefficient
-            if (otherQuantities.find { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) } == null) {
+            if (otherQuantities.none { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) }) {
 
                 // Find all Hall coefficients in the same temperature sweep
-                val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hallQuantity, excluded) && it.hasParameter(Temperature::class) }
+                val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hallQuantity, excluded) && it.hasParameter(Temperature::class) }.map { it as HallCoefficient }
 
                 // Calculate values of ln(RH), 1/sqrt(RH) and T^(-1/4)
                 val lnrh  = halls.map { ln(it.value) }
@@ -196,8 +195,9 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
 
                 // Find peak conductivity value from corresponding conductivity data
                 val maxC  = otherQuantities
-                            .filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }
-                            .maxBy  { it.value }
+                    .filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }
+                    .map { it as Conductivity }
+                    .maxByOrNull { it.value }
 
                 // Do the two fits for extracting T0 and RH0
                 val fit1  = Fitting.linearFit(t025, lnrh)

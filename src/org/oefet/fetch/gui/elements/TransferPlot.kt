@@ -1,7 +1,7 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.experiment.ResultTable
 import jisa.gui.Series
+import jisa.results.ResultTable
 import org.oefet.fetch.measurement.Transfer
 import kotlin.math.abs
 
@@ -24,7 +24,7 @@ class TransferPlot(data: ResultTable) : FetChPlot("Transfer Curve", "SG Voltage 
         yAxisType = AxisType.LOGARITHMIC
         pointOrdering = Sort.ORDER_ADDED
 
-        if (data.numRows > 0) {
+        if (data.rowCount > 0) {
             legendRows = data.getUniqueValues(SET_SG_VOLTAGE).size
         } else {
             legendColumns = 2

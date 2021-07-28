@@ -3,10 +3,12 @@ package org.oefet.fetch.action
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.TC
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
+
+import jisa.results.ResultTable
+import jisa.results.DoubleColumn
 import jisa.gui.Colour
 import jisa.gui.Series
+import jisa.results.Column
 import org.oefet.fetch.gui.elements.FetChPlot
 
 class TemperatureChange : FetChAction("Change Temperature") {
@@ -19,32 +21,37 @@ class TemperatureChange : FetChAction("Change Temperature") {
     val stabilityTime by input("Stability", "For at least [s]", 600.0) map { it.toMSec().toLong() }
     val tControl      by requiredConfig("Temperature Controller", TC::class)
 
+    companion object {
+        val TIME        = DoubleColumn("Time","s")
+        val TEMPERATURE = DoubleColumn("Temperature", "K")
+    }
+
     override fun createPlot(data: ResultTable): FetChPlot {
 
         val plot =  FetChPlot("Change Temperature to $temperature K", "Time [s]", "Temperature [K]")
 
         plot.createSeries()
-            .watch(data, { it[0] }, { (1 + (stabilityPct / 100.0)) * temperature })
+            .watch(data, { it[TIME] }, { (1 + (stabilityPct / 100.0)) * temperature })
             .setMarkerVisible(false)
             .setLineWidth(1.0)
             .setLineDash(Series.Dash.DASHED)
             .setColour(Colour.GREY)
 
         plot.createSeries()
-            .watch(data, { it[0] }, { (1 - (stabilityPct / 100.0)) * temperature })
+            .watch(data, { it[TIME] }, { (1 - (stabilityPct / 100.0)) * temperature })
             .setMarkerVisible(false)
             .setLineWidth(1.0)
             .setLineDash(Series.Dash.DASHED)
             .setColour(Colour.GREY)
 
         plot.createSeries()
-            .watch(data, 0, 1)
+            .watch(data, TIME, TEMPERATURE)
             .setMarkerVisible(false)
             .setColour(Colour.RED)
 
         plot.createSeries()
-            .watch(data, 0, 1)
-            .filter { Util.isBetween(it[1], (1 - (stabilityPct / 100.0)) * temperature, (1 + (stabilityPct / 100.0)) * temperature) }
+            .watch(data, TIME, TEMPERATURE)
+            .filter { Util.isBetween(it[TEMPERATURE], (1 - (stabilityPct / 100.0)) * temperature, (1 + (stabilityPct / 100.0)) * temperature) }
             .setMarkerVisible(false)
             .setLineWidth(3.0)
             .setColour(Colour.MEDIUMSEAGREEN)
@@ -74,13 +81,8 @@ class TemperatureChange : FetChAction("Change Temperature") {
         task?.stop()
     }
 
-    override fun getColumns(): Array<Col> {
-
-        return arrayOf(
-            Col("Time","s"),
-            Col("Temperature", "K")
-        )
-
+    override fun getColumns(): Array<Column<*>> {
+        return arrayOf(TIME, TEMPERATURE)
     }
 
     override fun getLabel(): String {

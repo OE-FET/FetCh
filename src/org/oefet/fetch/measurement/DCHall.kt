@@ -6,15 +6,15 @@ import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.DCHallPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.DCHallResult
 
 /**
@@ -22,12 +22,20 @@ import org.oefet.fetch.results.DCHallResult
  */
 class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
+    // Notice display to show when magnet is ramping down
     private val notice = Doc("Ramping Down").apply {
-        addHeading("Ramping Down Magnet").setAlignment(Doc.Align.CENTRE).setColour(Colour.RED)
-        addText("This measurement has been interrupted and so the electromagnet\nis now safely returning itself to a zero current state.").setAlignment(Doc.Align.CENTRE)
-        addText("Please Wait...").setAlignment(Doc.Align.CENTRE)
-    }
 
+        addHeading("Ramping Down Magnet")
+            .setAlignment(Doc.Align.CENTRE)
+            .setColour(Colour.RED)
+
+        addText("This measurement has been interrupted and so the electromagnet\nis now safely returning itself to a zero current state.")
+            .setAlignment(Doc.Align.CENTRE)
+
+        addText("Please Wait...")
+            .setAlignment(Doc.Align.CENTRE)
+
+    }
     // Parameter inputs to ask the user for
     private val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
     private val repTime  by input("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
@@ -55,38 +63,44 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     companion object {
 
-        val SET_SD_CURRENT = Col("Set SD Current", "A")
-        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
-        val SD_VOLTAGE     = Col("SD Voltage", "V")
-        val SD_CURRENT     = Col("SD Current", "A")
-        val SG_VOLTAGE     = Col("SG Voltage", "V")
-        val SG_CURRENT     = Col("SG Current", "A")
-        val FIELD          = Col("Field Strength", "T")
-        val HALL_1         = Col("Hall Voltage 1", "V")
-        val HALL_1_ERROR   = Col("Hall Voltage 1 Error", "V")
-        val HALL_2         = Col("Hall Voltage 2", "V")
-        val HALL_2_ERROR   = Col("Hall Voltage 2 Error", "V")
-        val FPP_1          = Col("Four-Point Probe 1", "V")
-        val FPP_1_ERROR    = Col("Four-Point Probe 1 Error", "V")
-        val FPP_2          = Col("Four-Point Probe 2", "V")
-        val FPP_2_ERROR    = Col("Four-Point Probe 2 Error", "V")
-        val TEMPERATURE    = Col("Temperature", "K")
+        val SET_SD_CURRENT = DoubleColumn("Set SD Current", "A")
+        val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
+        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT     = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT     = DoubleColumn("SG Current", "A")
+        val FIELD          = DoubleColumn("Field Strength", "T")
+        val HALL_1         = DoubleColumn("Hall Voltage 1", "V")
+        val HALL_1_ERROR   = DoubleColumn("Hall Voltage 1 Error", "V")
+        val HALL_2         = DoubleColumn("Hall Voltage 2", "V")
+        val HALL_2_ERROR   = DoubleColumn("Hall Voltage 2 Error", "V")
+        val FPP_1          = DoubleColumn("Four-Point Probe 1", "V")
+        val FPP_1_ERROR    = DoubleColumn("Four-Point Probe 1 Error", "V")
+        val FPP_2          = DoubleColumn("Four-Point Probe 2", "V")
+        val FPP_2_ERROR    = DoubleColumn("Four-Point Probe 2 Error", "V")
+        val TEMPERATURE    = DoubleColumn("Temperature", "K")
 
     }
 
+    /**
+     * This method defines what plot should be made from a given set of DC Hall data.
+     */
     override fun createPlot(data: ResultTable): DCHallPlot {
         return DCHallPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): DCHallResult {
-        return DCHallResult(data, extra)
+    /**
+     * This method defined how to process a given set of DC Hall data.
+     */
+    override fun processResults(data: ResultTable): DCHallResult {
+        return DCHallResult(data)
     }
 
     /**
      * Defines the structure of the result table for this measurement - i.e. it returns the columns that the results
      * table should have.
      */
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SET_SD_CURRENT,
@@ -246,7 +260,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun newResults(path: String?): ResultTable {
         val results =  super.newResults(path)
-        results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
+        results.setAttribute("Field Sweep", if (fields.maxOrNull() != fields.minOrNull()) "true" else "false")
         return results
     }
 
