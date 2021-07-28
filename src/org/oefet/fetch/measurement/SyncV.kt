@@ -11,9 +11,7 @@ import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.SyncPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.quantities.SimpleQuantity
 import org.oefet.fetch.results.FetChResult
-import org.oefet.fetch.results.OutputResult
 
 class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
@@ -52,7 +50,7 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
         return object : FetChResult("Synced Voltage Measurement", "VSync", Icon.CLOCK.blackImage, data) {
 
-            override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+            override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
                 return emptyList()
             }
 

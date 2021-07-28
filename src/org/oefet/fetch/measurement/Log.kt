@@ -8,6 +8,7 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultStream
 import jisa.results.ResultTable
+import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Dashboard
 import java.util.*
 
