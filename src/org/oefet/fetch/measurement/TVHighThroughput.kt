@@ -1,9 +1,7 @@
 package org.oefet.fetch.measurement
 
-import jisa.Util
 import jisa.Util.runInParallel
 import jisa.control.Repeat
-import jisa.control.Returnable
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TC
 import jisa.devices.interfaces.TMeter
@@ -14,7 +12,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVHTPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVHighThroughputResult
 
 class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput") {
@@ -58,9 +55,9 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
 
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): TVHighThroughputResult {
+    override fun processResults(data: ResultTable): TVHighThroughputResult {
         print("processResult")
-        return TVHighThroughputResult(data, extra)
+        return TVHighThroughputResult(data)
     }
 
     override fun getColumns(): Array<Column<*>> {

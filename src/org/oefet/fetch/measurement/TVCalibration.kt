@@ -12,7 +12,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVCPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVCResult
 
 class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
@@ -60,8 +59,8 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         return TVCPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): TVCResult {
-        return TVCResult(data, extra)
+    override fun processResults(data: ResultTable): TVCResult {
+        return TVCResult(data)
     }
 
     override fun run(results: ResultTable) {

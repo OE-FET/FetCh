@@ -9,7 +9,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TransferPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TransferResult
 
 class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer") {
@@ -44,8 +43,8 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
         return TransferPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): TransferResult {
-        return TransferResult(data, extra)
+    override fun processResults(data: ResultTable): TransferResult {
+        return TransferResult(data)
     }
 
     override fun getColumns(): Array<Column<*>> {

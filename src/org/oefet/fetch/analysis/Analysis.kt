@@ -1,20 +1,18 @@
 package org.oefet.fetch.analysis
 
-import jisa.results.ResultTable
-import jisa.results.DoubleColumn
 import jisa.gui.Plot
+import jisa.results.ResultTable
 import org.oefet.fetch.quantities.Quantity
-import kotlin.reflect.KClass
 
 interface Analysis {
 
-    fun analyse(quantities: List<Quantity>, labels: Map<KClass<out Quantity>, Map<Double, String>> = emptyMap()) : Output
+    fun analyse(quantities: List<Quantity<*>>) : Output
 
     class Output(val tables: List<Tabulated>, val plots: List<Plot>)
 
     class Tabulated(
-        val parameters: List<Quantity>,
-        val quantity: Quantity,
+        val parameters: List<Quantity<*>>,
+        val quantity: Quantity<*>,
         val table: ResultTable
     )
 

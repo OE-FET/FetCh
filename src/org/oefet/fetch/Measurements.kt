@@ -34,15 +34,15 @@ object Measurements {
         val rClass = (example::processResults).reflect()?.returnType?.jvmErasure
 
         fun createMeasurement(): FetChMeasurement                                             = mClass.primaryConstructor!!.call()
-        fun createResult(data: ResultTable, extra: List<Quantity> = emptyList()): FetChResult = example.processResults(data, extra)
+        fun createResult(data: ResultTable): FetChResult = example.processResults(data)
         fun createPlot(data: ResultTable)                                                     = example.createPlot(data)
 
 
     }
 
-    fun loadResultFile(data: ResultTable, extra: List<Quantity> = emptyList()): FetChResult? {
+    fun loadResultFile(data: ResultTable): FetChResult? {
 
-        return types.find { it.type == data.getAttribute("Type") }?.createResult(data, extra) ?: convertFile(data, extra)
+        return types.find { it.type == data.getAttribute("Type") }?.createResult(data) ?: convertFile(data)
 
     }
 
@@ -63,7 +63,7 @@ object Measurements {
     /**
      * Converts files from the old HallSpinner application for use in FetCh
      */
-    private fun convertFile(data: ResultTable, extra: List<Quantity> = emptyList()): FetChResult? {
+    private fun convertFile(data: ResultTable, extra: List<Quantity<*>> = emptyList()): FetChResult? {
 
         when (data.getColumn(0).name) {
 
@@ -114,7 +114,7 @@ object Measurements {
 
                 }
 
-                return ACHallResult(newData, extra)
+                return ACHallResult(newData)
 
             }
 
@@ -139,7 +139,7 @@ object Measurements {
 
                 }
 
-                return CondResult(newData, extra)
+                return CondResult(newData)
 
             }
 

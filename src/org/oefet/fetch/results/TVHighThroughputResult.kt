@@ -7,13 +7,12 @@ import org.oefet.fetch.measurement.TVHighThroughput
 import org.oefet.fetch.quantities.*
 import kotlin.math.abs
 
-class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+class TVHighThroughputResult(data: ResultTable) :
     FetChResult(
         "Thermal Voltage High Throughput",
         "Thermal Voltage High Throughput",
         Images.getImage("fire.png"),
-        data,
-        extraParams
+        data
     ) {
 
     val VOLTAGE  = data.findColumn(TVHighThroughput.VOLTAGE)
@@ -36,7 +35,7 @@ class TVHighThroughputResult(data: ResultTable, extraParams: List<Quantity> = em
         addQuantity(SeebeckCoefficient(value, error, parameters, possibleParameters))
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
         return emptyList()
     }
 

@@ -4,7 +4,7 @@ import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.TC
 import jisa.experiment.queue.Action
-import jisa.experiment.queue.SimpleAction
+import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
 import jisa.gui.Series
 import jisa.maths.Range
@@ -31,12 +31,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
         val list = LinkedList<Action<*>>()
 
-        list += SimpleAction("Change Temperature") {
-
-            tControl.temperature = value
-            tControl.waitForStableTemperature(value, stabilityPct, stabilityTime)
-
-        }
+        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime, tControl))
 
         list += actions
 

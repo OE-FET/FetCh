@@ -12,7 +12,7 @@ import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.reflect.KClass
 
-class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) : FetChResult("DC Hall Measurement", "DC Hall", Images.getImage("hall.png"), data, extraParams) {
+class DCHallResult(data: ResultTable) : FetChResult("DC Hall Measurement", "DC Hall", Images.getImage("hall.png"), data) {
 
     private val possibleParameters = listOf(
         Device::class,
@@ -42,7 +42,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
         // Split data-up into separate tables based on gate voltage
         for ((gate, data) in data.split(SET_SG_VOLTAGE)) {
 
-            val parameters = ArrayList<Quantity>(parameters)
+            val parameters = ArrayList<Quantity<*>>(parameters)
             parameters    += Gate(gate, 0.0)
 
             // Don't bother with this gate voltage if there's fewer than 2 data-points in it
@@ -126,7 +126,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
 
             }
 
-            val possibleParameters = ArrayList<KClass<out Quantity>>(possibleParameters)
+            val possibleParameters = ArrayList<KClass<out Quantity<*>>>(possibleParameters)
             possibleParameters    += BField::class
 
             // If either of the FPP channels were used then try to calculate magneto-conductivity
@@ -170,16 +170,17 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
     /**
      * Calculates any extra quantities that can only be calculated by combining quantities from multiple result files
      */
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
 
-        val extras   = LinkedList<Quantity>()
+        val extras   = LinkedList<Quantity<*>>()
         val excluded = listOf(Temperature::class, Frequency::class)
 
         // Look over all values of the Hall coefficient that were calculated above
-        for (hallQuantity in quantities.filter { it is HallCoefficient }) {
+        for (hallQuantity in quantities.filter { it is HallCoefficient }.map { it as HallCoefficient }) {
 
             // Find compatible values of conductivity for this Hall measurement and multiply to get mobility
             extras += otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hallQuantity) }
+                                     .map    { it as Conductivity }
                                      .map    { hallQuantity * it * 1e6 }
                                      .map    { HallMobility(it.value, it.error, hallQuantity.parameters) }
 
@@ -187,7 +188,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
             if (otherQuantities.none { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) }) {
 
                 // Find all Hall coefficients in the same temperature sweep
-                val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hallQuantity, excluded) && it.hasParameter(Temperature::class) }
+                val halls = otherQuantities.filter { it is HallCoefficient && it.isCompatibleWith(hallQuantity, excluded) && it.hasParameter(Temperature::class) }.map { it as HallCoefficient }
 
                 // Calculate values of ln(RH), 1/sqrt(RH) and T^(-1/4)
                 val lnrh  = halls.map { ln(it.value) }
@@ -197,6 +198,7 @@ class DCHallResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
                 // Find peak conductivity value from corresponding conductivity data
                 val maxC  = otherQuantities
                     .filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }
+                    .map { it as Conductivity }
                     .maxByOrNull { it.value }
 
                 // Do the two fits for extracting T0 and RH0

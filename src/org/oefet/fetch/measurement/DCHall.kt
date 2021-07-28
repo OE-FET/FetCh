@@ -15,7 +15,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.DCHallPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.DCHallResult
 
 /**
@@ -93,8 +92,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     /**
      * This method defined how to process a given set of DC Hall data.
      */
-    override fun processResults(data: ResultTable, extra: List<Quantity>): DCHallResult {
-        return DCHallResult(data, extra)
+    override fun processResults(data: ResultTable): DCHallResult {
+        return DCHallResult(data)
     }
 
     /**

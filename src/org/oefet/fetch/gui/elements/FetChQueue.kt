@@ -101,115 +101,135 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     private fun askMeasurement(measurement: FetChMeasurement) {
 
-        // Generate measurement parameter input GUI and make it remember values from last time
-        val input = MeasurementConfigurator(measurement.name, measurement).apply {
-            maxWindowHeight = 700.0
-            linkToConfig(Settings.inputs)
-        }
+        try {
 
-        input.addAll(measurement.getExtraTabs())
-        (input.elements.first() as Grid).addAll(measurement.getCustomParams())
-
-        if (input.showInput()) {
-
-            val action = queue.addAction(MeasurementAction(measurement))
-
-            action.setFileNameGenerator { params, label -> "${Measure.baseFile}-$params-$label.csv" }
-            if (action is MeasurementAction) action.setOnMeasurementStart { Measure.display(it) }
-
-            action.setOnFinish {
-                FileLoad.addData(it.data)
-                System.gc()
+            // Generate measurement parameter input GUI and make it remember values from last time
+            val input = MeasurementConfigurator(measurement.name, measurement).apply {
+                maxWindowHeight = 700.0
+                linkToConfig(Settings.inputs)
             }
 
-            action.setOnEdit {
-                input.showInput()
-                it.name = "${measurement.name} (${measurement.label})"
+            input.addAll(measurement.getExtraTabs())
+            (input.elements.first() as Grid).addAll(measurement.getCustomParams())
+
+            if (input.showInput()) {
+
+                val action = queue.addAction(MeasurementAction(measurement))
+
+                action.setFileNameGenerator { params, label -> "${Measure.baseFile}-$params-$label.csv" }
+                if (action is MeasurementAction) action.setOnMeasurementStart { Measure.display(it) }
+
+                action.setOnFinish {
+                    FileLoad.addData(it.data)
+                    System.gc()
+                }
+
+                action.setOnEdit {
+                    input.showInput()
+                    it.name = "${measurement.name} (${measurement.label})"
+                }
+
             }
 
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            GUI.errorAlert(e.message)
         }
 
     }
 
     private fun askAction(measurement: FetChAction) {
 
-        // Generate measurement parameter input GUI and make it remember values from last time
-        val input = MeasurementConfigurator(measurement.name, measurement).apply {
-            maxWindowHeight = 700.0
-            linkToConfig(Settings.inputs)
-        }
+        try {
 
-        input.addAll(measurement.getExtraTabs())
-        (input.elements.first() as Grid).addAll(measurement.getCustomParams())
-
-        if (input.showInput()) {
-
-            val action = queue.addAction(MeasurementAction(measurement))
-
-            action.setOnMeasurementStart { Measure.display(it) }
-            action.setOnMeasurementFinish { System.gc() }
-            action.setOnEdit {
-                input.showInput()
-                it.name = "${measurement.name} (${measurement.label})"
+            // Generate measurement parameter input GUI and make it remember values from last time
+            val input = MeasurementConfigurator(measurement.name, measurement).apply {
+                maxWindowHeight = 700.0
+                linkToConfig(Settings.inputs)
             }
 
+            input.addAll(measurement.getExtraTabs())
+            (input.elements.first() as Grid).addAll(measurement.getCustomParams())
+
+            if (input.showInput()) {
+
+                val action = queue.addAction(MeasurementAction(measurement))
+
+                action.setOnMeasurementStart { Measure.display(it) }
+                action.setOnMeasurementFinish { System.gc() }
+                action.setOnEdit {
+                    input.showInput()
+                    it.name = "${measurement.name} (${measurement.label})"
+                }
+
+            }
+
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            GUI.errorAlert(e.message)
         }
 
     }
 
     private fun <T> askSweep(measurement: FetChSweep<T>) {
 
-        // Generate measurement parameter input GUI and make it remember values from last time
-        val input = MeasurementConfigurator(measurement.name, measurement).apply {
-            linkToConfig(Settings.inputs)
-        }
+        try {
+            // Generate measurement parameter input GUI and make it remember values from last time
+            val input = MeasurementConfigurator(measurement.name, measurement).apply {
+                linkToConfig(Settings.inputs)
+            }
 
-        input.addAll(measurement.getExtraTabs())
-        (input.elements.first() as Grid).addAll(measurement.getCustomParams())
+            input.addAll(measurement.getExtraTabs())
+            (input.elements.first() as Grid).addAll(measurement.getCustomParams())
 
-        val sweepQueue = FetChQueue("Interval Actions", measurement.queue)
+            val sweepQueue = FetChQueue("Interval Actions", measurement.queue)
 
-        val grid = Grid(measurement.name, 2, input, sweepQueue).apply {
-            maxWindowHeight = 700.0
-        }
+            val grid = Grid(measurement.name, 2, input, sweepQueue).apply {
+                maxWindowHeight = 700.0
+            }
 
-        if (grid.showAsConfirmation()) {
+            if (grid.showAsConfirmation()) {
 
-            input.update()
-            measurement.loadInstruments()
+                input.update()
+                measurement.loadInstruments()
 
-            val multiAction = measurement.createSweepAction()
-            measurement.loadInstruments()
-            multiAction.setSweepValues(measurement.getValues())
-            multiAction.addActions(measurement.queue.actions)
+                val multiAction = measurement.createSweepAction()
+                measurement.loadInstruments()
+                multiAction.setSweepValues(measurement.getValues())
+                multiAction.addActions(measurement.queue.actions)
 
-            multiAction.setOnEdit {
+                multiAction.setOnEdit {
 
-                measurement.queue.clear()
-                measurement.queue.addActions(multiAction.actions)
+                    measurement.queue.clear()
+                    measurement.queue.addActions(multiAction.actions)
 
-                if (grid.showAsConfirmation()) {
+                    if (grid.showAsConfirmation()) {
 
-                    input.update()
-                    measurement.loadInstruments()
-                    multiAction.clearActions()
-                    multiAction.addActions(measurement.queue.actions)
-                    multiAction.setSweepValues(measurement.getValues())
+                        input.update()
+                        measurement.loadInstruments()
+                        multiAction.clearActions()
+                        multiAction.addActions(measurement.queue.actions)
+                        multiAction.setSweepValues(measurement.getValues())
 
-                    multiAction.children.forEach {
-                        if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
+                        multiAction.children.forEach {
+                            if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
+                        }
+
                     }
 
                 }
 
+                multiAction.children.forEach {
+                    if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
+                }
+
+                queue.addAction(multiAction)
+
             }
 
-            multiAction.children.forEach {
-                if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
-            }
-
-            queue.addAction(multiAction)
-
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            GUI.errorAlert(e.message)
         }
 
     }

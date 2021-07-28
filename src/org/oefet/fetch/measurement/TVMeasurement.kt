@@ -14,7 +14,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVResult
 
 class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
@@ -54,8 +53,8 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
         return TVPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): TVResult {
-        return TVResult(data, extra)
+    override fun processResults(data: ResultTable): TVResult {
+        return TVResult(data)
     }
 
     // Constants for referring to result table columns

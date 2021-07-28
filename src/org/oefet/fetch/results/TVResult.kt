@@ -10,8 +10,8 @@ import org.oefet.fetch.quantities.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("Thermal Voltage Measurement", "Thermal Voltage", Images.getImage("fire.png"), data, extraParams) {
+class TVResult(data: ResultTable) :
+    FetChResult("Thermal Voltage Measurement", "Thermal Voltage", Images.getImage("fire.png"), data) {
 
     val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
     val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
@@ -43,7 +43,7 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
 
         val calibrationLeft = otherQuantities.filter {
             it is LeftStripResistance
@@ -90,13 +90,13 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
             it is LeftStripResistance
             && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
-        }
+        }.map { it as LeftStripResistance }
 
         val powerRight = otherQuantities.filter {
             it is RightStripResistance
             && it.isCompatibleWith(quantities.first())
             && it.getParameter(Temperature::class)?.value == temperature
-        }
+        }.map { it as RightStripResistance }
 
         val POWER = DoubleColumn("Power")
         val TEMP  = DoubleColumn("Temperature")
@@ -130,7 +130,7 @@ class TVResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
         val leftPowerFit  = Fitting.linearFit(dataLeft, POWER, TEMP).function
         val rightPowerFit = Fitting.linearFit(dataRight, POWER, TEMP).function
 
-        val extras = ArrayList<Quantity>()
+        val extras = ArrayList<Quantity<*>>()
 
         for ((gate, data) in data.split(SET_GATE)) {
 

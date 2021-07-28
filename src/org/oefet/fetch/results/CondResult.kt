@@ -7,8 +7,7 @@ import org.oefet.fetch.measurement.Conductivity
 import org.oefet.fetch.quantities.*
 import kotlin.math.abs
 
-class CondResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("Conductivity Measurement", "FPP Conductivity", Icon.ELECTRICITY.blackImage, data, extraParams) {
+class CondResult(data: ResultTable) : FetChResult("Conductivity Measurement", "FPP Conductivity", Icon.ELECTRICITY.blackImage, data) {
 
     val SD_VOLTAGE     = data.findColumn(Conductivity.SD_VOLTAGE)
     val SD_CURRENT     = data.findColumn(Conductivity.SD_CURRENT)
@@ -43,7 +42,7 @@ class CondResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
         return emptyList()
     }
 

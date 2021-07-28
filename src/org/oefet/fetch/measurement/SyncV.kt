@@ -9,7 +9,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.SyncPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.OutputResult
 
 class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
@@ -45,8 +44,8 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         return SyncPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): OutputResult {
-        return OutputResult(data, extra)
+    override fun processResults(data: ResultTable): OutputResult {
+        return OutputResult(data)
     }
 
     override fun getColumns(): Array<Column<*>> {

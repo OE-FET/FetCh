@@ -221,6 +221,7 @@ abstract class FetChEntity : Measurement() {
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I {
             if (!set) setNow()
+            if (!set) throw Exception("${conf.name} is not configured")
             return instrument
         }
 

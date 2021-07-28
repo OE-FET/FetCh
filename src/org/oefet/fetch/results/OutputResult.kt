@@ -13,8 +13,7 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class OutputResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("Output Measurement", "Output", Images.getImage("output.png"), data, extraParams) {
+class OutputResult(data: ResultTable) : FetChResult("Output Measurement", "Output", Images.getImage("output.png"), data) {
 
     val SET_SD_VOLTAGE = data.findColumn(Output.SET_SD_VOLTAGE)
     val SET_SG_VOLTAGE = data.findColumn(Output.SET_SG_VOLTAGE)
@@ -162,6 +161,6 @@ class OutputResult(data: ResultTable, extraParams: List<Quantity> = emptyList())
 
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> = emptyList()
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> = emptyList()
 
 }

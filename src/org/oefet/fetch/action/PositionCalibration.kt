@@ -1,16 +1,9 @@
 package org.oefet.fetch.action
 
-import jisa.control.RTask
-import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.ProbeStation
-
-import jisa.results.ResultTable
-import jisa.results.DoubleColumn
-import jisa.gui.Colour
 import jisa.gui.Field
 import jisa.gui.Fields
-import jisa.gui.Series
-import org.oefet.fetch.gui.elements.FetChPlot
+import jisa.results.ResultTable
 
 class PositionCalibration : FetChAction("3-point Position Calibration") {
 
@@ -37,7 +30,6 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
 
     override fun run(results: ResultTable) {
 
-        pControl.setGrossUpDistance(grossLift)
         pControl.lockDistance = fineLift
 
         val calibration = Fields("Calibration")
@@ -63,12 +55,6 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         }
         val FineDown  = calibration.addDialogButton("Fine Down"){
             pControl.setLocked(false)
-        }
-        val GrossUp  = calibration.addDialogButton("Gross Up"){
-            pControl.setGrossUp(true)
-        }
-        val GrossDown  = calibration.addDialogButton("Gross Down"){
-            pControl.setGrossUp(false)
         }
 
 

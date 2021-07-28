@@ -5,6 +5,7 @@ import jisa.devices.interfaces.ProbeStation
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.*
+import org.oefet.fetch.Settings
 import org.oefet.fetch.action.PositionCalibration
 
 
@@ -25,10 +26,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     var position3X by input("Position 3 (bottom right)", "X [m]", 0.0)
     var position3Y by input("Position 3 (bottom right)", "Y [m]", 0.0)
 
-
     val pControl by requiredConfig("Position Control", ProbeStation::class)
-    val camera by optionalConfig("Camera", Camera::class)
-
+    val camera   by optionalConfig("Camera", Camera::class)
 
     val counts      = Fields("Counts")
     val countXParam = counts.addIntegerField("No. X", 8)
@@ -41,6 +40,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     init {
         countXParam.setOnChange { checkGrid.setSize(countXParam.value, countYParam.value) }
         countYParam.setOnChange { checkGrid.setSize(countXParam.value, countYParam.value) }
+        counts.loadFromConfig(Settings.positionSweepCounts)
     }
 
 
@@ -55,6 +55,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     }
 
     override fun getValues(): List<Position> {
+
+        counts.writeToConfig(Settings.positionSweepCounts)
 
         if (useCalibration) {
             position1X = PositionCalibration.position1X

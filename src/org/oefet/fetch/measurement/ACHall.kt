@@ -10,7 +10,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.ACHallPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ACHallResult
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -208,8 +207,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): ACHallResult {
-        return ACHallResult(data, extra)
+    override fun processResults(data: ResultTable): ACHallResult {
+        return ACHallResult(data)
     }
 
     override fun createPlot(data: ResultTable): ACHallPlot {

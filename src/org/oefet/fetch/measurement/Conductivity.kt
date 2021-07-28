@@ -8,7 +8,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FPPPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.CondResult
 import java.lang.Double.min
 
@@ -45,8 +44,8 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         return FPPPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): CondResult {
-        return CondResult(data, extra)
+    override fun processResults(data: ResultTable): CondResult {
+        return CondResult(data)
     }
 
     override fun getColumns(): Array<Column<*>> {

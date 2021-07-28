@@ -8,7 +8,6 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.OutputResult
 
 class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
@@ -43,8 +42,8 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
         return OutputPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): OutputResult {
-        return OutputResult(data, extra)
+    override fun processResults(data: ResultTable): OutputResult {
+        return OutputResult(data)
     }
 
     override fun getColumns(): Array<Column<*>> {
