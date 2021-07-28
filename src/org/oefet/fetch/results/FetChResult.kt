@@ -73,7 +73,7 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
     private fun determineTemperature(): Double {
 
         val attributes = data.attributes
-        val column = data.findColumn("Temperature", Double::class.java)
+        val column     = data.findColumn("Temperature")
 
         return when {
 
@@ -129,36 +129,7 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
     }
 
     fun getParameterString(): String {
-        return parameters.filter { it.important && (it.value !is Number || (it.value as Number).toDouble().isFinite()) }.sortedWith(Comparator).joinToString(", ") { "${it.symbol} = ${it.value} ${it.unit}".trim() }
-    }
-
-    object Comparator : kotlin.Comparator<Quantity<*>> {
-
-        override fun compare(o1: Quantity<*>, o2: Quantity<*>): Int {
-
-            val value1 = o1.value
-            val value2 = o2.value
-
-            if (value1 is String && value2 is String) {
-                return value1.compareTo(value2)
-            }
-
-            if (value1 is String && value2 is Number) {
-                return -1
-            }
-
-            if (value2 is String && value1 is Number) {
-                return +1
-            }
-
-            if (value1 is Number && value2 is Number) {
-                return -1 * value1.toDouble().compareTo(value2.toDouble())
-            }
-
-            return 0
-
-        }
-
+        return parameters.filter { it.important && (it.value !is Number || (it.value as Number).toDouble().isFinite()) }.joinToString(", ") { "${it.symbol} = ${it.value} ${it.unit}".trim() }
     }
 
 }

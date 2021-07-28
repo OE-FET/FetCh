@@ -67,7 +67,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
             if (param < minParam) {
                 minParam = param
-                minVolts = if (reFit.gradient > 0) rotated else rotated * -1.0
+                minVolts = if (reFit.gradient >= 0.0) rotated else rotated * -1.0
                 minTheta = theta
             }
 
