@@ -4,12 +4,12 @@ import jisa.control.Repeat
 import jisa.devices.interfaces.*
 import jisa.enums.Coupling
 import jisa.enums.Input
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.ACHallPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ACHallResult
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -48,23 +48,23 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     companion object {
 
-        val SD_VOLTAGE = Col("SD Voltage", "V")
-        val SD_CURRENT = Col("SD Current", "A")
-        val SG_VOLTAGE = Col("SG Voltage", "V")
-        val SG_CURRENT = Col("SG Current", "A")
-        val RMS_FIELD = Col("RMS Field Strength", "T")
-        val FREQUENCY = Col("Field Frequency", "Hz")
-        val X_VOLTAGE = Col("X Voltage", "V")
-        val X_ERROR = Col("X Error", "V")
-        val Y_VOLTAGE = Col("Y Voltage", "V")
-        val Y_ERROR = Col("Y Error", "V")
-        val HALL_VOLTAGE = Col("Hall Voltage", "V")
-        val HALL_ERROR = Col("Hall Voltage Error", "V")
-        val TEMPERATURE = Col("Temperature", "K")
+        val SD_VOLTAGE = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT = DoubleColumn("SG Current", "A")
+        val RMS_FIELD = DoubleColumn("RMS Field Strength", "T")
+        val FREQUENCY = DoubleColumn("Field Frequency", "Hz")
+        val X_VOLTAGE = DoubleColumn("X Voltage", "V")
+        val X_ERROR = DoubleColumn("X Error", "V")
+        val Y_VOLTAGE = DoubleColumn("Y Voltage", "V")
+        val Y_ERROR = DoubleColumn("Y Error", "V")
+        val HALL_VOLTAGE = DoubleColumn("Hall Voltage", "V")
+        val HALL_ERROR = DoubleColumn("Hall Voltage Error", "V")
+        val TEMPERATURE = DoubleColumn("Temperature", "K")
 
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SD_VOLTAGE,
@@ -90,7 +90,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
         results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
-        results.setAttribute("Averaging Count", repeats.toDouble())
+        results.setAttribute("Averaging Count", repeats)
         results.setAttribute("Pre-Amp Gain", paGain)
         results.setAttribute("Extra Pre-Amp Gain", exGain)
 
@@ -168,21 +168,21 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
                     val hallValue = sqrt((x - startX).pow(2) + (y - startY).pow(2))
                     val hallError = sqrt(((x / r) * eX).pow(2) + ((y / r) * eY).pow(2))
 
-                    results.addData(
-                        sdSMU.voltage,                                            // SD Voltage
-                        current,                                                  // SD Current
-                        gate,                                                     // SG Voltage
-                        sgSMU?.current ?: Double.NaN,                             // SG Current
-                        rmsField,                                                 // RMS Field
-                        frequency,                                                // Field Frequency
-                        x - startX,                                               // Locked X
-                        eX,                                                       // Error X
-                        y - startY,                                               // Locked Y
-                        eY,                                                       // Error Y
-                        hallValue,                                                // Hall Voltage
-                        if (hallError.isFinite()) hallError else (eX + eY) / 2.0, // Hall Error
-                        tMeter?.temperature ?: Double.NaN                         // Temperature
-                    )
+                    results.startRow()
+                        .set(SD_VOLTAGE, sdSMU.voltage)
+                        .set(SD_CURRENT, current)
+                        .set(SG_VOLTAGE, gate)
+                        .set(SG_CURRENT, sgSMU?.current ?: Double.NaN)
+                        .set(RMS_FIELD, rmsField)
+                        .set(FREQUENCY, frequency)
+                        .set(X_VOLTAGE, x - startX)
+                        .set(X_ERROR, eX)
+                        .set(Y_VOLTAGE, y - startX)
+                        .set(Y_ERROR, eY)
+                        .set(HALL_VOLTAGE, hallValue)
+                        .set(HALL_ERROR, if (hallError.isFinite()) hallError else (eX + eY) / 2.0)
+                        .set(TEMPERATURE, tMeter?.temperature ?: Double.NaN)
+                        .endRow()
 
                 }
 
@@ -207,8 +207,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): ACHallResult {
-        return ACHallResult(data, extra)
+    override fun processResults(data: ResultTable): ACHallResult {
+        return ACHallResult(data)
     }
 
     override fun createPlot(data: ResultTable): ACHallPlot {

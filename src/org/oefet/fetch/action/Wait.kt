@@ -2,10 +2,10 @@ package org.oefet.fetch.action
 
 import jisa.Util
 import jisa.control.RTask
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.gui.Colour
 import jisa.gui.Plot
+import jisa.results.Column
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
 class Wait : FetChAction("Wait") {
@@ -45,7 +45,7 @@ class Wait : FetChAction("Wait") {
         task?.stop()
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
         return emptyArray()
     }
 

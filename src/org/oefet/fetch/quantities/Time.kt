@@ -5,9 +5,9 @@ import kotlin.reflect.KClass
 open class Time(
     override val value: Double,
     override val error: Double,
-    override val parameters: List<Quantity> = emptyList(),
-    override val possibleParameters: List<KClass<out Quantity>> = emptyList()
-) : Quantity {
+    override val parameters: List<Quantity<*>> = emptyList(),
+    override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
+) : DoubleQuantity {
 
     override val name   = "Stress Time"
     override val symbol = "t"
@@ -17,8 +17,8 @@ open class Time(
 }
 
 class IntegrationTime(override val value: Double,
-                      override val parameters: List<Quantity> = emptyList(),
-                      override val possibleParameters: List<KClass<out Quantity>> = emptyList()
+                      override val parameters: List<Quantity<*>> = emptyList(),
+                      override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
 ) : Time(value, 0.0, parameters, possibleParameters) {
 
     override val name   = "Integration Time"
@@ -29,8 +29,8 @@ class IntegrationTime(override val value: Double,
 }
 
 class DelayTime(override val value: Double,
-                      override val parameters: List<Quantity> = emptyList(),
-                      override val possibleParameters: List<KClass<out Quantity>> = emptyList()
+                      override val parameters: List<Quantity<*>> = emptyList(),
+                      override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
 ) : Time(value, 0.0, parameters, possibleParameters) {
 
     override val name   = "Delay Time"
@@ -41,8 +41,8 @@ class DelayTime(override val value: Double,
 }
 
 class HeaterHoldTime(override val value: Double,
-                      override val parameters: List<Quantity> = emptyList(),
-                      override val possibleParameters: List<KClass<out Quantity>> = emptyList()
+                      override val parameters: List<Quantity<*>> = emptyList(),
+                      override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
 ) : Time(value, 0.0, parameters, possibleParameters) {
 
     override val name   = "Heater Hold Time"
@@ -53,8 +53,8 @@ class HeaterHoldTime(override val value: Double,
 }
 
 class GateHoldTime(override val value: Double,
-                      override val parameters: List<Quantity> = emptyList(),
-                      override val possibleParameters: List<KClass<out Quantity>> = emptyList()
+                      override val parameters: List<Quantity<*>> = emptyList(),
+                      override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
 ) : Time(value, 0.0, parameters, possibleParameters) {
 
     override val name   = "Gate Hold Time"

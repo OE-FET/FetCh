@@ -2,12 +2,11 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ResultTable
 import jisa.gui.*
-import org.oefet.fetch.analysis.*
+import jisa.results.ResultTable
 import org.oefet.fetch.analysis.Analysis
+import org.oefet.fetch.analysis.SpecificAnalysis
 import org.oefet.fetch.quantities.*
-import kotlin.reflect.KClass
 
 object Analysis : BorderDisplay("Analysis") {
 
@@ -26,44 +25,44 @@ object Analysis : BorderDisplay("Analysis") {
         setIcon(Icon.PLOT)
 
         sidebar.add(
-            AutoAnalysis,
+            SpecificAnalysis(),
             "Automatic Analysis",
             "Automatically determines what to plot",
             Icon.LIGHTBULB.blackImage
         )
 
         sidebar.add(
-            HallAnalysis,
+            SpecificAnalysis(Temperature::class, Device::class, Gate::class, Conductivity::class),
             "Hall Analysis",
             "Plot quantities in ways useful for Hall analysis",
             Icon.HALL.blackImage
         )
 
         sidebar.add(
-            SingleParameterAnalysis(Temperature(0.0, 0.0)),
+            SpecificAnalysis(Temperature::class, Device::class),
             "Temperature Only",
-            "Plot everything against temperature with no splitting",
+            "Plot everything against temperature",
             Icon.THERMOMETER.blackImage
         )
 
         sidebar.add(
-            SingleParameterAnalysis(Time(0.0, 0.0)),
+            SpecificAnalysis(Time::class, Device::class),
             "Time Only",
-            "Plot everything against time with no splitting",
+            "Plot everything against time",
             Icon.CLOCK.blackImage
         )
 
         sidebar.add(
-            SingleParameterAnalysis(Repeat(0.0)),
+            SpecificAnalysis(Repeat::class, Device::class),
             "Repeat Only",
-            "Plot everything against repeat number with no splitting",
+            "Plot everything against repeat number",
             Icon.REPEAT.blackImage
         )
 
         sidebar.add(
-            SingleParameterAnalysis(BField(0.0, 0.0)),
+            SpecificAnalysis(BField::class, Device::class),
             "Magnetic Field Only",
-            "Plot everything against magnetic field with no splitting",
+            "Plot everything against magnetic field",
             Icon.MAGNET.blackImage
         )
 
@@ -79,7 +78,6 @@ object Analysis : BorderDisplay("Analysis") {
 
             val quantities = FileLoad.getQuantities()
             val names      = FileLoad.getNames()
-            val labels     = mapOf<KClass<out Quantity>, Map<Double, String>>(Device::class to names)
             val analysis   = sidebar.selected.getObject()
             val plots      = Grid("Plots", 2)
             val tables     = Grid("Tables", 1)
@@ -96,7 +94,7 @@ object Analysis : BorderDisplay("Analysis") {
 
             centreElement = Grid(progress)
 
-            val output  = analysis.analyse(quantities, labels)
+            val output  = analysis.analyse(quantities)
             this.output = output
 
             plots.addAll(output.plots)

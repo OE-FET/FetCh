@@ -1,19 +1,19 @@
 package org.oefet.fetch.results
 
-import jisa.experiment.ResultTable
+import jisa.maths.fits.Fitting
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.quantities.*
 import org.oefet.fetch.gui.elements.TVCResultPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.TVCalibration
+import org.oefet.fetch.quantities.*
 
-class TVCResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
+class TVCResult(data: ResultTable) :
     FetChResult(
         "Thermal Voltage Calibration",
         "Thermal Voltage Calibration",
         Images.getImage("calibration.png"),
         data,
-        extraParams
     ) {
 
     val SET_HEATER_VOLTAGE  = data.findColumn(TVCalibration.SET_HEATER_VOLTAGE)
@@ -40,7 +40,7 @@ class TVCResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
         for ((heaterVoltage, data) in data.split(SET_HEATER_VOLTAGE)) {
 
             val power              = data.getMean(HEATER_POWER)
-            val fit                = data.linearFit(STRIP_CURRENT, STRIP_VOLTAGE)
+            val fit                = Fitting.linearFit(data, STRIP_CURRENT, STRIP_VOLTAGE)
             val parameters         = parameters.toMutableList()
             val possibleParameters = possibleParameters.toMutableList()
             parameters            += Drain(heaterVoltage, 0.0)
@@ -58,7 +58,7 @@ class TVCResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
 
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
         return emptyList()
     }
 

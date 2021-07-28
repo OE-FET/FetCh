@@ -3,19 +3,18 @@ package org.oefet.fetch.measurement
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.OutputResult
 
 class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
     // Parameters
     val delTime    by input("Basic", "Delay Time [s]", 0.5) map { it.toMSec() }
-    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1)) map { if (symVSD) it.mirror() else it }
-    val symVSD     by input("Source-Drain", "Sweep Both Ways", true)
+    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.step(0, 60, 1).mirror())
     val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 10))
 
     // Instruments
@@ -27,27 +26,27 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
     val tMeter by optionalConfig("Thermometer", TMeter::class)
 
     companion object {
-        val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
-        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
-        val SD_VOLTAGE     = Col("SD Voltage", "V")
-        val SD_CURRENT     = Col("SD Current", "A")
-        val SG_VOLTAGE     = Col("SG Voltage", "V")
-        val SG_CURRENT     = Col("SG Current", "A")
-        val FPP_1          = Col("Four Point Probe 1", "V")
-        val FPP_2          = Col("Four Point Probe 2", "V")
-        val TEMPERATURE    = Col("Temperature", "K")
-        val GROUND_CURRENT = Col("Ground Current", "A")
+        val SET_SD_VOLTAGE = DoubleColumn("Set SD Voltage", "V")
+        val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
+        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT     = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT     = DoubleColumn("SG Current", "A")
+        val FPP_1          = DoubleColumn("Four Point Probe 1", "V")
+        val FPP_2          = DoubleColumn("Four Point Probe 2", "V")
+        val TEMPERATURE    = DoubleColumn("Temperature", "K")
+        val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
     override fun createPlot(data: ResultTable): OutputPlot {
         return OutputPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): OutputResult {
-        return OutputResult(data, extra)
+    override fun processResults(data: ResultTable): OutputResult {
+        return OutputResult(data)
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SET_SD_VOLTAGE,

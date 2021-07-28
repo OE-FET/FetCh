@@ -1,6 +1,6 @@
 package org.oefet.fetch.quantities
 
-abstract class Mobility : Quantity {
+abstract class Mobility : DoubleQuantity {
 
     override val symbol = "μ"
     override val unit   = "cm^2/Vs"

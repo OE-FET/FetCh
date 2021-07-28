@@ -2,14 +2,16 @@ package org.oefet.fetch.sweep
 
 import jisa.control.RTask
 import jisa.devices.interfaces.EMController
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
 import jisa.gui.Series
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.ResultTable
 import org.oefet.fetch.action.FetChAction
+import org.oefet.fetch.action.FieldChange.Companion.FIELD
+import org.oefet.fetch.action.FieldChange.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.gui.tabs.Measure
 import java.util.*
@@ -46,14 +48,14 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B") {
             val plot = FetChPlot("Change Field to $field T", "Time [s]", "Field [T]")
 
             plot.createSeries()
-                .watch(data, { it[0] }, { field })
+                .watch(data, { it[TIME] }, { field })
                 .setMarkerVisible(false)
                 .setLineWidth(1.0)
                 .setLineDash(Series.Dash.DASHED)
                 .setColour(Colour.GREY)
 
             plot.createSeries()
-                .watch(data, 0, 1)
+                .watch(data, TIME, FIELD)
                 .setMarkerVisible(false)
                 .setColour(Colour.PURPLE)
 
@@ -80,11 +82,11 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B") {
             task?.stop()
         }
 
-        override fun getColumns(): Array<Col> {
+        override fun getColumns(): Array<Column<*>> {
 
             return arrayOf(
-                Col("Time", "s"),
-                Col("Field", "T")
+                TIME,
+                FIELD
             )
 
         }

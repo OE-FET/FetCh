@@ -1,6 +1,7 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
+import jisa.results.DoubleColumn
 import jisa.gui.Series.Dash.DASHED
 import jisa.maths.matrices.RealMatrix
 import org.oefet.fetch.measurement.ACHall
@@ -28,7 +29,7 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?
             createSeries()
                 .setName("Phase Optimised")
                 .polyFit(1)
-                .addPoints(data.getColumns(SD_CURRENT), optimised, data.getColumns(HALL_ERROR))
+                .addPoints(data.toMatrix(SD_CURRENT), optimised, data.toMatrix(HALL_ERROR))
 
         }
 
@@ -38,7 +39,7 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?
                 .setName("Faraday Voltage")
                 .setMarkerVisible(false)
                 .setLineDash(DASHED)
-                .addPoints(data.getColumns(SD_CURRENT), faraday)
+                .addPoints(data.toMatrix(SD_CURRENT), faraday)
 
         }
 

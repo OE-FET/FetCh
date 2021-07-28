@@ -2,18 +2,19 @@ package org.oefet.fetch.gui.tabs
 
 import jisa.Util
 import jisa.enums.Icon
-import jisa.experiment.ResultList
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.gui.*
+import jisa.results.ResultList
+import jisa.results.ResultTable
 import org.oefet.fetch.Measurements
-import org.oefet.fetch.analysis.*
-import org.oefet.fetch.quantities.*
+import org.oefet.fetch.analysis.UnknownResultException
+import org.oefet.fetch.quantities.DoubleQuantity
+import org.oefet.fetch.quantities.MaxLinMobility
+import org.oefet.fetch.quantities.MaxSatMobility
+import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.FetChResult
 import java.io.File
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * Page for loading in and viewing previous results
@@ -86,13 +87,21 @@ object FileLoad : BorderDisplay("Results") {
 
                 val filtered = selected.quantities.filter { it::class == type }
                 val instance = filtered.first()
-                val unit     = instance.unit
-                val name     = instance.name
-                val values   = filtered.map{ it.value }
-                val min      = values.min()
-                val max      = values.max()
+                val unit = instance.unit
+                val name = instance.name
+                val values = filtered.map { it.value as Double }
+                val min = values.minOrNull()
+                val max = values.maxOrNull()
 
-                params.addParameter(name, if (min == max) "%.03g %s".format(min, unit) else "%.03g to %.03g %s".format(min, max, unit))
+                var value = if (min == max) "%.03g".format(min) else "%.03g to %.03g".format(min, max)
+
+                value += if (filtered.filter{ it is DoubleQuantity }.any { (it as DoubleQuantity).error > 0 }) {
+                    " ± %.03g %s".format(filtered.filter{ it is DoubleQuantity }.map { (it as DoubleQuantity).error }.average(), unit)
+                } else {
+                    " $unit"
+                }
+
+                params.addParameter(name, value)
 
             }
 
@@ -109,13 +118,13 @@ object FileLoad : BorderDisplay("Results") {
 
     }
 
-    private fun toDisplay(quantity: Quantity) : Boolean {
+    private fun toDisplay(quantity: Quantity<*>) : Boolean {
         return quantity::class !in notDisplayed
     }
 
-    fun getQuantities(): List<Quantity> {
+    fun getQuantities(): List<Quantity<*>> {
 
-        val list = ArrayList<Quantity>()
+        val list = ArrayList<Quantity<*>>()
 
         for (result in results) {
             list += result.quantities
@@ -143,7 +152,7 @@ object FileLoad : BorderDisplay("Results") {
         }
 
         // Load the result as a ResultFile object, specifying device number parameter to use
-        val result = Measurements.loadResultFile(data, listOf(Device(n.toDouble()))) ?: throw UnknownResultException("Unknown result file.")
+        val result = Measurements.loadResultFile(data) ?: throw UnknownResultException("Unknown result file.")
 
         // Add the loaded ResultFile to the list display and overall list of loaded results
         fileList.add(result, result.name, result.getParameterString(), result.image)
