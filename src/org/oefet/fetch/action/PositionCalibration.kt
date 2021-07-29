@@ -31,6 +31,8 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
     override fun run(results: ResultTable) {
 
         pControl.lockDistance = fineLift
+        pControl.setGrossUpDistance(grossLift)
+
 
         val calibration = Fields("Calibration")
 
@@ -55,6 +57,12 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         }
         val FineDown  = calibration.addDialogButton("Fine Down"){
             pControl.setLocked(false)
+        }
+        val GrossUp  = calibration.addDialogButton("Gross Up"){
+            pControl.setGrossUp(true)
+        }
+        val GrossDown  = calibration.addDialogButton("Gross Down"){
+            pControl.setGrossUp(false)
         }
 
 

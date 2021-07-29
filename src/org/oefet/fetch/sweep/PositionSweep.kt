@@ -16,15 +16,15 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
 
 
-    var position1X by input("Start Position (top left)", "X [m]", 0.0)
-    var position1Y by input("Start Position (top left)", "Y [m]", 0.0)
-    var measureHeightZ by input("Start Position (top left)", "Z [m]", 0.0)
+    var position1XInput by input("Start Position (top left)", "X [m]", 0.0)
+    var position1YInput by input("Start Position (top left)", "Y [m]", 0.0)
+    var measureHeightZInput by input("Start Position (top left)", "Z [m]", 0.0)
 
-    var position2X by input("Position 2 (top right)", "X [m]", 0.0)
-    var position2Y by input("Position 2 (top right)", "Y [m]", 0.0)
+    var position2XInput by input("Position 2 (top right)", "X [m]", 0.0)
+    var position2YInput by input("Position 2 (top right)", "Y [m]", 0.0)
 
-    var position3X by input("Position 3 (bottom right)", "X [m]", 0.0)
-    var position3Y by input("Position 3 (bottom right)", "Y [m]", 0.0)
+    var position3XInput by input("Position 3 (bottom right)", "X [m]", 0.0)
+    var position3YInput by input("Position 3 (bottom right)", "Y [m]", 0.0)
 
     val pControl by requiredConfig("Position Control", ProbeStation::class)
     val camera   by optionalConfig("Camera", Camera::class)
@@ -57,6 +57,13 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     override fun getValues(): List<Position> {
 
         counts.writeToConfig(Settings.positionSweepCounts)
+        val position1X: Double
+        val position1Y: Double
+        val measureHeightZ: Double
+        val position2X: Double
+        val position2Y: Double
+        val position3X: Double
+        val position3Y: Double
 
         if (useCalibration) {
             position1X = PositionCalibration.position1X
@@ -66,6 +73,15 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
             position2Y = PositionCalibration.position2Y
             position3X = PositionCalibration.position3X
             position3Y = PositionCalibration.position3Y
+        }
+        else{
+            position1X = position1XInput
+            position1Y = position1YInput
+            measureHeightZ = measureHeightZInput
+            position2X = position2XInput
+            position2Y = position2YInput
+            position3X = position3XInput
+            position3Y = position3YInput
         }
 
 
@@ -82,10 +98,13 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
                     list += Position(
                         position1X + i * directionHorizontalX / (countX - 1) + j * directionVerticalX / (countY - 1),
                         position1Y + i * directionHorizontalY / (countX - 1) + j * directionVerticalY / (countY - 1),
+                        measureHeightZ,
                         i,
                         j
                     )
-                    println(j * countX + i)
+                    print(j * countX + i)
+                    print(position1Y + i * directionHorizontalY / (countX - 1) + j * directionVerticalY / (countY - 1))
+                    println(measureHeightZ)
                 }
             }
 
@@ -96,7 +115,7 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
     override fun generateForValue(value: Position, actions: List<Action<*>>): List<Action<*>> {
         val list = ArrayList<Action<*>>()
-        val grossLift: Double = measureHeightZ - fineLift
+        val grossLift: Double = value.z - fineLift
 
         pControl.lockDistance = fineLift
 
@@ -117,6 +136,6 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
     override fun formatValue(value: Position): String = "(${value.nx}, ${value.ny})"
 
-    class Position(val x: Double, val y: Double, val nx: Int, val ny: Int)
+    class Position(val x: Double, val y: Double, val z: Double, val nx: Int, val ny: Int)
 
 }
