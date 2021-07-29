@@ -59,9 +59,9 @@ class DCHallResult(data: ResultTable) : FetChResult("DC Hall Measurement", "DC H
             // If both current and field were swept, then we can perform a better analysis of the output
             if (data.getUniqueValues(FIELD).size > 1 && data.getUniqueValues(SET_SD_CURRENT).size > 1) {
 
-                val CURRENT  = DoubleColumn("Current")
-                val GRADIENT = DoubleColumn("Gradient")
-                val ERROR    = DoubleColumn("Error")
+                val CURRENT   = DoubleColumn("Current")
+                val GRADIENT  = DoubleColumn("Gradient")
+                val ERROR     = DoubleColumn("Error")
                 val gradients = ResultList(CURRENT, GRADIENT, ERROR)
 
                 // Split the data up based on source-drain current value
@@ -96,8 +96,7 @@ class DCHallResult(data: ResultTable) : FetChResult("DC Hall Measurement", "DC H
                     val density = hallQ.pow(-1) * (100.0).pow(-3)  / 1.6e-19
 
                     // Add both the Hall and carrier density quantities to the list of calculated quantities
-                    quantities += hallQ
-                    quantities += CarrierDensity(density.value, density.error, parameters, possibleParameters)
+                    addQuantities(hallQ, CarrierDensity(density.value, density.error, parameters, possibleParameters))
 
                 }
 
@@ -121,8 +120,7 @@ class DCHallResult(data: ResultTable) : FetChResult("DC Hall Measurement", "DC H
                 val density = hallQ.pow(-1) * (100.0).pow(-3)  / 1.6e-19
 
                 // Add both the Hall and carrier density quantities to the list of calculated quantities
-                quantities += hallQ
-                quantities += CarrierDensity(density.value, density.error, parameters, possibleParameters)
+                addQuantities(hallQ, CarrierDensity(density.value, density.error, parameters, possibleParameters))
 
             }
 

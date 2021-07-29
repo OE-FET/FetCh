@@ -7,12 +7,18 @@ import jisa.experiment.queue.ActionQueue.Result.*
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
 import jisa.results.ResultTable
-import org.oefet.fetch.FetChEntity
-import org.oefet.fetch.Settings
+import org.oefet.fetch.*
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.measurement.Log
 
 object Measure : Grid("Measurement", 1) {
+
+    val materials = mapOf(
+        "CYTOP" to 2.05,
+        "PMMA"  to 2.22,
+        "SiO2"  to 3.9,
+        "Other" to Double.NaN
+    )
 
     val queue     = ActionQueue()
     val queueList = FetChQueue("Measurements", queue).apply { maxHeight = 500.0 }
@@ -30,13 +36,17 @@ object Measure : Grid("Measurement", 1) {
     val width      = basic.addDoubleField("Channel Width [m]")
     val cThick     = basic.addDoubleField("Channel Thickness [m]")
     val dThick     = basic.addDoubleField("Dielectric Thickness [m]")
-    val dielectric = basic.addChoice("Dielectric Material", "CYTOP", "PMMA", "Other")
+    val dielectric = basic.addChoice("Dielectric Material", *materials.keys.toTypedArray())
     val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
 
     val bigQueueButton: Button
 
     val toolbarStart = addToolbarButton("Start", ::runMeasurement)
     val toolbarStop  = addToolbarButton("Stop", ::stopMeasurement)
+
+    init { addToolbarSeparator() }
+
+    val hidden = addToolbarButton("Hidden Actions", ::editHidden)
 
     val baseFile: String get() = Util.joinPath(dir.get(), name.get())
     var table:    Table?       = null
@@ -71,6 +81,58 @@ object Measure : Grid("Measurement", 1) {
 
     }
 
+    fun editHidden() {
+
+        val measurements = Fields("Hidden Measurements")
+        val actions      = Fields("Hidden Actions")
+        val sweeps       = Fields("Hidden Sweeps")
+
+        for (type in Measurements.types) {
+            measurements.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
+        }
+
+        for (type in Actions.types) {
+            actions.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
+        }
+
+        for (type in Sweeps.types) {
+            sweeps.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
+        }
+
+        val grid = Grid("Configure Hidden Types", 3, measurements, actions, sweeps)
+
+        if (grid.showAsConfirmation()) {
+
+            for (field in measurements) {
+
+                if (field.value is Boolean) {
+                    Settings.hidden.booleanValue(field.text).set(field.value)
+                }
+
+            }
+
+            for (field in actions) {
+
+                if (field.value is Boolean) {
+                    Settings.hidden.booleanValue(field.text).set(field.value)
+                }
+
+            }
+
+            for (field in sweeps) {
+
+                if (field.value is Boolean) {
+                    Settings.hidden.booleanValue(field.text).set(field.value)
+                }
+
+            }
+
+
+
+        }
+
+    }
+
     fun display(action: MeasurementAction) {
 
         action.data.setAttribute("Name", name.get())
@@ -95,22 +157,13 @@ object Measure : Grid("Measurement", 1) {
 
     private fun setDielectric() {
 
-        when (dielectric.get()) {
+        val value = materials.values.toList()[dielectric.value]
 
-            0 -> {
-                dielConst.isDisabled = true
-                dielConst.value      = 2.05
-            }
-
-            1 -> {
-                dielConst.isDisabled = true
-                dielConst.value      = 2.22
-            }
-
-            2 -> {
-                dielConst.isDisabled = false
-            }
-
+        if (value.isFinite()) {
+            dielConst.isDisabled = true
+            dielConst.value      = value
+        } else {
+            dielConst.isDisabled = false
         }
 
     }

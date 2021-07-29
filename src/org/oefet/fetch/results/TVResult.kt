@@ -84,7 +84,7 @@ class TVResult(data: ResultTable) :
         val leftFit  = Fitting.linearFit(left, R, T)
         val rightFit = Fitting.linearFit(right, R, T)
 
-        val temperature = parameters.find { it is Temperature }?.value
+        val temperature = findParameter(Temperature::class)?.value
 
         val powerLeft = otherQuantities.filter {
             it is LeftStripResistance

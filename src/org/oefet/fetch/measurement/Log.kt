@@ -8,14 +8,18 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultStream
 import jisa.results.ResultTable
+import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Dashboard
 import java.util.*
 
 object Log {
 
     private val logTasks: MutableList<() -> Double> = ArrayList()
-    private val logger: RTask = RTask(2500) { it -> log(log!!, it) }
+    private val logger: RTask = RTask(
+        if (Settings.hasValue("loggerInterval")) Settings.intValue("loggerInterval").get().toLong() else 2500
+    ) { it -> log(log!!, it) }
     private var log: ResultTable? = null
+    private val map: Map<String, Boolean> = HashMap()
 
     fun start(path: String) {
 
@@ -176,17 +180,42 @@ object Log {
         logger.stop()
     }
 
+
+    var interval: Int
+        get() {
+            return logger.interval.toInt()
+        }
+        set(value) {
+            logger.interval = value.toLong()
+            Settings.intValue("loggerInterval").set(value)
+        }
+
+    val isRunning: Boolean
+        get() {
+            return logger.isRunning
+        }
+
     private fun log(log: ResultTable, task: RTask) {
 
         val data = Array(logTasks.size + 1) { 0.0 }
         data[0] = task.secFromStart
 
         for ((i, logTask) in logTasks.withIndex()) {
-            data[i + 1] = try {
-                logTask()
-            } catch (e: Exception) {
-                Double.NaN
+
+            if (Dashboard.isLogged(i)) {
+
+                data[i + 1] = try {
+                    logTask()
+                } catch (e: Exception) {
+                    Double.NaN
+                }
+
+            } else {
+
+                data[i + 1] = Double.NaN
+
             }
+
         }
 
         log.addData(*data)

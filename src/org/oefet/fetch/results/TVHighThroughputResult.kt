@@ -7,15 +7,9 @@ import org.oefet.fetch.measurement.TVHighThroughput
 import org.oefet.fetch.quantities.*
 import kotlin.math.abs
 
-class TVHighThroughputResult(data: ResultTable) :
-    FetChResult(
-        "Thermal Voltage High Throughput",
-        "Thermal Voltage High Throughput",
-        Images.getImage("fire.png"),
-        data
-    ) {
+class TVHighThroughputResult(data: ResultTable) : FetChResult("Thermal Voltage High Throughput", "Thermal Voltage High Throughput", Images.getImage("fire.png"), data) {
 
-    val VOLTAGE  = data.findColumn(TVHighThroughput.VOLTAGE)
+    val VOLTAGE                = data.findColumn(TVHighThroughput.VOLTAGE)
     val TEMPERATURE_DIFFERENCE = data.findColumn(TVHighThroughput.TEMPERATURE_DIFFERENCE)
 
     private val possibleParameters = listOf(

@@ -9,5 +9,7 @@ object Settings : ConfigFile("FetCh") {
     val inputs              = subBlock("inputs")
     val positionSweepCounts = subBlock("positionSweepCounts")
     val dashboard           = subBlock("dashboard")
+    val hidden              = subBlock("hidden")
+    val logged              = subBlock("logged")
 
 }
