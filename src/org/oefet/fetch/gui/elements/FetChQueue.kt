@@ -107,6 +107,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             val input = MeasurementConfigurator(measurement.name, measurement).apply {
                 maxWindowHeight = 700.0
                 linkToConfig(Settings.inputs)
+
             }
 
             input.addAll(measurement.getExtraTabs())

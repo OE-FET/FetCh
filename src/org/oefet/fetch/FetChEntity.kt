@@ -4,6 +4,8 @@ import jisa.devices.Configuration
 import jisa.devices.interfaces.Instrument
 import jisa.experiment.Measurement
 import jisa.gui.Element
+import jisa.gui.Field
+import jisa.gui.Fields
 import jisa.maths.Range
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
@@ -13,10 +15,10 @@ import kotlin.reflect.KProperty
 
 abstract class FetChEntity : Measurement() {
 
-    private val errors = LinkedList<String>()
-    protected val setters = LinkedList<() -> Unit>()
+    private    val errors  = LinkedList<String>()
+    protected  val setters = LinkedList<() -> Unit>()
 
-    open fun createPlot(data: ResultTable): FetChPlot {
+    open fun createPlot(data: ResultTable): Element {
         return FetChPlot(name).apply {
             createSeries().watchAll(data)
         }
@@ -131,7 +133,6 @@ abstract class FetChEntity : Measurement() {
 
     fun choice(section: String, name: String, vararg options: String): PDelegate<Int> {
         return input(ChoiceParameter(section, name, 0, *options))
-
     }
 
     fun input(section: String, name: String, defaultValue: Range<Double>): PDelegate<Range<Double>> {
@@ -140,6 +141,18 @@ abstract class FetChEntity : Measurement() {
 
     fun input(name: String, defaultValue: Range<Double>): PDelegate<Range<Double>> {
         return input("Basic", name, defaultValue)
+    }
+
+    fun <I> custom(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit) : PDelegate<I> {
+        return input(CustomParameter(tag, element, getter, setter))
+    }
+
+    fun <I> custom(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit, reader: (String?) -> I?, writer: (I) -> String) : PDelegate<I> {
+        return input(CustomParameter(tag, element, getter, setter, { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() }, { b,v -> b.stringValue(tag).set(writer(v)) }))
+    }
+
+    fun <I> custom(fields: Fields, field: Field<I>) : PDelegate<I> {
+        return custom(field.text, fields, field::get, field::set)
     }
 
     fun runRegardless(toRun: () -> Unit) {

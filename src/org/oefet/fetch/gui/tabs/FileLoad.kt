@@ -109,7 +109,7 @@ object FileLoad : BorderDisplay("Results") {
                 params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
             }
 
-            val row  = Grid(2, params, selected?.getPlot() ?: Measurements.createPlot(selected.data))
+            val row  = Grid(2, params, selected?.getPlot() ?: Measurements.createElement(selected.data))
             val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
 
             centreElement = grid

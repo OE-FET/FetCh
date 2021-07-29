@@ -50,7 +50,7 @@ object Measure : Grid("Measurement", 1) {
 
     val baseFile: String get() = Util.joinPath(dir.get(), name.get())
     var table:    Table?       = null
-    var plot:     Plot?        = null
+    var element:  Element?     = null
 
     private var log: ResultTable? = null
 
@@ -143,14 +143,14 @@ object Measure : Grid("Measurement", 1) {
         action.data.setAttribute("Dielectric Thickness", "${dThick.value} m")
         action.data.setAttribute("Dielectric Permittivity", dielConst.value)
 
-        val table = Table("Data", action.data)
-        val plot  = (action.measurement as FetChEntity).createPlot(action.data)
+        val table   = Table("Data", action.data)
+        val element = (action.measurement as FetChEntity).createPlot(action.data)
 
-        topRow.remove(this.plot)
+        topRow.remove(this.element)
         bottomRow.remove(this.table)
         this.table = table
-        this.plot  = plot
-        topRow.add(plot, 1)
+        this.element  = element
+        topRow.add(element, 1)
         bottomRow.add(table)
 
     }
@@ -244,13 +244,13 @@ object Measure : Grid("Measurement", 1) {
 
         if (flag) {
 
-            topRow.remove(plot)
+            topRow.remove(element)
             bottomRow.remove(table)
 
-            plot  = Plot("Results")
+            element  = Plot("Results")
             table = Table("Results")
 
-            topRow.add(plot, 1)
+            topRow.add(element, 1)
             bottomRow.add(table)
             topRow.configuration = 1
 
