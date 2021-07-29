@@ -4,9 +4,7 @@ import jisa.devices.interfaces.Camera
 import jisa.devices.interfaces.ProbeStation
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
-import jisa.gui.CameraFeed
 import jisa.gui.CheckGrid
-import jisa.gui.Element
 import jisa.gui.Fields
 import org.oefet.fetch.action.PositionCalibration
 
@@ -37,25 +35,14 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
     val countYParam = counts.addIntegerField("No. Y", 6)
     val checkGrid   = CheckGrid("Active Devices", countXParam.value, countYParam.value)
 
-    val countX  by custom(counts, countXParam)
-    val countY  by custom(counts, countYParam)
-
-    val checked by custom("Active Devices", checkGrid, checkGrid::getValues, checkGrid::setValues,
-        { it?.split(";")?.map{ it.split(",").map(String::toBoolean).toBooleanArray() }?.toTypedArray() },
-        { it.joinToString(";") { it.joinToString(",") }
-    })
-
     init {
         countXParam.setOnChange { checkGrid.setSize(countXParam.value, countYParam.value) }
         countYParam.setOnChange { checkGrid.setSize(countXParam.value, countYParam.value) }
     }
 
-
-    override fun getExtraTabs(): List<Element> {
-        val feed = CameraFeed("Camera", camera)
-        feed.start()
-        return listOf(feed)
-    }
+    val countX  by custom(counts, countXParam)
+    val countY  by custom(counts, countYParam)
+    val checked by custom(checkGrid)
 
     override fun getValues(): List<Position> {
 

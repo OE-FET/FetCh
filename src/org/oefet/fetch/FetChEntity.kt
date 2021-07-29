@@ -3,6 +3,7 @@ package org.oefet.fetch
 import jisa.devices.Configuration
 import jisa.devices.interfaces.Instrument
 import jisa.experiment.Measurement
+import jisa.gui.CheckGrid
 import jisa.gui.Element
 import jisa.gui.Field
 import jisa.gui.Fields
@@ -149,6 +150,15 @@ abstract class FetChEntity : Measurement() {
 
     fun <I> custom(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit, reader: (String?) -> I?, writer: (I) -> String) : PDelegate<I> {
         return input(CustomParameter(tag, element, getter, setter, { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() }, { b,v -> b.stringValue(tag).set(writer(v)) }))
+    }
+
+    fun custom(checkGrid: CheckGrid) : PDelegate<Array<BooleanArray>> {
+
+        return custom(checkGrid.title, checkGrid, checkGrid::getValues, checkGrid::setValues,
+            { it?.split(";")?.map{ it.split(",").map(String::toBoolean).toBooleanArray() }?.toTypedArray() },
+            { it.joinToString(";") { it.joinToString(",") } }
+        )
+
     }
 
     fun <I> custom(fields: Fields, field: Field<I>) : PDelegate<I> {
