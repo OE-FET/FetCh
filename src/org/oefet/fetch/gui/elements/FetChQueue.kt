@@ -85,8 +85,32 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         addItem("Collapse All") { setExpanded(false) }
     }
 
+    init {
+        addToolbarSeparator()
+    }
+
+    private val saveButton = addToolbarButton("Save") {
+
+        val file = GUI.saveFileSelect()
+
+        if (file != null) {
+            queue.saveActions(file)
+        }
+
+    }
+
+    private val loadButton = addToolbarButton("Load") {
+
+        val file = GUI.openFileSelect()
+
+        if (file != null) {
+            queue.loadActions(file)
+        }
+
+    }
 
     var isDisabled: Boolean
+
         get() {
             return addButton.isDisabled
         }

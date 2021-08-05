@@ -7,10 +7,10 @@ import jisa.results.ResultTable
 
 class PositionCalibration : FetChAction("3-point Position Calibration") {
 
-    private val grossLift    by input("Setup", "Gross Distance [m]", 3e-3)
-    private val fineLift    by input("Setup", "Fine Distance [m]", 3e-4)
+    private val grossLift    by userInput("Setup", "Gross Distance [m]", 3e-3)
+    private val fineLift    by userInput("Setup", "Fine Distance [m]", 3e-4)
 
-    private val pControl by requiredConfig("Position Control", ProbeStation::class)
+    private val pControl by requiredInstrument("Position Control", ProbeStation::class)
 
     val fast = 3000.0
     val middle = 500.0

@@ -150,7 +150,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
                 val params = parameters.filter { it !is Temperature }.toMutableList()
                 val pParams = possibleParameters.filter { it != Temperature::class }
 
-                params += maxC
+                params += MaxConductivity(maxC.value, maxC.error, maxC.parameters, maxC.possibleParameters)
 
                 val t0 = (grad1 * 0.5).pow(4)
                 val r0 = (incp2 + (grad2 / (grad1 * 0.5))).pow(-2)

@@ -5,7 +5,7 @@ import jisa.maths.Range
 
 class Repeat : FetChSweep<Int>("Repeat", "N") {
 
-    val count by input("Basic", "Count", 5)
+    val count by userInput("Basic", "Count", 5)
 
     override fun getValues(): List<Int> {
         return Range.count(0, count-1).array().toList()

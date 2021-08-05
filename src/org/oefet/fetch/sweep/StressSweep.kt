@@ -20,16 +20,16 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
     var task: RTask? = null
 
-    val interval  by input("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val time      by input("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
-    val count     by input("Timing", "No. Stress Intervals", 10)
-    val useSD     by input("Source-Drain", "Enabled", false)
-    val sdVoltage by input("Source-Drain", "Voltage [V]", 50.0)
-    val useSG     by input("Source-Gate", "Enabled", false)
-    val sgVoltage by input("Source-Gate", "Voltage [V]", 50.0)
+    val interval  by userInput("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val time      by userInput("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
+    val count     by userInput("Timing", "No. Stress Intervals", 10)
+    val useSD     by userInput("Source-Drain", "Enabled", false)
+    val sdVoltage by userInput("Source-Drain", "Voltage [V]", 50.0)
+    val useSG     by userInput("Source-Gate", "Enabled", false)
+    val sgVoltage by userInput("Source-Gate", "Voltage [V]", 50.0)
 
-    val sdSMU by optionalConfig("Source-Drain Channel", SMU::class) requiredIf { useSD }
-    val sgSMU by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { useSG }
+    val sdSMU by optionalInstrument("Source-Drain Channel", SMU::class) requiredIf { useSD }
+    val sgSMU by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { useSG }
 
     override fun getValues(): List<Int> {
         return Range.step(time, time * (count + 1), time).array().map { it.toInt() }

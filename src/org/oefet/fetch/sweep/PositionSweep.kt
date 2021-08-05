@@ -11,23 +11,23 @@ import org.oefet.fetch.action.PositionCalibration
 
 class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") {
 
-    val fineLift by input("Sample Setup", "Fine Lift [m]", 0.02)
-    val useCalibration by input("Sample Setup", "Use values from 3-point calibration", true)
+    val fineLift by userInput("Sample Setup", "Fine Lift [m]", 0.02)
+    val useCalibration by userInput("Sample Setup", "Use values from 3-point calibration", true)
     //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
 
 
-    var position1XInput     by input("Start Position (top left)", "X [m]", 0.0)
-    var position1YInput     by input("Start Position (top left)", "Y [m]", 0.0)
-    var measureHeightZInput by input("Start Position (top left)", "Z [m]", 0.0)
+    var position1XInput     by userInput("Start Position (top left)", "X [m]", 0.0)
+    var position1YInput     by userInput("Start Position (top left)", "Y [m]", 0.0)
+    var measureHeightZInput by userInput("Start Position (top left)", "Z [m]", 0.0)
 
-    var position2XInput by input("Position 2 (top right)", "X [m]", 0.0)
-    var position2YInput by input("Position 2 (top right)", "Y [m]", 0.0)
+    var position2XInput by userInput("Position 2 (top right)", "X [m]", 0.0)
+    var position2YInput by userInput("Position 2 (top right)", "Y [m]", 0.0)
 
-    var position3XInput by input("Position 3 (bottom right)", "X [m]", 0.0)
-    var position3YInput by input("Position 3 (bottom right)", "Y [m]", 0.0)
+    var position3XInput by userInput("Position 3 (bottom right)", "X [m]", 0.0)
+    var position3YInput by userInput("Position 3 (bottom right)", "Y [m]", 0.0)
 
-    val pControl by requiredConfig("Position Control", ProbeStation::class)
-    val camera   by optionalConfig("Camera", Camera::class)
+    val pControl by requiredInstrument("Position Control", ProbeStation::class)
+    val camera   by optionalInstrument("Camera", Camera::class)
 
     // Custom input fields
     val counts      = Fields("Counts")
@@ -40,9 +40,9 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
         countYParam.setOnChange { checkGrid.setSize(countXParam.value, countYParam.value) }
     }
 
-    val countX  by custom(counts, countXParam)
-    val countY  by custom(counts, countYParam)
-    val checked by custom(checkGrid)
+    val countX  by customInput(counts, countXParam)
+    val countY  by customInput(counts, countYParam)
+    val checked by customInput(checkGrid)
 
     override fun getValues(): List<Position> {
 
@@ -82,8 +82,11 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
 
 
         for (j in 0 until countY) {
+
             for (i in 0 until countX) {
+
                 if (checkGrid.isChecked(i, j)) {
+
                     list += Position(
                         position1X + i * directionHorizontalX / (countX - 1) + j * directionVerticalX / (countY - 1),
                         position1Y + i * directionHorizontalY / (countX - 1) + j * directionVerticalY / (countY - 1),
@@ -91,10 +94,15 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") 
                         i,
                         j
                     )
+
                     print(j * countX + i)
-                    print(position1Y + i * directionHorizontalY / (countX - 1) + j * directionVerticalY / (countY - 1))
-                    println(measureHeightZ)
+                    print("\t")
+                    print(position1X + i * directionHorizontalX / (countX - 1) + j * directionVerticalX / (countY - 1))
+                    print("\t")
+                    println(position1Y + i * directionHorizontalY / (countX - 1) + j * directionVerticalY / (countY - 1))
+
                 }
+
             }
 
         }

@@ -72,7 +72,7 @@ abstract class FetChEntity : Measurement() {
 
     }
 
-    fun <I : Instrument> optionalConfig(name: String, type: KClass<I>): ODelegate<I?> {
+    fun <I : Instrument> optionalInstrument(name: String, type: KClass<I>): ODelegate<I?> {
 
         val config = addInstrument(name, type.java)
         val del = ODelegate<I?>(config)
@@ -83,7 +83,7 @@ abstract class FetChEntity : Measurement() {
 
     }
 
-    fun <I : Instrument> requiredConfig(name: String, type: KClass<I>): RDelegate<I> {
+    fun <I : Instrument> requiredInstrument(name: String, type: KClass<I>): RDelegate<I> {
 
         val config = addInstrument(name, type.java)
         val del    = RDelegate<I>(config)
@@ -94,75 +94,75 @@ abstract class FetChEntity : Measurement() {
 
     }
 
-    fun <T> input(parameter: Parameter<T>): PDelegate<T> {
+    fun <T> userInput(parameter: Parameter<T>): PDelegate<T> {
         return PDelegate(parameter)
     }
 
-    fun input(section: String, name: String, defaultValue: String): PDelegate<String> {
-        return input(StringParameter(section, name, null, defaultValue))
+    fun userInput(section: String, name: String, defaultValue: String): PDelegate<String> {
+        return userInput(StringParameter(section, name, null, defaultValue))
     }
 
-    fun input(name: String, defaultValue: String): PDelegate<String> {
-        return input("Basic", name, defaultValue)
+    fun userInput(name: String, defaultValue: String): PDelegate<String> {
+        return userInput("Basic", name, defaultValue)
     }
 
-    fun input(section: String, name: String, defaultValue: Double): PDelegate<Double> {
-        return input(DoubleParameter(section, name, null, defaultValue))
+    fun userInput(section: String, name: String, defaultValue: Double): PDelegate<Double> {
+        return userInput(DoubleParameter(section, name, null, defaultValue))
     }
 
-    fun input(name: String, defaultValue: Double): PDelegate<Double> {
-        return input("Basic", name, defaultValue)
+    fun userInput(name: String, defaultValue: Double): PDelegate<Double> {
+        return userInput("Basic", name, defaultValue)
     }
 
-    fun input(section: String, name: String, defaultValue: Int): PDelegate<Int> {
-        return input(IntegerParameter(section, name, null, defaultValue))
-
-    }
-
-    fun input(name: String, defaultValue: Int): PDelegate<Int> {
-        return input("Basic", name, defaultValue)
-    }
-
-    fun input(section: String, name: String, defaultValue: Boolean): PDelegate<Boolean> {
-        return input(BooleanParameter(section, name, null, defaultValue))
+    fun userInput(section: String, name: String, defaultValue: Int): PDelegate<Int> {
+        return userInput(IntegerParameter(section, name, null, defaultValue))
 
     }
 
-    fun input(name: String, defaultValue: Boolean): PDelegate<Boolean> {
-        return input("Basic", name, defaultValue)
+    fun userInput(name: String, defaultValue: Int): PDelegate<Int> {
+        return userInput("Basic", name, defaultValue)
+    }
+
+    fun userInput(section: String, name: String, defaultValue: Boolean): PDelegate<Boolean> {
+        return userInput(BooleanParameter(section, name, null, defaultValue))
+
+    }
+
+    fun userInput(name: String, defaultValue: Boolean): PDelegate<Boolean> {
+        return userInput("Basic", name, defaultValue)
     }
 
     fun choice(section: String, name: String, vararg options: String): PDelegate<Int> {
-        return input(ChoiceParameter(section, name, 0, *options))
+        return userInput(ChoiceParameter(section, name, 0, *options))
     }
 
-    fun input(section: String, name: String, defaultValue: Range<Double>): PDelegate<Range<Double>> {
-        return input(RangeParameter(section, name, null, defaultValue))
+    fun userInput(section: String, name: String, defaultValue: Range<Double>): PDelegate<Range<Double>> {
+        return userInput(RangeParameter(section, name, null, defaultValue))
     }
 
-    fun input(name: String, defaultValue: Range<Double>): PDelegate<Range<Double>> {
-        return input("Basic", name, defaultValue)
+    fun userInput(name: String, defaultValue: Range<Double>): PDelegate<Range<Double>> {
+        return userInput("Basic", name, defaultValue)
     }
 
-    fun <I> custom(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit) : PDelegate<I> {
-        return input(CustomParameter(tag, element, getter, setter))
+    fun <I> customInput(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit) : PDelegate<I> {
+        return userInput(CustomParameter(tag, element, getter, setter))
     }
 
-    fun <I> custom(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit, reader: (String?) -> I?, writer: (I) -> String) : PDelegate<I> {
-        return input(CustomParameter(tag, element, getter, setter, { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() }, { b,v -> b.stringValue(tag).set(writer(v)) }))
+    fun <I> customInput(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit, reader: (String?) -> I?, writer: (I) -> String) : PDelegate<I> {
+        return userInput(CustomParameter(tag, element, getter, setter, { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() }, { b, v -> b.stringValue(tag).set(writer(v)) }))
     }
 
-    fun custom(checkGrid: CheckGrid) : PDelegate<Array<BooleanArray>> {
+    fun customInput(checkGrid: CheckGrid) : PDelegate<Array<BooleanArray>> {
 
-        return custom(checkGrid.title, checkGrid, checkGrid::getValues, checkGrid::setValues,
+        return customInput(checkGrid.title, checkGrid, checkGrid::getValues, checkGrid::setValues,
             { it?.split(";")?.map{ it.split(",").map(String::toBoolean).toBooleanArray() }?.toTypedArray() },
             { it.joinToString(";") { it.joinToString(",") } }
         )
 
     }
 
-    fun <I> custom(fields: Fields, field: Field<I>) : PDelegate<I> {
-        return custom(field.text, fields, field::get, field::set)
+    fun <I> customInput(fields: Fields, field: Field<I>) : PDelegate<I> {
+        return customInput(field.text, fields, field::get, field::set)
     }
 
     fun runRegardless(toRun: () -> Unit) {

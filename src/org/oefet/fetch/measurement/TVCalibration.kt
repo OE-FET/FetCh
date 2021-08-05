@@ -17,21 +17,21 @@ import org.oefet.fetch.results.TVCResult
 class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 
     // Parameters
-    private val avgCount by input("Basic", "Averaging Count",1)
-    private val avgDelay by input("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
+    private val avgCount by userInput("Basic", "Averaging Count",1)
+    private val avgDelay by userInput("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
     private val probe    by choice("Basic", "Strip", "Left", "Right")
-    private val heaterV  by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
-    private val holdHV   by input("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
-    private val currents by input("Resistive Thermometer", "Current [A]", Range.linear(0.0, 100e-6, 11))
-    private val holdSI   by input("Resistive Thermometer", "Hold Time", 0.5) map { (it * 1e3).toInt() }
+    private val heaterV  by userInput("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
+    private val holdHV   by userInput("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
+    private val currents by userInput("Resistive Thermometer", "Current [A]", Range.linear(0.0, 100e-6, 11))
+    private val holdSI   by userInput("Resistive Thermometer", "Hold Time", 0.5) map { (it * 1e3).toInt() }
 
     // Instruments
-    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val heater by requiredConfig("Heater Channel", SMU::class)
-    private val sdSMU  by requiredConfig("Strip Source-Drain Channel", SMU::class)
-    private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
-    private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
-    private val tMeter by optionalConfig("Thermometer", TMeter::class)
+    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val heater by requiredInstrument("Heater Channel", SMU::class)
+    private val sdSMU  by requiredInstrument("Strip Source-Drain Channel", SMU::class)
+    private val fpp1   by optionalInstrument("Four-Point Probe Channel 1", VMeter::class)
+    private val fpp2   by optionalInstrument("Four-Point Probe Channel 2", VMeter::class)
+    private val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
     private val actionHeater = MeasurementSubAction("Hold Heater")
     private val actionSweep  = MeasurementSubAction("Sweep Current")

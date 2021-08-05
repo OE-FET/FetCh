@@ -1,23 +1,17 @@
 package org.oefet.fetch.action
 
-import jisa.Util
-import jisa.control.RTask
 import jisa.devices.interfaces.ProbeStation
 
 import jisa.results.ResultTable
-import jisa.results.DoubleColumn
-import jisa.gui.Colour
-import jisa.gui.Series
-import org.oefet.fetch.gui.elements.FetChPlot
 
 class PositionChangeIndex : FetChAction("Change Position to Index") {
 
-    val pControl    by requiredConfig("Position Controller", ProbeStation::class)
-    val countX      by input("Sample Setup", "Number of Devices in x Direction", 6)
-    val countY      by input("Sample Setup", "Number of Devices in y Direction", 8)
-    val i           by input("Position", "x Position (index)", 0)
-    val j           by input("Position", "y Position (index)", 0)
-    val fineLift    by input("Sample Setup", "Fine Lift [m]", 0.02)
+    val pControl    by requiredInstrument("Position Controller", ProbeStation::class)
+    val countX      by userInput("Sample Setup", "Number of Devices in x Direction", 6)
+    val countY      by userInput("Sample Setup", "Number of Devices in y Direction", 8)
+    val i           by userInput("Position", "x Position (index)", 0)
+    val j           by userInput("Position", "y Position (index)", 0)
+    val fineLift    by userInput("Sample Setup", "Fine Lift [m]", 0.02)
 
 
 

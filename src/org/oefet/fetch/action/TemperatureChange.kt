@@ -15,11 +15,11 @@ class TemperatureChange : FetChAction("Change Temperature") {
 
     var task: RTask? = null
 
-    val temperature   by input("Temperature", "Set-Point [K]", 100.0)
-    val interval      by input("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val stabilityPct  by input("Stability", "Stays within [%]", 1.0)
-    val stabilityTime by input("Stability", "For at least [s]", 600.0) map { it.toMSec().toLong() }
-    val tControl      by requiredConfig("Temperature Controller", TC::class)
+    val temperature   by userInput("Temperature", "Set-Point [K]", 100.0)
+    val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val stabilityPct  by userInput("Stability", "Stays within [%]", 1.0)
+    val stabilityTime by userInput("Stability", "For at least [s]", 600.0) map { it.toMSec().toLong() }
+    val tControl      by requiredInstrument("Temperature Controller", TC::class)
 
     companion object {
         val TIME        = DoubleColumn("Time","s")

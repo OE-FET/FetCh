@@ -14,9 +14,9 @@ class FieldChange : FetChAction("Change Field") {
 
     var task: RTask? = null
 
-    val field    by input("Field", "Set-Point [T]", 1.0)
-    val interval by input("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val fControl by requiredConfig("EM Controller", EMController::class)
+    val field    by userInput("Field", "Set-Point [T]", 1.0)
+    val interval by userInput("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val fControl by requiredInstrument("EM Controller", EMController::class)
 
     companion object {
         val TIME  = DoubleColumn("Time","s")

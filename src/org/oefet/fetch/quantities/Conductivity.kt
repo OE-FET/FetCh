@@ -29,3 +29,17 @@ class MConductivity(
     override val important  = false
 
 }
+
+class MaxConductivity(
+    override val value: Double,
+    override val error: Double,
+    override val parameters: List<Quantity<*>> = emptyList(),
+    override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
+) : DoubleQuantity {
+
+    override val name   = "Max Conductivity"
+    override val symbol = "σ"
+    override val unit   = "S/cm"
+    override val important  = false
+
+}

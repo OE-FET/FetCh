@@ -16,31 +16,31 @@ import org.oefet.fetch.results.TVHighThroughputResult
 
 class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput") {
 
-    private val repTime  by input("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
-    private val repeats  by input("Basic", "Repeats", 50)
+    private val repTime  by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
+    private val repeats  by userInput("Basic", "Repeats", 50)
 
-    private val pctMarginPeltiers by input("Temperature Stabilization: Peltiers", "Percentage range for temperature to stay within",0.3 )
-    private val durationPeltiers by input("Temperature Stabilization: Peltiers", "Duration of temperature stabilization [s]",60.0 ) map { (it * 1e3).toLong() }
-    private val maxTimePeltiers by input("Temperature Stabilization: Peltiers", "Maximum Duration of temperature stabilization [s]",180.0 ) map { (it * 1e3).toLong() }
+    private val pctMarginPeltiers by userInput("Temperature Stabilization: Peltiers", "Percentage range for temperature to stay within",0.3 )
+    private val durationPeltiers by userInput("Temperature Stabilization: Peltiers", "Duration of temperature stabilization [s]",60.0 ) map { (it * 1e3).toLong() }
+    private val maxTimePeltiers by userInput("Temperature Stabilization: Peltiers", "Maximum Duration of temperature stabilization [s]",180.0 ) map { (it * 1e3).toLong() }
 
-    private val pctMarginOnChip by input("Temperature Stabilization: On chip", "Percentage range for temperature to stay within",1.0 )
-    private val durationOnChip by input("Temperature Stabilization: On chip", "Duration of temperature stabilization [s]",10 ) map { (it * 1e3).toLong() }
-    private val maxTimeOnChip by input("Temperature Stabilization: On chip", "Maximum Duration of temperature stabilization [s]",180.0 ) map { (it * 1e3).toLong() }
+    private val pctMarginOnChip by userInput("Temperature Stabilization: On chip", "Percentage range for temperature to stay within",1.0 )
+    private val durationOnChip by userInput("Temperature Stabilization: On chip", "Duration of temperature stabilization [s]",10 ) map { (it * 1e3).toLong() }
+    private val maxTimeOnChip by userInput("Temperature Stabilization: On chip", "Maximum Duration of temperature stabilization [s]",180.0 ) map { (it * 1e3).toLong() }
 
 
-    private val coldTemps by input("Temperature", "Cold Side Temperature [K]", Range.linear(295.15, 274, 3))
-    private val hotTemps by input("Temperature", "Hot Side Temperature [K]", Range.linear(295.15, 312, 3))
+    private val coldTemps by userInput("Temperature", "Cold Side Temperature [K]", Range.linear(295.15, 274, 3))
+    private val hotTemps by userInput("Temperature", "Hot Side Temperature [K]", Range.linear(295.15, 312, 3))
 
     // Instruments
-    private val vMeter1   by requiredConfig("Thermal Voltage Meter 1", VMeter::class)
-    private val vMeter2   by optionalConfig("Thermal Voltage Meter 2", VMeter::class)
-    private val ground   by optionalConfig("Ground", SMU::class)
+    private val vMeter1   by requiredInstrument("Thermal Voltage Meter 1", VMeter::class)
+    private val vMeter2   by optionalInstrument("Thermal Voltage Meter 2", VMeter::class)
+    private val ground   by optionalInstrument("Ground", SMU::class)
 
-    private val tMeter1  by requiredConfig("Thermometer Cold", TMeter::class)
-    private val tMeter2  by requiredConfig("Thermometer Hot", TMeter::class)
+    private val tMeter1  by requiredInstrument("Thermometer Cold", TMeter::class)
+    private val tMeter2  by requiredInstrument("Thermometer Hot", TMeter::class)
 
-    private val hotPeltier  by requiredConfig("Hot Peltier", TC::class)
-    private val coldPeltier  by requiredConfig("Cold Peltier", TC::class)
+    private val hotPeltier  by requiredInstrument("Hot Peltier", TC::class)
+    private val coldPeltier  by requiredInstrument("Cold Peltier", TC::class)
 
 
 

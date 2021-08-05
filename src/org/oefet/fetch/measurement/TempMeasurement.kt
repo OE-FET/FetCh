@@ -6,10 +6,10 @@ import jisa.results.ResultTable
 
 class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Temp Measurement") {
 
-    private val pctMargin by input("Temperature Stabilization", "Percentage range for temperature to stay within",0.3, )
-    private val duration by input("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0, ) map { (it * 1e3).toLong() }
+    private val pctMargin by userInput("Temperature Stabilization", "Percentage range for temperature to stay within",0.3, )
+    private val duration by userInput("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0, ) map { (it * 1e3).toLong() }
 
-    private val tMeter by requiredConfig("Thermometer", TMeter::class)
+    private val tMeter by requiredInstrument("Thermometer", TMeter::class)
 
     companion object{
         val TEMPERATURE = Col("Temperature", "K")
