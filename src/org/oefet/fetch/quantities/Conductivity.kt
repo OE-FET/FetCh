@@ -13,7 +13,6 @@ class Conductivity(
     override val symbol = "σ"
     override val unit   = "S/cm"
     override val important  = false
-
 }
 
 class MConductivity(

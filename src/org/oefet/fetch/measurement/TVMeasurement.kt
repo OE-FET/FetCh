@@ -21,7 +21,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
     // User input parameters
     private val avgCount   by userInput("Basic", "Averaging Count", 1)
     private val avgDelay   by userInput("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
-    private val order      by choice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
+    private val order      by userChoice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
     private val heaterV    by userInput("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
     private val symHV      by userInput("Heater", "Sweep Both Ways", false)
     private val heaterHold by userInput("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }

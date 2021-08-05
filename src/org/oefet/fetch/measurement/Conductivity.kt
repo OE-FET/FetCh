@@ -81,6 +81,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
 
         results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
+        results.setAttribute("Used FPP", fpp1 != null || fpp2 != null || sdSMU.isFourProbeEnabled)
 
         // Turn everything off before starting
         gdSMU?.turnOff()

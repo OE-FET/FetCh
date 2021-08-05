@@ -132,7 +132,7 @@ abstract class FetChEntity : Measurement() {
         return userInput("Basic", name, defaultValue)
     }
 
-    fun choice(section: String, name: String, vararg options: String): PDelegate<Int> {
+    fun userChoice(section: String, name: String, vararg options: String): PDelegate<Int> {
         return userInput(ChoiceParameter(section, name, 0, *options))
     }
 
