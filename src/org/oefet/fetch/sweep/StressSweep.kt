@@ -28,6 +28,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
     val useSG     by userInput("Source-Gate", "Enabled", false)
     val sgVoltage by userInput("Source-Gate", "Voltage [V]", 50.0)
 
+    val gdSMU by optionalInstrument("Ground Channel (SPA)", SMU::class)
     val sdSMU by optionalInstrument("Source-Drain Channel", SMU::class) requiredIf { useSD }
     val sgSMU by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { useSG }
 
@@ -39,7 +40,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, sdSMU, sgSMU))
+        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, gdSMU, sdSMU, sgSMU))
         list += actions
 
         return list
@@ -57,6 +58,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         val sdVoltage: Double,
         val useSG: Boolean,
         val sgVoltage: Double,
+        val gdSMU: SMU?,
         val sdSMU: SMU?,
         val sgSMU: SMU?
     ) : FetChAction("Hold") {
@@ -103,11 +105,17 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
             task?.start()
 
+            gdSMU?.turnOff()
             sdSMU?.turnOff()
             sgSMU?.turnOff()
 
+            gdSMU?.voltage = 0.0
             sdSMU?.voltage = 0.0
             sgSMU?.voltage = 0.0
+
+            if (useSD || useSG) {
+                gdSMU?.turnOn()
+            }
 
             if (useSD) {
                 sdSMU?.voltage = sdVoltage
@@ -124,6 +132,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         }
 
         override fun onFinish() {
+            runRegardless { gdSMU?.turnOff() }
             runRegardless { sdSMU?.turnOff() }
             runRegardless { sgSMU?.turnOff() }
             task?.stop()
