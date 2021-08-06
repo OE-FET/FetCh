@@ -75,6 +75,15 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         }
 
 
+        val LightOn  = calibration.addDialogButton("Lamp On"){
+            pControl.setLightOn(true)
+        }
+
+        val LightOff  = calibration.addDialogButton("Lamp Off"){
+            pControl.setLightOn(true)
+        }
+
+
         continControl(leftContinFast,"X", -1,fast)
         continControl(leftContinMiddle,"X", -1,middle)
         continControl(leftContinSlow,"X", -1,slow)
