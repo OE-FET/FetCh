@@ -34,10 +34,13 @@ class CondResult(data: ResultTable) : FetChResult("Conductivity Measurement", "F
 
     init {
 
-        val fit   = Fitting.linearFit(data.toMatrix(FPP_VOLTAGE), data.toMatrix(SD_CURRENT))
-        val value = abs(fit.gradient * separation / (width * thickness) / 100.0)
-        val error = abs(fit.gradientError * separation / (width * thickness) / 100.0)
+        val usedFPP = data.getAttribute("Used FPP")?.toBoolean() ?: true
+        val size    = if (usedFPP) separation else length
+        val fit     = Fitting.linearFit(data.toMatrix(FPP_VOLTAGE), data.toMatrix(SD_CURRENT))
+        val value   = abs(fit.gradient * size / (width * thickness) / 100.0)
+        val error   = abs(fit.gradientError * size / (width * thickness) / 100.0)
 
+        addParameter(FourPointProbe(usedFPP))
         addQuantity(Conductivity(value, error, parameters, possibleParameters))
 
     }

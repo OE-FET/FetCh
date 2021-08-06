@@ -37,23 +37,23 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
     }
     // Parameter inputs to ask the user for
-    private val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
-    private val repTime  by input("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
-    private val repeats  by input("Basic", "Repeats", 50)
-    private val fields   by input("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
-    private val currents by input("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))
-    private val gates    by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
+    private val delTime  by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
+    private val repTime  by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
+    private val repeats  by userInput("Basic", "Repeats", 50)
+    private val fields   by userInput("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
+    private val currents by userInput("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))
+    private val gates    by userInput("Source-Gate", "Voltage [V]", Range.manual(0.0))
 
     // Instrument configurations to ask user for
-    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
-    private val hvm1   by requiredConfig("Hall Voltmeter 1", VMeter::class)
-    private val hvm2   by optionalConfig("Hall Voltmeter 2", VMeter::class)
-    private val fpp1   by optionalConfig("Four-Point Probe 1", VMeter::class)
-    private val fpp2   by optionalConfig("Four-Point Probe 2", VMeter::class)
-    private val tMeter by optionalConfig("Thermometer", TMeter::class)
-    private val magnet by optionalConfig("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
+    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
+    private val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
+    private val hvm1   by requiredInstrument("Hall Voltmeter 1", VMeter::class)
+    private val hvm2   by optionalInstrument("Hall Voltmeter 2", VMeter::class)
+    private val fpp1   by optionalInstrument("Four-Point Probe 1", VMeter::class)
+    private val fpp2   by optionalInstrument("Four-Point Probe 2", VMeter::class)
+    private val tMeter by optionalInstrument("Thermometer", TMeter::class)
+    private val magnet by optionalInstrument("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
 
     private val actionMagnet  = MeasurementSubAction("Ramp Magnet")
     private val actionCurrent = MeasurementSubAction("Sweep Current")

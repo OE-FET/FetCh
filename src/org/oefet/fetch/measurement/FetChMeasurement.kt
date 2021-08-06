@@ -5,9 +5,9 @@ import org.oefet.fetch.FetChEntity
 import org.oefet.fetch.results.FetChResult
 import org.oefet.fetch.results.SimpleResultFile
 
-abstract class FetChMeasurement(private val name: String, label: String, val tag: String) : FetChEntity() {
+abstract class FetChMeasurement(private val name: String, fileLabel: String, val tag: String) : FetChEntity() {
 
-    private val labelProperty = StringParameter("Basic", "Name", null, label)
+    private val labelProperty = StringParameter("Basic", "Name", null, fileLabel)
 
     open fun processResults(data: ResultTable): FetChResult {
         return SimpleResultFile(name, tag, data)

@@ -20,16 +20,17 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
     var task: RTask? = null
 
-    val interval  by input("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val time      by input("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
-    val count     by input("Timing", "No. Stress Intervals", 10)
-    val useSD     by input("Source-Drain", "Enabled", false)
-    val sdVoltage by input("Source-Drain", "Voltage [V]", 50.0)
-    val useSG     by input("Source-Gate", "Enabled", false)
-    val sgVoltage by input("Source-Gate", "Voltage [V]", 50.0)
+    val interval  by userInput("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val time      by userInput("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
+    val count     by userInput("Timing", "No. Stress Intervals", 10)
+    val useSD     by userInput("Source-Drain", "Enabled", false)
+    val sdVoltage by userInput("Source-Drain", "Voltage [V]", 50.0)
+    val useSG     by userInput("Source-Gate", "Enabled", false)
+    val sgVoltage by userInput("Source-Gate", "Voltage [V]", 50.0)
 
-    val sdSMU by optionalConfig("Source-Drain Channel", SMU::class) requiredIf { useSD }
-    val sgSMU by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { useSG }
+    val gdSMU by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    val sdSMU by optionalInstrument("Source-Drain Channel", SMU::class) requiredIf { useSD }
+    val sgSMU by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { useSG }
 
     override fun getValues(): List<Int> {
         return Range.step(time, time * (count + 1), time).array().map { it.toInt() }
@@ -39,7 +40,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, sdSMU, sgSMU))
+        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, gdSMU, sdSMU, sgSMU))
         list += actions
 
         return list
@@ -57,6 +58,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         val sdVoltage: Double,
         val useSG: Boolean,
         val sgVoltage: Double,
+        val gdSMU: SMU?,
         val sdSMU: SMU?,
         val sgSMU: SMU?
     ) : FetChAction("Hold") {
@@ -103,11 +105,17 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
             task?.start()
 
+            gdSMU?.turnOff()
             sdSMU?.turnOff()
             sgSMU?.turnOff()
 
+            gdSMU?.voltage = 0.0
             sdSMU?.voltage = 0.0
             sgSMU?.voltage = 0.0
+
+            if (useSD || useSG) {
+                gdSMU?.turnOn()
+            }
 
             if (useSD) {
                 sdSMU?.voltage = sdVoltage
@@ -124,6 +132,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         }
 
         override fun onFinish() {
+            runRegardless { gdSMU?.turnOff() }
             runRegardless { sdSMU?.turnOff() }
             runRegardless { sgSMU?.turnOff() }
             task?.stop()

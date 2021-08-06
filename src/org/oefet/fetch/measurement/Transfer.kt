@@ -14,17 +14,17 @@ import org.oefet.fetch.results.TransferResult
 class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer") {
 
     // Parameters
-    val delTime    by input("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }
-    val sdVoltages by input("Source-Drain", "Voltage [V]", Range.manual(6, 60))
-    val sgVoltages by input("Source-Gate", "Voltage [V]", Range.step(0, 60, 1).mirror())
+    val delTime    by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }
+    val sdVoltages by userInput("Source-Drain", "Voltage [V]", Range.manual(6, 60))
+    val sgVoltages by userInput("Source-Gate", "Voltage [V]", Range.step(0, 60, 1).mirror())
 
     // Instruments
-    val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
-    val sgSMU  by requiredConfig("Source-Gate Channel", SMU::class)
-    val fpp1   by optionalConfig("Four-Point-Probe Channel 1", VMeter::class)
-    val fpp2   by optionalConfig("Four-Point-Probe Channel 2", VMeter::class)
-    val tMeter by optionalConfig("Thermometer", TMeter::class)
+    val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
+    val sgSMU  by requiredInstrument("Source-Gate Channel", SMU::class)
+    val fpp1   by optionalInstrument("Four-Point-Probe Channel 1", VMeter::class)
+    val fpp2   by optionalInstrument("Four-Point-Probe Channel 2", VMeter::class)
+    val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
     companion object {
         val SET_SD_VOLTAGE = DoubleColumn("Set SD Voltage", "V")

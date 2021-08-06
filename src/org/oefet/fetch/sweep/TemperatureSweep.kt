@@ -18,11 +18,11 @@ import java.util.*
 
 class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
-    val temperatures  by input("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
-    val interval      by input("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val stabilityPct  by input("Temperature", "Stays within [%]", 1.0)
-    val stabilityTime by input("Temperature", "For at least [s]", 600.0) map { it.toMSec().toLong() }
-    val tControl      by requiredConfig("Temperature Controller", TC::class)
+    val temperatures  by userInput("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
+    val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val stabilityPct  by userInput("Temperature", "Stays within [%]", 1.0)
+    val stabilityTime by userInput("Temperature", "For at least [s]", 600.0) map { it.toMSec().toLong() }
+    val tControl      by requiredInstrument("Temperature Controller", TC::class)
 
 
     override fun getValues(): List<Double> = temperatures.array().toList()

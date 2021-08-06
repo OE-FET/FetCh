@@ -34,7 +34,7 @@ class FPPPlot(data: ResultTable) : FetChPlot("Conductivity", "Drain Current [A]"
             .watch(data, SD_CURRENT, FPP2_VOLTAGE)
 
         createSeries()
-            .setName("FPP Difference")
+            .setName("Difference")
             .polyFit(1)
             .watch(data, SD_CURRENT, FPP_VOLTAGE)
 

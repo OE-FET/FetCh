@@ -18,9 +18,9 @@ import java.util.*
 
 class FieldSweep : FetChSweep<Double>("Field Sweep", "B") {
 
-    val fields    by input("Field", "Set-Points [T]", Range.step(-1, +1, 0.5))
-    val interval  by input("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val emControl by optionalConfig("Electromagnet Controller", EMController::class)
+    val fields    by userInput("Field", "Set-Points [T]", Range.step(-1, +1, 0.5))
+    val interval  by userInput("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val emControl by optionalInstrument("Electromagnet Controller", EMController::class)
 
     override fun getValues(): List<Double> {
         return fields.array().toList();

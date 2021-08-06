@@ -12,10 +12,10 @@ class Wait : FetChAction("Wait") {
 
     var task: RTask? = null
 
-    val hours   by input ("Time", "Hours", 0)
-    val minutes by input ("Time", "Minutes", 0)
-    val seconds by input ("Time", "Seconds", 0)
-    val millis  by input ("Time", "Milliseconds", 0)
+    val hours   by userInput ("Time", "Hours", 0)
+    val minutes by userInput ("Time", "Minutes", 0)
+    val seconds by userInput ("Time", "Seconds", 0)
+    val millis  by userInput ("Time", "Milliseconds", 0)
     val time get() = millis + (seconds * 1000) + (minutes * 60 * 1000) + (hours * 60 * 60 * 1000)
     val plot       = FetChPlot("Wait").apply { isLegendVisible = false; pointOrdering = Plot.Sort.ORDER_ADDED; }
 

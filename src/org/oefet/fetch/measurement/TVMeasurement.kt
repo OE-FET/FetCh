@@ -19,22 +19,22 @@ import org.oefet.fetch.results.TVResult
 class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
 
     // User input parameters
-    private val avgCount   by input("Basic", "Averaging Count", 1)
-    private val avgDelay   by input("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
-    private val order      by choice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
-    private val heaterV    by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
-    private val symHV      by input("Heater", "Sweep Both Ways", false)
-    private val heaterHold by input("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
-    private val gates      by input("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
-    private val symSGV     by input("Gate", "Sweep Both Ways", false)
-    private val gateHold   by input("Gate", "Hold Time [s]", 1.0) map { (it * 1e3).toInt() }
+    private val avgCount   by userInput("Basic", "Averaging Count", 1)
+    private val avgDelay   by userInput("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
+    private val order      by userChoice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
+    private val heaterV    by userInput("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
+    private val symHV      by userInput("Heater", "Sweep Both Ways", false)
+    private val heaterHold by userInput("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
+    private val gates      by userInput("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
+    private val symSGV     by userInput("Gate", "Sweep Both Ways", false)
+    private val gateHold   by userInput("Gate", "Hold Time [s]", 1.0) map { (it * 1e3).toInt() }
 
     // Instruments
-    private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val heater  by requiredConfig("Heater Channel", SMU::class)
-    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
-    private val tvMeter by requiredConfig("Thermal Voltage Channel", VMeter::class)
-    private val tMeter  by optionalConfig("Thermometer", TMeter::class)
+    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val heater  by requiredInstrument("Heater Channel", SMU::class)
+    private val sgSMU   by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
+    private val tvMeter by requiredInstrument("Thermal Voltage Channel", VMeter::class)
+    private val tMeter  by optionalInstrument("Thermometer", TMeter::class)
 
     private val actionGate   = MeasurementSubAction("Gate")
     private val actionHeater = MeasurementSubAction("Heater")

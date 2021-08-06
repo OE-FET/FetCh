@@ -14,19 +14,19 @@ import java.lang.Double.min
 class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
     // User input parameters
-    private val delTime  by input("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
-    private val currents by input("Source-Drain", "Current [A]", Range.linear(-10e-6, +10e-6, 11))
-    private val symI     by input("Source-Drain", "Sweep Both Ways", false)
-    private val holdG    by input("Source-Gate", "Active", false)
-    private val gateV    by input("Source-Gate", "Voltage [V]", 50.0)
+    private val delTime  by userInput("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
+    private val currents by userInput("Source-Drain", "Current [A]", Range.linear(-10e-6, +10e-6, 11))
+    private val symI     by userInput("Source-Drain", "Sweep Both Ways", false)
+    private val holdG    by userInput("Source-Gate", "Active", false)
+    private val gateV    by userInput("Source-Gate", "Voltage [V]", 50.0)
 
     // Instruments
-    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { holdG }
-    private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
-    private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
-    private val tMeter by optionalConfig("Thermometer", TMeter::class)
+    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
+    private val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { holdG }
+    private val fpp1   by optionalInstrument("Four-Point Probe Channel 1", VMeter::class)
+    private val fpp2   by optionalInstrument("Four-Point Probe Channel 2", VMeter::class)
+    private val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
     companion object {
         val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
@@ -81,6 +81,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
 
         results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
+        results.setAttribute("Used FPP", fpp1 != null || fpp2 != null || sdSMU.isFourProbeEnabled)
 
         // Turn everything off before starting
         gdSMU?.turnOff()

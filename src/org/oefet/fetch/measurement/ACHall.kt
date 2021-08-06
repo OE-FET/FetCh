@@ -17,25 +17,25 @@ import kotlin.math.sqrt
 class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     // User input parameters
-    private val intTime     by input("Basic", "Integration Time [s]", 100.0)
-    private val delTime     by input("Basic", "Delay Time [s]", 300.0) map { (it * 1e3).toInt() }
-    private val repeats     by input("Basic", "Repeats", 300)
-    private val paGain      by input("Basic", "Pre-Amp Gain", 1.0)
-    private val exGain      by input("Basic", "Extra Gain", 10.0)
-    private val rmsField    by input("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
-    private val frequencies by input("Magnets", "Frequency [Hz]", Range.manual(1.5))
-    private val spin        by input("Magnets", "Spin-Up Time [s]", 600.0) map { (it * 1e3).toInt() }
-    private val currents    by input("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))
-    private val gates       by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
+    private val intTime     by userInput("Basic", "Integration Time [s]", 100.0)
+    private val delTime     by userInput("Basic", "Delay Time [s]", 300.0) map { (it * 1e3).toInt() }
+    private val repeats     by userInput("Basic", "Repeats", 300)
+    private val paGain      by userInput("Basic", "Pre-Amp Gain", 1.0)
+    private val exGain      by userInput("Basic", "Extra Gain", 10.0)
+    private val rmsField    by userInput("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
+    private val frequencies by userInput("Magnets", "Frequency [Hz]", Range.manual(1.5))
+    private val spin        by userInput("Magnets", "Spin-Up Time [s]", 600.0) map { (it * 1e3).toInt() }
+    private val currents    by userInput("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))
+    private val gates       by userInput("Source-Gate", "Voltage [V]", Range.manual(0.0))
 
     // Instruments
-    private val gdSMU   by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val sdSMU   by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU   by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
-    private val dcPower by requiredConfig("Motor Power Supply", DCPower::class)
-    private val lockIn  by requiredConfig("Lock-In Amplifier", DPLockIn::class)
-    private val preAmp  by optionalConfig("Voltage Pre-Amplifier", VPreAmp::class) requiredIf { paGain != 1.0 }
-    private val tMeter  by optionalConfig("Thermometer", TMeter::class)
+    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val sdSMU   by requiredInstrument("Source-Drain Channel", SMU::class)
+    private val sgSMU   by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
+    private val dcPower by requiredInstrument("Motor Power Supply", DCPower::class)
+    private val lockIn  by requiredInstrument("Lock-In Amplifier", DPLockIn::class)
+    private val preAmp  by optionalInstrument("Voltage Pre-Amplifier", VPreAmp::class) requiredIf { paGain != 1.0 }
+    private val tMeter  by optionalInstrument("Thermometer", TMeter::class)
 
     private val stageSpinUp    = MeasurementSubAction("Spin-up magnets")
     private val stageAutoRange = MeasurementSubAction("Auto-range lock-in amplifier")
