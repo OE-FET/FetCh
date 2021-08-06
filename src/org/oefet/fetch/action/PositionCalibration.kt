@@ -47,7 +47,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         val forwardContinFast  = calibration.addCheckBox("Forward (fast)")
         val forwardContinMiddle  = calibration.addCheckBox("Forward (medium)")
         val forwardContinSlow  = calibration.addCheckBox("Forward (slow)")
-
+        calibration.addSeparator()
         val backwardContinFast  = calibration.addCheckBox("Backward (fast)")
         val backContinMiddle  = calibration.addCheckBox("Backward (medium)")
         val backContinSlow  = calibration.addCheckBox("Backward (slow)")
