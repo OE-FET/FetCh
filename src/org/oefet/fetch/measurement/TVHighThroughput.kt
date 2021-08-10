@@ -127,16 +127,13 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             coldPeltier.useAutoHeater()
             hotPeltier.useAutoHeater()
 
-            //WaitForStableTemperatureMultiple(coldPeltier::getTemperature,hotPeltier::getTemperature,temperatures.cold,temperatures.hot,pctMarginPeltiers,durationPeltiers,maxTimePeltiers)
-            //WaitForStableTemperatureMultiple(tMeter1::getTemperature,tMeter2::getTemperature,tMeter1.temperature,tMeter2.temperature ,pctMarginOnChip,durationOnChip,maxTimeOnChip)
-
 
             runInParallel(
                 { ->
-                coldPeltier.waitForStableTemperature(temperatures.cold, pctMarginPeltiers, durationPeltiers)
-                hotPeltier.waitForStableTemperature(temperatures.hot, pctMarginPeltiers, durationPeltiers)
-                tMeter1.waitForStableTemperature(pctMarginOnChip, durationOnChip)
-                tMeter1.waitForStableTemperature(pctMarginOnChip, durationOnChip)
+                coldPeltier.waitForStableTemperatureMaxTime(temperatures.cold, pctMarginPeltiers, durationPeltiers,maxTimePeltiers)
+                hotPeltier.waitForStableTemperatureMaxTime(temperatures.hot, pctMarginPeltiers, durationPeltiers, maxTimePeltiers)
+                tMeter1.waitForStableTemperatureMaxTime(pctMarginOnChip, durationOnChip, maxTimeOnChip)
+                tMeter1.waitForStableTemperatureMaxTime(pctMarginOnChip, durationOnChip, maxTimeOnChip)
             })
 
 
@@ -177,38 +174,6 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
 
     }
 
-
-/*
-    fun WaitForStableTemperatureMultiple(valueToCheckTMeter1 : Returnable<Double> ,valueToCheckTMeter2 : Returnable<Double>,target1 : Double, target2 : Double,  pctMargin : Double, duration : Long, maxTime: Long){
-        var time: Long = 0
-        var absolutTime: Long = 0
-        var min1: Double = target1 * (1 - pctMargin / 100.0)
-        var max1: Double = target1 * (1 + pctMargin / 100.0)
-        var min2: Double = target2 * (1 - pctMargin / 100.0)
-        var max2: Double = target2 * (1 + pctMargin / 100.0)
-
-        while (time < duration && absolutTime < maxTime)
-        {
-            if (Thread.currentThread().isInterrupted) {
-                throw InterruptedException("Interrupted")
-            }
-            val valueTMeter1: Double = valueToCheckTMeter1.get()
-            val valueTMeter2: Double = valueToCheckTMeter2.get()
-
-
-
-            if (Util.isBetween(valueTMeter1, min1, max1) && Util.isBetween(valueTMeter2, min2, max2) ) {
-                time += 1000
-                absolutTime += 1000
-            } else {
-                time = 0
-                absolutTime += 1000
-            }
-            Thread.sleep(1000)
-        }
-
-    }
-*/
 
     override fun createPlot(data: ResultTable): TVHTPlot {
         return TVHTPlot(data)
