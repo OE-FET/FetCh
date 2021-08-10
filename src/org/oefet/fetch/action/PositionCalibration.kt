@@ -52,6 +52,15 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         val backContinMiddle  = calibration.addCheckBox("Backward (medium)")
         val backContinSlow  = calibration.addCheckBox("Backward (slow)")
 
+        val Load  = calibration.addDialogButton("Load Position"){
+            pControl.goLoadPosition()
+        }
+
+        val Center  = calibration.addDialogButton("Center Position"){
+            pControl.goProbingZoneCentre()
+        }
+
+        calibration.addSeparator()
         val FineUp  = calibration.addDialogButton("Fine Up"){
             pControl.setLocked(true)
         }
@@ -63,6 +72,15 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         }
         val GrossDown  = calibration.addDialogButton("Gross Down"){
             pControl.setGrossUp(false)
+        }
+
+
+        val LightOn  = calibration.addDialogButton("Lamp On"){
+            pControl.setLightOn(true)
+        }
+
+        val LightOff  = calibration.addDialogButton("Lamp Off"){
+            pControl.setLightOn(false)
         }
 
 
@@ -78,6 +96,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
         continControl(backwardContinFast,"Y", 1,fast)
         continControl(backContinMiddle,"Y", 1,middle)
         continControl(backContinSlow,"Y", 1,slow)
+
 
 
         calibration.addToolbarButton("Calibrate as postion 1 (x,y,z), top left") {
