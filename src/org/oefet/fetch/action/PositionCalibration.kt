@@ -9,12 +9,12 @@ class PositionCalibration : FetChAction("3-point Position Calibration") {
 
     private val grossLift    by userInput("Setup", "Gross Distance [m]", 3e-3)
     private val fineLift    by userInput("Setup", "Fine Distance [m]", 3e-4)
+    private val fast by userInput("Speed", "Fast speed",1800.0)
+    private val middle by userInput("Speed", "Medium speed",500.0)
+    private val slow by userInput("Speed", "Slow speed",5.0)
 
     private val pControl by requiredInstrument("Position Control", ProbeStation::class)
 
-    val fast = 3000.0
-    val middle = 500.0
-    val slow = 10.0
 
     companion object {
         var position1X = 0.0
