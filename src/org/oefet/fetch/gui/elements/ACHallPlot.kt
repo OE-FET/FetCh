@@ -5,6 +5,7 @@ import jisa.results.DoubleColumn
 import jisa.gui.Series.Dash.DASHED
 import jisa.maths.matrices.RealMatrix
 import org.oefet.fetch.measurement.ACHall
+import kotlin.math.absoluteValue
 
 class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?) : FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]") {
 
@@ -19,10 +20,12 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?
         isMouseEnabled = true
         pointOrdering  = Sort.ORDER_ADDED
 
+        val zero = data.minByOrNull { it[SD_CURRENT].absoluteValue } ?: data[0]
+
         createSeries()
             .setName("Vector Subtracted")
             .polyFit(1)
-            .watch(data, SD_CURRENT, HALL_VOLTAGE, HALL_ERROR)
+            .watch(data, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - zero[HALL_VOLTAGE] }, { it[HALL_ERROR] })
 
         if (optimised != null) {
 

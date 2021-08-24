@@ -45,7 +45,8 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
     init {
 
         val rmsField = data.getMean(RMS_FIELD)
-        val voltages = data.toMatrix(X_VOLTAGE, Y_VOLTAGE).transpose()
+        val zero     = data.minByOrNull { it[SD_CURRENT].absoluteValue } ?: data[0]
+        val voltages = data.toMatrix(X_VOLTAGE, Y_VOLTAGE).transpose() - RealMatrix.asColumn(zero[X_VOLTAGE], zero[Y_VOLTAGE])
         val currents = data.toMatrix(SD_CURRENT)
 
         field = rmsField
@@ -79,7 +80,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
         val hallErrors = data.toMatrix(X_ERROR, Y_ERROR).rowQuadratures
         val weights = hallErrors.map { x -> x.pow(-2) }
 
-        val vectorHall: RealMatrix = data.toMatrix(HALL_VOLTAGE)
+        val vectorHall: RealMatrix = data.toMatrix(HALL_VOLTAGE) - zero[HALL_VOLTAGE]
 
         // Determine whether to use the PO or VS hall fitting
         val hallFit = if (minVolts != null) {
