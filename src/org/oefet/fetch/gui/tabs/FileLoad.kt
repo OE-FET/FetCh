@@ -87,9 +87,14 @@ object FileLoad : BorderDisplay("Results") {
 
                 val filtered = selected.quantities.filter { it::class == type }
                 val instance = filtered.first()
-                val unit = instance.unit
-                val name = instance.name
-                val values = filtered.map { it.value as Double }
+                val unit     = instance.unit
+                val name     = instance.name
+                val values   = filtered.map { it.value as Double }.filter { it.isFinite() }
+
+                if (values.isEmpty()) {
+                    continue
+                }
+
                 val min = values.minOrNull()
                 val max = values.maxOrNull()
 
@@ -106,7 +111,13 @@ object FileLoad : BorderDisplay("Results") {
             }
 
             for (parameter in selected.parameters) {
-                params.addParameter(parameter.name, "%s %s".format(parameter.value, parameter.unit))
+
+                val value = parameter.value
+
+                if (value !is Double || value.isFinite()) {
+                    params.addParameter(parameter.name, "%s %s".format(value, parameter.unit))
+                }
+
             }
 
             val row  = Grid(2, params, selected?.getPlot() ?: Measurements.createElement(selected.data))

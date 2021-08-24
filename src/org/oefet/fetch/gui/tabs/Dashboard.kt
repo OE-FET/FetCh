@@ -269,7 +269,6 @@ object Dashboard : Grid("Dashboard", 3) {
             plot.isLegendVisible = false
 
             plot.createSeries()
-                .setAutoReduction(3000, 5000)
                 .watch(log, time, col)
                 .setMarkerVisible(false)
                 .setLineVisible(true).colour = Series.defaultColours[(i - 1) % Series.defaultColours.size]

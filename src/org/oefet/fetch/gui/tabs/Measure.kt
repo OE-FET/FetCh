@@ -89,8 +89,8 @@ object Measure : Grid("Measurement", 1) {
     fun editHidden() {
 
         val measurements = Fields("Hidden Measurements")
-        val actions = Fields("Hidden Actions")
-        val sweeps = Fields("Hidden Sweeps")
+        val actions      = Fields("Hidden Actions")
+        val sweeps       = Fields("Hidden Sweeps")
 
         for (type in Measurements.types) {
             measurements.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
