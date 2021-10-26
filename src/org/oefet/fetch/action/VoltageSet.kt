@@ -7,14 +7,17 @@ import jisa.results.ResultTable
 class VoltageSet : FetChAction("Set Voltage") {
 
     private val voltage by userInput("Voltage [V]", 10.0)
+    private val off     by userInput("Turn Off?", false)
     private val vSource by requiredInstrument("Voltage Source", VSource::class)
 
     override fun run(results: ResultTable?) {
 
-        vSource.turnOn()
-        vSource.voltage = voltage
-
-        if (voltage == 0.0) vSource.turnOff()
+        if (off) {
+            vSource.turnOff()
+        } else {
+            vSource.turnOn()
+            vSource.voltage = voltage
+        }
 
     }
 

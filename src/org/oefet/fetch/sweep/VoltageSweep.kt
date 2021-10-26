@@ -12,6 +12,7 @@ class VoltageSweep : FetChSweep<Double>("Voltage Sweep", "V") {
     private val vSource  by requiredInstrument("Voltage Source", VSource::class)
 
     override fun getValues(): List<Double> {
+
         if (off) {
             val list = voltages.list().toMutableList()
             list += Double.NaN
@@ -19,6 +20,7 @@ class VoltageSweep : FetChSweep<Double>("Voltage Sweep", "V") {
         } else {
             return voltages.list()
         }
+
     }
 
     override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {
