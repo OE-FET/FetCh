@@ -15,3 +15,17 @@ class Gate(
     override val important  = true
 
 }
+
+class Voltage(
+    override val value: Double,
+    override val error: Double,
+    override val parameters: List<Quantity<*>> = emptyList(),
+    override val possibleParameters: List<KClass<out Quantity<*>>> = emptyList()
+) : DoubleQuantity {
+
+    override val name   = "Voltage"
+    override val symbol = "V"
+    override val unit   = "V"
+    override val important  = true
+
+}
