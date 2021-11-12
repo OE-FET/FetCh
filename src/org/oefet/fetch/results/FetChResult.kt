@@ -26,6 +26,7 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
     var field        = data.getAttribute("B")?.removeSuffix("T")?.toDouble() ?: Double.NaN
     var positionX    = data.getAttribute("P")?.trim('(', ')')?.split(",")?.get(0)?.toDouble() ?: Double.NaN
     var positionY    = data.getAttribute("P")?.trim('(', ')')?.split(",")?.get(1)?.toDouble() ?: Double.NaN
+    var voltage      = data.getAttribute("V")?.removeSuffix("V")?.toDouble() ?: Double.NaN
 
     init {
 
@@ -45,6 +46,7 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
         parameters += BField(field, 0.0)
         parameters += XPosition(positionX, 0.0)
         parameters += YPosition(positionY, 0.0)
+        parameters += Voltage(voltage, 0.0)
 
         if (temperature.isFinite()) {
             parameters += Temperature(temperature, 0.0)
