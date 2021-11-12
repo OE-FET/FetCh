@@ -9,7 +9,6 @@ import jisa.results.ResultList
 import jisa.results.ResultTable
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.gui.tabs.Dashboard.addToolbarButton
 import org.oefet.fetch.measurement.Log
 
 object Dashboard : Grid("Dashboard", 3) {

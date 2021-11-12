@@ -16,6 +16,8 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
     val delTime    by userInput("Basic", "Delay Time [s]", 0.5) map { it.toMSec() }
     val sdVoltages by userInput("Source-Drain", "Voltage [V]", Range.step(0, 60, 1).mirror())
     val sgVoltages by userInput("Source-Gate", "Voltage [V]", Range.step(0, 60, 10))
+    val sdOff      by userInput("Auto-Off", "Source-Drain Channel", true)
+    val sgOff      by userInput("Auto-Off", "Source-Gate Channel", true)
 
     // Instruments
     val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
@@ -68,9 +70,15 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
 
-        sdSMU.turnOff()
-        sgSMU?.turnOff()
-        gdSMU?.turnOff()
+        if (sdOff) {
+            sdSMU.turnOff()
+            gdSMU?.turnOff()
+        }
+
+        if (sgOff) {
+            sgSMU?.turnOff()
+        }
+
         fpp1?.turnOff()
         fpp2?.turnOff()
 
@@ -118,9 +126,15 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
     override fun onFinish() {
 
-        runRegardless { sdSMU.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
+        if (sdOff) {
+            runRegardless { sdSMU.turnOff() }
+            runRegardless { gdSMU?.turnOff() }
+        }
+
+        if (sgOff) {
+            runRegardless { sgSMU?.turnOff() }
+        }
+
         runRegardless { fpp1?.turnOff() }
         runRegardless { fpp2?.turnOff() }
 

@@ -137,9 +137,13 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
             val rh05 = halls.map { it.value.pow(-0.5) }
             val t025 = halls.map { it.getParameter(Temperature::class)?.value?.pow(-0.25) ?: 0.0 }
 
-            val maxC = otherQuantities.filter { it is Conductivity && it.isCompatibleWith(hall, excluded) }
+            // Find peak conductivity value from corresponding conductivity data
+            val conds = otherQuantities
+                .filter { it is Conductivity && it.isCompatibleWith(hall, excluded) }
                 .map { it as Conductivity }
-                .maxByOrNull { it.value }
+
+            val maxC = conds.maxByOrNull { it.value }
+
             val fit1 = Fitting.linearFit(t025, lnrh)
             val fit2 = Fitting.linearFit(t025, rh05)
 
@@ -157,9 +161,15 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
                 val r0 = (incp2 + (grad2 / (grad1 * 0.5))).pow(-2)
                 val n0 = (r0 * 1.6e-19).pow(-1) * (100.0).pow(-3)
 
+                val unscreened = UnscreenedHall(r0.value, r0.error, params, pParams)
                 extras += MottHoppingT0(t0.value, t0.error, params, pParams)
-                extras += UnscreenedHall(r0.value, r0.error, params, pParams)
+                extras += unscreened
                 extras += BandLikeDensity(n0.value, n0.error, params, pParams)
+
+                extras += conds.map {
+                    val mob = unscreened * it * 1e6
+                    UnscreenedHallMobility(mob.value, mob.error, it.parameters, it.possibleParameters)
+                }
 
             }
 
