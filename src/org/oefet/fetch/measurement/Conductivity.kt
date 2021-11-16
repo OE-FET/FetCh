@@ -40,7 +40,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
-    override fun createPlot(data: ResultTable): FPPPlot {
+    override fun createDisplay(data: ResultTable): FPPPlot {
         return FPPPlot(data)
     }
 

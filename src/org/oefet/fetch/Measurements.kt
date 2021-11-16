@@ -35,7 +35,7 @@ object Measurements {
 
         fun createMeasurement(): FetChMeasurement                                             = mClass.primaryConstructor!!.call()
         fun createResult(data: ResultTable): FetChResult = example.processResults(data)
-        fun createPlot(data: ResultTable)                                                     = example.createPlot(data)
+        fun createPlot(data: ResultTable)                                                     = example.createDisplay(data)
 
 
     }

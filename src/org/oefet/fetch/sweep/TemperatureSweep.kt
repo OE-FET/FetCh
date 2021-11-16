@@ -45,7 +45,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
         var task: RTask? = null
 
-        override fun createPlot(data: ResultTable): FetChPlot {
+        override fun createDisplay(data: ResultTable): FetChPlot {
 
             val plot =  FetChPlot("Change Temperature to $temperature K", "Time [s]", "Temperature [K]")
 

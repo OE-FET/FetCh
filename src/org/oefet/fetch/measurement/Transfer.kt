@@ -41,7 +41,7 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
         val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
-    override fun createPlot(data: ResultTable): TransferPlot {
+    override fun createDisplay(data: ResultTable): TransferPlot {
         return TransferPlot(data)
     }
 

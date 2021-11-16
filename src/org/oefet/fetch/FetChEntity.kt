@@ -20,7 +20,7 @@ abstract class FetChEntity : Measurement() {
     private    val errors  = LinkedList<String>()
     protected  val setters = LinkedList<() -> Unit>()
 
-    open fun createPlot(data: ResultTable): Element {
+    open fun createDisplay(data: ResultTable): Element {
         return FetChPlot(name).apply {
             createSeries().watchAll(data)
         }

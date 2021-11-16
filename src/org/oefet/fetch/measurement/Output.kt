@@ -41,7 +41,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
         val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
-    override fun createPlot(data: ResultTable): OutputPlot {
+    override fun createDisplay(data: ResultTable): OutputPlot {
         return OutputPlot(data)
     }
 

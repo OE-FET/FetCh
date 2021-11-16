@@ -211,7 +211,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         return ACHallResult(data)
     }
 
-    override fun createPlot(data: ResultTable): ACHallPlot {
+    override fun createDisplay(data: ResultTable): ACHallPlot {
         return ACHallPlot(data)
     }
 

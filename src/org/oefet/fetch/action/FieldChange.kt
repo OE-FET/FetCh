@@ -23,7 +23,7 @@ class FieldChange : FetChAction("Change Field") {
         val FIELD = DoubleColumn("Field", "T")
     }
 
-    override fun createPlot(data: ResultTable): FetChPlot {
+    override fun createDisplay(data: ResultTable): FetChPlot {
 
         val plot =  FetChPlot("Change Field to $field T", "Time [s]", "Field [T]")
 

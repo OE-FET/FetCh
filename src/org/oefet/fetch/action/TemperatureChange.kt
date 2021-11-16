@@ -26,7 +26,7 @@ class TemperatureChange : FetChAction("Change Temperature") {
         val TEMPERATURE = DoubleColumn("Temperature", "K")
     }
 
-    override fun createPlot(data: ResultTable): FetChPlot {
+    override fun createDisplay(data: ResultTable): FetChPlot {
 
         val plot =  FetChPlot("Change Temperature to $temperature K", "Time [s]", "Temperature [K]")
 

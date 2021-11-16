@@ -30,7 +30,7 @@ class VoltageHold : FetChAction("Hold") {
         val SG_VOLTAGE = DoubleColumn("Source-Gate Voltage", "V")
     }
 
-    override fun createPlot(data: ResultTable): FetChPlot {
+    override fun createDisplay(data: ResultTable): FetChPlot {
 
         return FetChPlot("Hold Voltages", "Time [s]", "Voltage [V]").apply {
             createSeries().watch(data, TIME, SD_VOLTAGE).setName("Source-Drain").setMarkerVisible(false).setColour(Colour.ORANGERED)

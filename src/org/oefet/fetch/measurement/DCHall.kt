@@ -85,7 +85,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     /**
      * This method defines what plot should be made from a given set of DC Hall data.
      */
-    override fun createPlot(data: ResultTable): DCHallPlot {
+    override fun createDisplay(data: ResultTable): DCHallPlot {
         return DCHallPlot(data)
     }
 

@@ -171,7 +171,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     }
 
 
-    override fun createPlot(data: ResultTable): TVHTPlot {
+    override fun createDisplay(data: ResultTable): TVHTPlot {
         return TVHTPlot(data)
     }
 

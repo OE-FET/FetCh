@@ -49,7 +49,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
     }
 
-    override fun createPlot(data: ResultTable): TVPlot {
+    override fun createDisplay(data: ResultTable): TVPlot {
         return TVPlot(data)
     }
 

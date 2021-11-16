@@ -147,8 +147,8 @@ object Measure : Grid("Measurement", 1) {
         action.data.setAttribute("Dielectric Thickness", "${dThick.value} m")
         action.data.setAttribute("Dielectric Permittivity", dielConst.value)
 
-        val table = Table("Data", action.data)
-        val element = (action.measurement as FetChEntity).createPlot(action.data)
+        val table   = Table("Data", action.data)
+        val element = (action.measurement as FetChEntity).createDisplay(action.data)
 
         topRow.remove(this.element)
         bottomRow.remove(this.table)

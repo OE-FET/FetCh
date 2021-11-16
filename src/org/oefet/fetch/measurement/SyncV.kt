@@ -42,7 +42,7 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
         val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
-    override fun createPlot(data: ResultTable): SyncPlot {
+    override fun createDisplay(data: ResultTable): SyncPlot {
         return SyncPlot(data)
     }
 

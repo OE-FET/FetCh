@@ -18,7 +18,7 @@ class HeaterSwitch : FetChAction("Heater Switch") {
 
     val plot = FetChPlot("Heater Switch").apply { isLegendVisible = false; pointOrdering = Plot.Sort.ORDER_ADDED; }
 
-    override fun createPlot(data: ResultTable): FetChPlot = plot
+    override fun createDisplay(data: ResultTable): FetChPlot = plot
 
     override fun run(results: ResultTable) {
 

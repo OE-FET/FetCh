@@ -55,7 +55,7 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         return listOf(actionHeater, actionSweep)
     }
 
-    override fun createPlot(data: ResultTable): TVCPlot {
+    override fun createDisplay(data: ResultTable): TVCPlot {
         return TVCPlot(data)
     }
 
