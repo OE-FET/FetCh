@@ -26,9 +26,9 @@ class Wait : FetChAction("Wait") {
 
         progress.setProgress(0, time)
 
-        task = RTask(10) { t ->
+        task = RTask(50) { t ->
             progress.setProgress(t.mSecFromStart, time)
-            progress.status = "${Util.msToString(time.toLong() - t.mSecFromStart)} remaining..."
+            progress.status = "${Util.msToPaddedString(time.toLong() - t.mSecFromStart)} remaining..."
         }
 
         task?.start()
