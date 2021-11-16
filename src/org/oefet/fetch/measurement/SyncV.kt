@@ -108,17 +108,17 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
             sleep(delTime)
 
-            results.addData(
-                vSD,
-                vSG,
-                sdSMU.voltage,
-                sdSMU.current,
-                sgSMU.voltage,
-                sgSMU.current,
-                fpp1?.voltage ?: Double.NaN,
-                fpp2?.voltage ?: Double.NaN,
-                tMeter?.temperature ?: Double.NaN,
-                gdSMU?.current ?: Double.NaN
+            results.mapRow(
+                SET_SD_VOLTAGE to vSD,
+                SET_SG_VOLTAGE to vSG,
+                SD_VOLTAGE     to sdSMU.voltage,
+                SD_CURRENT     to sdSMU.current,
+                SG_VOLTAGE     to sgSMU.voltage,
+                SG_CURRENT     to sgSMU.current,
+                FPP_1          to (fpp1?.voltage ?: Double.NaN),
+                FPP_2          to (fpp2?.voltage ?: Double.NaN),
+                TEMPERATURE    to (tMeter?.temperature ?: Double.NaN),
+                GROUND_CURRENT to (gdSMU?.current ?: Double.NaN)
             )
 
         }

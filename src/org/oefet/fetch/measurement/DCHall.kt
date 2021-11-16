@@ -184,23 +184,23 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     // Run all four repeat measurements side-by-side
                     Repeat.runTogether(hvm1Values, hvm2Values, fpp1Values, fpp2Values)
 
-                    results.addData(
-                        current,                             // Source-Drain Current (Set Value)
-                        gate,                                // Source-Gate Voltage (Set Value)
-                        sdSMU.voltage,                       // Source-Drain Voltage
-                        sdSMU.current,                       // Source-Drain Current (Measured Value)
-                        sgSMU?.voltage ?: Double.NaN,        // Source-Gate Voltage (Measured Value) - NaN if not used
-                        sgSMU?.current ?: Double.NaN,        // Source-Gate Current - NaN if not used
-                        magnet?.field ?: fields.first(),     // Magnetic field
-                        hvm1Values.mean,                     // Hall voltage 1 value (mean)
-                        hvm1Values.standardDeviation,        // Hall voltage 1 error (std. deviation)
-                        hvm2Values.mean,                     // Hall voltage 2 value (mean)
-                        hvm2Values.standardDeviation,        // Hall voltage 2 error (std. deviation)
-                        fpp1Values.mean,                     // FPP1
-                        fpp1Values.standardDeviation,        // FPP1 Error
-                        fpp2Values.mean,                     // FPP2
-                        fpp2Values.standardDeviation,        // FPP2 Error
-                        tMeter?.temperature ?: Double.NaN    // Temperature - NaN if not used
+                    results.mapRow(
+                        SET_SD_CURRENT to current,                             // Source-Drain Current (Set Value)
+                        SET_SG_VOLTAGE to gate,                                // Source-Gate Voltage (Set Value)
+                        SD_VOLTAGE     to sdSMU.voltage,                       // Source-Drain Voltage
+                        SD_CURRENT     to sdSMU.current,                       // Source-Drain Current (Measured Value)
+                        SG_VOLTAGE     to (sgSMU?.voltage ?: Double.NaN),      // Source-Gate Voltage (Measured Value) - NaN if not used
+                        SG_CURRENT     to (sgSMU?.current ?: Double.NaN),      // Source-Gate Current - NaN if not used
+                        FIELD          to (magnet?.field ?: fields.first()),   // Magnetic field
+                        HALL_1         to hvm1Values.mean,                     // Hall voltage 1 value (mean)
+                        HALL_1_ERROR   to hvm1Values.standardDeviation,        // Hall voltage 1 error (std. deviation)
+                        HALL_2         to hvm2Values.mean,                     // Hall voltage 2 value (mean)
+                        HALL_2_ERROR   to hvm2Values.standardDeviation,        // Hall voltage 2 error (std. deviation)
+                        FPP_1          to fpp1Values.mean,                     // FPP1
+                        FPP_1_ERROR    to fpp1Values.standardDeviation,        // FPP1 Error
+                        FPP_2          to fpp2Values.mean,                     // FPP2
+                        FPP_2_ERROR    to fpp2Values.standardDeviation,        // FPP2 Error
+                        TEMPERATURE    to (tMeter?.temperature ?: Double.NaN)  // Temperature - NaN if not used
                     )
 
                 }

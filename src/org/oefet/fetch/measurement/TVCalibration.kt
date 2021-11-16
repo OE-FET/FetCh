@@ -123,16 +123,16 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
                 stripMeasurement.run()
 
-                results.addData(
-                    heaterVoltage,
-                    stripCurrent,
-                    gdSMU?.current ?: Double.NaN,
-                    heater.voltage,
-                    heater.current,
-                    stripMeasurement.mean,
-                    stripMeasurement.standardDeviation,
-                    sdSMU.current,
-                    tMeter?.temperature ?: Double.NaN
+                results.mapRow(
+                    SET_HEATER_VOLTAGE  to heaterVoltage,
+                    SET_STRIP_CURRENT   to stripCurrent,
+                    GROUND_CURRENT      to (gdSMU?.current ?: Double.NaN),
+                    HEATER_VOLTAGE      to heater.voltage,
+                    HEATER_CURRENT      to heater.current,
+                    STRIP_VOLTAGE       to stripMeasurement.mean,
+                    STRIP_VOLTAGE_ERROR to stripMeasurement.standardDeviation,
+                    STRIP_CURRENT       to sdSMU.current,
+                    TEMPERATURE         to (tMeter?.temperature ?: Double.NaN)
                 )
 
             }

@@ -1,6 +1,5 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.gui.Series.Dash.DOTTED
 import jisa.results.ResultTable
 import org.oefet.fetch.measurement.TVHighThroughput
 
@@ -8,7 +7,7 @@ class TVHTPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Temperature Di
 
     val VOLTAGE  = data.findColumn(TVHighThroughput.VOLTAGE)
     val TEMPERATURE_DIFFERENCE = data.findColumn(TVHighThroughput.TEMPERATURE_DIFFERENCE)
-    val VOLTAGESTDDEVIATION = data.findColumn(TVHighThroughput.VOLTAGESTDDEVIATION)
+    val VOLTAGESTDDEVIATION = data.findColumn(TVHighThroughput.VOLTAGE_ERROR)
 
 
     init {
