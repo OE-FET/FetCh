@@ -140,16 +140,15 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
                         val tvVoltage = Repeat.run(avgCount, avgDelay) { tvMeter.voltage }
 
                         results.mapRow(
-                            MEAS_NO               to (count ++),
+                            MEAS_NO               to count++,
                             SET_GATE              to gateVoltage,
                             SET_HEATER            to heaterVoltage,
                             TEMPERATURE           to (tMeter?.temperature ?: Double.NaN),
                             GATE_VOLTAGE          to (sgSMU?.voltage ?: Double.NaN),
                             GATE_CURRENT          to (sgSMU?.current ?: Double.NaN),
-                            HEATER_VOLTAGE        to (heater.voltage),
-                            HEATER_CURRENT        to (heater.current),
-                            THERMAL_VOLTAGE       to (tvVoltage.mean),
-                            THERMAL_VOLTAGE_ERROR to (tvVoltage.standardDeviation),
+                            HEATER_VOLTAGE        to heater.voltage,
+                            THERMAL_VOLTAGE       to tvVoltage.mean,
+                            THERMAL_VOLTAGE_ERROR to tvVoltage.standardDeviation,
                             THERMAL_CURRENT       to (if (tvMeter is IMeter) (tvMeter as IMeter).current else Double.NaN)
                         )
 
@@ -190,17 +189,16 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
                         val tvVoltage = Repeat.run(avgCount, avgDelay) { tvMeter.voltage }
 
                         results.addData(
-                            count ++,
-                            gateVoltage,
-                            heaterVoltage,
-                            tMeter?.temperature ?: Double.NaN,
-                            sgSMU?.voltage ?: Double.NaN,
-                            sgSMU?.current ?: Double.NaN,
-                            heater.voltage,
-                            heater.current,
-                            tvVoltage.mean,
-                            tvVoltage.standardDeviation,
-                            if (tvMeter is IMeter) (tvMeter as IMeter).current else Double.NaN
+                            MEAS_NO               to count++,
+                            SET_GATE              to gateVoltage,
+                            SET_HEATER            to heaterVoltage,
+                            TEMPERATURE           to (tMeter?.temperature ?: Double.NaN),
+                            GATE_VOLTAGE          to (sgSMU?.voltage ?: Double.NaN),
+                            GATE_CURRENT          to (sgSMU?.current ?: Double.NaN),
+                            HEATER_VOLTAGE        to heater.voltage,
+                            THERMAL_VOLTAGE       to tvVoltage.mean,
+                            THERMAL_VOLTAGE_ERROR to tvVoltage.standardDeviation,
+                            THERMAL_CURRENT       to (if (tvMeter is IMeter) (tvMeter as IMeter).current else Double.NaN)
                         )
 
                     }
