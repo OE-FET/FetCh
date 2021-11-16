@@ -122,16 +122,16 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
             val fpp1Voltage = fpp1?.voltage ?: Double.NaN
             val fpp2Voltage = fpp2?.voltage ?: Double.NaN
 
-            results.addData(
-                sdVoltage,
-                sdSMU.current,
-                sgSMU?.voltage ?: Double.NaN,
-                sgSMU?.current ?: Double.NaN,
-                fpp1Voltage,
-                fpp2Voltage,
-                determineVoltage(sdVoltage, fpp1Voltage, fpp2Voltage),
-                tMeter?.temperature ?: Double.NaN,
-                gdSMU?.current ?: Double.NaN
+            results.mapRow(
+                SD_VOLTAGE     to sdVoltage,
+                SD_CURRENT     to sdSMU.current,
+                SG_VOLTAGE     to (sgSMU?.voltage ?: Double.NaN),
+                SG_CURRENT     to (sgSMU?.current ?: Double.NaN),
+                FPP1_VOLTAGE   to fpp1Voltage,
+                FPP2_VOLTAGE   to fpp2Voltage,
+                FPP_VOLTAGE    to determineVoltage(sdVoltage, fpp1Voltage, fpp2Voltage),
+                TEMPERATURE    to (tMeter?.temperature ?: Double.NaN),
+                GROUND_CURRENT to (gdSMU?.current ?: Double.NaN)
             )
 
         }

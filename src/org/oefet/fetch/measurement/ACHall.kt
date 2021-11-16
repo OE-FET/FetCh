@@ -168,21 +168,21 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
                     val hallValue = sqrt((x - startX).pow(2) + (y - startY).pow(2))
                     val hallError = sqrt(((x / r) * eX).pow(2) + ((y / r) * eY).pow(2))
 
-                    results.startRow()
-                        .set(SD_VOLTAGE, sdSMU.voltage)
-                        .set(SD_CURRENT, current)
-                        .set(SG_VOLTAGE, gate)
-                        .set(SG_CURRENT, sgSMU?.current ?: Double.NaN)
-                        .set(RMS_FIELD, rmsField)
-                        .set(FREQUENCY, frequency)
-                        .set(X_VOLTAGE, x - startX)
-                        .set(X_ERROR, eX)
-                        .set(Y_VOLTAGE, y - startX)
-                        .set(Y_ERROR, eY)
-                        .set(HALL_VOLTAGE, hallValue)
-                        .set(HALL_ERROR, if (hallError.isFinite()) hallError else (eX + eY) / 2.0)
-                        .set(TEMPERATURE, tMeter?.temperature ?: Double.NaN)
-                        .endRow()
+                    results.mapRow(
+                       SD_VOLTAGE   to sdSMU.voltage,
+                       SD_CURRENT   to current,
+                       SG_VOLTAGE   to gate,
+                       SG_CURRENT   to (sgSMU?.current ?: Double.NaN),
+                       RMS_FIELD    to rmsField,
+                       FREQUENCY    to frequency,
+                       X_VOLTAGE    to x - startX,
+                       X_ERROR      to eX,
+                       Y_VOLTAGE    to y - startX,
+                       Y_ERROR      to eY,
+                       HALL_VOLTAGE to hallValue,
+                       HALL_ERROR   to if (hallError.isFinite()) hallError else (eX + eY) / 2.0,
+                       TEMPERATURE  to (tMeter?.temperature ?: Double.NaN)
+                    )
 
                 }
 

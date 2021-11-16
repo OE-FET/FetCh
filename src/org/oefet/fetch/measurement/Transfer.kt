@@ -52,16 +52,16 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
     override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
-            Output.SET_SD_VOLTAGE,
-            Output.SET_SG_VOLTAGE,
-            Output.SD_VOLTAGE,
-            Output.SD_CURRENT,
-            Output.SG_VOLTAGE,
-            Output.SG_CURRENT,
-            Output.FPP_1,
-            Output.FPP_2,
-            Output.TEMPERATURE,
-            Output.GROUND_CURRENT
+            SET_SD_VOLTAGE,
+            SET_SG_VOLTAGE,
+            SD_VOLTAGE,
+            SD_CURRENT,
+            SG_VOLTAGE,
+            SG_CURRENT,
+            FPP_1,
+            FPP_2,
+            TEMPERATURE,
+            GROUND_CURRENT
         )
 
     }
@@ -104,17 +104,17 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
 
                 sleep(delTime)
 
-                results.addData(
-                    vSD,
-                    vSG,
-                    sdSMU.voltage,
-                    sdSMU.current,
-                    sgSMU.voltage,
-                    sgSMU.current,
-                    fpp1?.voltage ?: Double.NaN,
-                    fpp2?.voltage ?: Double.NaN,
-                    tMeter?.temperature ?: Double.NaN,
-                    gdSMU?.current ?: Double.NaN
+                results.mapRow(
+                    SET_SD_VOLTAGE to vSD,
+                    SET_SG_VOLTAGE to vSG,
+                    SD_VOLTAGE     to sdSMU.voltage,
+                    SD_CURRENT     to sdSMU.current,
+                    SG_VOLTAGE     to sgSMU.voltage,
+                    SG_CURRENT     to sgSMU.current,
+                    FPP_1          to (fpp1?.voltage ?: Double.NaN),
+                    FPP_2          to (fpp2?.voltage ?: Double.NaN),
+                    TEMPERATURE    to (tMeter?.temperature ?: Double.NaN),
+                    GROUND_CURRENT to (gdSMU?.current ?: Double.NaN)
                 )
 
             }

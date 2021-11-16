@@ -9,6 +9,7 @@ import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.results.OutputResult
+import kotlin.Double.Companion.NaN
 
 class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
@@ -103,17 +104,17 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
                 sleep(delTime)
 
-                results.addData(
-                    vSD,
-                    vSG,
-                    sdSMU.voltage,
-                    sdSMU.current,
-                    sgSMU?.voltage ?: vSG,
-                    sgSMU?.current ?: Double.NaN,
-                    fpp1?.voltage ?: Double.NaN,
-                    fpp2?.voltage ?: Double.NaN,
-                    tMeter?.temperature ?: Double.NaN,
-                    gdSMU?.current ?: Double.NaN
+                results.mapRow(
+                    SET_SD_VOLTAGE to vSD,
+                    SET_SG_VOLTAGE to vSG,
+                    SD_VOLTAGE     to sdSMU.voltage,
+                    SD_CURRENT     to sdSMU.current,
+                    SG_VOLTAGE     to (sgSMU?.voltage ?: vSG),
+                    SG_CURRENT     to (sgSMU?.current ?: NaN),
+                    FPP_1          to (fpp1?.voltage ?: NaN),
+                    FPP_2          to (fpp2?.voltage ?: NaN),
+                    TEMPERATURE    to (tMeter?.temperature ?: NaN),
+                    GROUND_CURRENT to (gdSMU?.current ?: NaN)
                 )
 
                 checkPoint()

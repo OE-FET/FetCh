@@ -8,6 +8,7 @@ import jisa.gui.Element
 import jisa.gui.Field
 import jisa.gui.Fields
 import jisa.maths.Range
+import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
@@ -23,6 +24,10 @@ abstract class FetChEntity : Measurement() {
         return FetChPlot(name).apply {
             createSeries().watchAll(data)
         }
+    }
+
+    fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
+        addData(mapOf(*data))
     }
 
     /**
