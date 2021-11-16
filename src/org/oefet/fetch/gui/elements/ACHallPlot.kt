@@ -1,9 +1,8 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.results.ResultTable
-import jisa.results.DoubleColumn
 import jisa.gui.Series.Dash.DASHED
 import jisa.maths.matrices.RealMatrix
+import jisa.results.ResultTable
 import org.oefet.fetch.measurement.ACHall
 import kotlin.math.absoluteValue
 
@@ -20,12 +19,12 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?
         isMouseEnabled = true
         pointOrdering  = Sort.ORDER_ADDED
 
-        val zero = data.minByOrNull { it[SD_CURRENT].absoluteValue } ?: data[0]
+        val zero by lazy { data.minByOrNull { it[SD_CURRENT].absoluteValue }?.get(HALL_VOLTAGE) ?: 0.0 }
 
         createSeries()
             .setName("Vector Subtracted")
             .polyFit(1)
-            .watch(data, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - zero[HALL_VOLTAGE] }, { it[HALL_ERROR] })
+            .watch(data, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - zero }, { it[HALL_ERROR] })
 
         if (optimised != null) {
 
