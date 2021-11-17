@@ -64,7 +64,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
             val rotated = voltages.rotate2D(theta)
             val reFit   = Fitting.linearFit(currents, rotated.getRowMatrix(0))
             val imFit   = Fitting.linearFit(currents, rotated.getRowMatrix(1))
-            val param   = abs(imFit.gradient / reFit.gradient)
+            val param   = try { abs(imFit.gradient / reFit.gradient) } catch (e: Throwable) { continue }
 
             if (param < minParam) {
                 minParam = param
