@@ -25,6 +25,7 @@ fun main() {
     }
 
     System.setErr(PrintStream(stream))
+    System.setOut(PrintStream(stream))
 
     Splash.show()
     MainWindow.select(0)

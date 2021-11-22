@@ -15,7 +15,8 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
 
     // User input parameters
     private val delTime  by userInput("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
-    private val currents by userInput("Source-Drain", "Current [A]", Range.linear(-10e-6, +10e-6, 11))
+    private val type     by userChoice("Source-Drain", "Type", "Current Sweep", "Voltage Sweep")
+    private val values   by userInput("Source-Drain", "Values [A or V]", Range.linear(-10e-6, +10e-6, 11))
     private val symI     by userInput("Source-Drain", "Sweep Both Ways", false)
     private val holdG    by userInput("Source-Gate", "Active", false)
     private val gateV    by userInput("Source-Gate", "Voltage [V]", 50.0)
@@ -38,6 +39,10 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         val FPP_VOLTAGE    = DoubleColumn("FPP Voltage", "V")
         val TEMPERATURE    = DoubleColumn("Temperature", "K")
         val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
+
+        const val TYPE_CURRENT = 0
+        const val TYPE_VOLTAGE = 1
+
     }
 
     override fun createDisplay(data: ResultTable): FPPPlot {
@@ -82,6 +87,11 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
         results.setAttribute("Used FPP", fpp1 != null || fpp2 != null || sdSMU.isFourProbeEnabled)
+        results.setAttribute("Sweep Type", when(type) {
+            TYPE_CURRENT -> "Current"
+            TYPE_VOLTAGE -> "Voltage"
+            else         -> "Unknown"
+        })
 
         // Turn everything off before starting
         gdSMU?.turnOff()
@@ -93,7 +103,11 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         // Configure all channel voltages/currents
         gdSMU?.voltage = 0.0
         sgSMU?.voltage = gateV
-        sdSMU.current  = currents.first()
+
+        when (type) {
+            TYPE_CURRENT -> sdSMU.current = values.first()
+            TYPE_VOLTAGE -> sdSMU.voltage = values.first()
+        }
 
         // Enable all channels
         gdSMU?.turnOn()
@@ -112,9 +126,12 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         }
 
         // Sweep current
-        for (current in if (symI) currents.mirror() else currents) {
+        for (value in if (symI) values.mirror() else values) {
 
-            sdSMU.current = current
+            when (type) {
+                TYPE_CURRENT -> sdSMU.current = value
+                TYPE_VOLTAGE -> sdSMU.voltage = value
+            }
 
             sleep(delTime)
 
