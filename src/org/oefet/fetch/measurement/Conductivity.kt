@@ -126,7 +126,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         }
 
         // Sweep current
-        for (value in if (symI) values.mirror() else values) {
+        for (value in (if (symI) values.mirror() else values)) {
 
             when (type) {
                 TYPE_CURRENT -> sdSMU.current = value
