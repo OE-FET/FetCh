@@ -17,7 +17,6 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
     private val delTime  by userInput("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
     private val type     by userChoice("Source-Drain", "Type", "Current Sweep", "Voltage Sweep")
     private val values   by userInput("Source-Drain", "Values [A or V]", Range.linear(-10e-6, +10e-6, 11))
-    private val symI     by userInput("Source-Drain", "Sweep Both Ways", false)
     private val holdG    by userInput("Source-Gate", "Active", false)
     private val gateV    by userInput("Source-Gate", "Voltage [V]", 50.0)
 
@@ -126,7 +125,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         }
 
         // Sweep current
-        for (value in (if (symI) values.mirror() else values)) {
+        for (value in values) {
 
             when (type) {
                 TYPE_CURRENT -> sdSMU.current = value
