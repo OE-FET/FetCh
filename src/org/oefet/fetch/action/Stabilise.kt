@@ -19,7 +19,7 @@ class Stabilise : FetChAction("Current Stabilisation") {
     private val logTime    by userInput("Logging Interval [s]", 1.0) map { it.toMSec() }
     private val autoOff    by userInput("Auto Off?", true)
 
-    private val vSource    by requiredInstrument("Voltage Source", VSource::class)
+    private val vSource    by optionalInstrument("Voltage Source", VSource::class)
     private val iMeter     by requiredInstrument("Ammeter", IMeter::class)
 
     private var logger     = RTask(1000) { _ -> }
@@ -49,14 +49,14 @@ class Stabilise : FetChAction("Current Stabilisation") {
 
     override fun run(results: ResultTable) {
 
-        vSource.voltage = setVoltage
-        vSource.turnOn()
+        vSource?.voltage = setVoltage
+        vSource?.turnOn()
         iMeter.turnOn()
 
         logger = RTask(logTime.toLong()) { task -> results.mapRow(
             TIME    to task.secFromStart,
             CURRENT to iMeter.current
-        )}
+        ) }
 
         logger.start()
 
@@ -69,7 +69,7 @@ class Stabilise : FetChAction("Current Stabilisation") {
         logger.stop()
 
         if (autoOff) {
-            vSource.turnOff()
+            vSource?.turnOff()
             iMeter.turnOff()
         }
 
