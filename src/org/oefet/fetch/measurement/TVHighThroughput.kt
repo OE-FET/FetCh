@@ -162,11 +162,14 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     }
 
     override fun onFinish() {
-        runRegardless { vMeter1.turnOff() }
-        runRegardless { vMeter2?.turnOff() }
-        runRegardless { ground?.turnOff() }
-        runRegardless { hotPeltier.setHeaterPower(0.0) }
-        runRegardless { coldPeltier.setHeaterPower(0.0) }
+
+        runRegardless(
+            { vMeter1.turnOff() },
+            { vMeter2?.turnOff() },
+            { ground?.turnOff() },
+            { hotPeltier.setHeaterPower(0.0) },
+            { coldPeltier.setHeaterPower(0.0) }
+        )
 
     }
 

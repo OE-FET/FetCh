@@ -29,6 +29,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
     private val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
     companion object {
+
         val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
         val SD_CURRENT     = DoubleColumn("SD Current", "A")
         val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
@@ -156,11 +157,13 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
 
     override fun onFinish() {
 
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { sdSMU.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
-        runRegardless { fpp1?.turnOff() }
-        runRegardless { fpp2?.turnOff() }
+        runRegardless(
+            { gdSMU?.turnOff() },
+            { sdSMU.turnOff() },
+            { sgSMU?.turnOff() },
+            { fpp1?.turnOff() },
+            { fpp2?.turnOff() }
+        )
 
     }
 

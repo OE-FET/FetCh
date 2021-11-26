@@ -217,10 +217,14 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
     }
 
     override fun onFinish() {
-        runRegardless { heater.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { tvMeter.turnOff() }
+
+        runRegardless(
+            { heater.turnOff() },
+            { sgSMU?.turnOff() },
+            { gdSMU?.turnOff() },
+            { tvMeter.turnOff() }
+        )
+
     }
 
     override fun getColumns(): Array<Column<*>> {

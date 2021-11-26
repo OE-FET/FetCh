@@ -180,6 +180,10 @@ abstract class FetChEntity : Measurement() {
 
     }
 
+    fun runRegardless(vararg toRun: () -> Unit) {
+        for (run in toRun) { try { run() } catch (e: Throwable) { e.printStackTrace() } }
+    }
+
     class MDelegate<T, M>(private val parameter: Parameter<T>, private val map: (T) -> M) {
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): M {

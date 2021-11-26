@@ -36,6 +36,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
             .setAlignment(Doc.Align.CENTRE)
 
     }
+
     // Parameter inputs to ask the user for
     private val delTime  by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
     private val repTime  by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
@@ -238,17 +239,18 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
         // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
         // failing would prevent the rest from running.
-        runRegardless { sdSMU.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
-        runRegardless { hvm1.turnOff() }
-        runRegardless { hvm2?.turnOff() }
-        runRegardless { fpp1?.turnOff() }
-        runRegardless { fpp2?.turnOff() }
-        runRegardless { magnet?.turnOff() }
+        runRegardless (
+            { sdSMU.turnOff() },
+            { gdSMU?.turnOff() },
+            { sgSMU?.turnOff() },
+            { hvm1.turnOff() },
+            { hvm2?.turnOff() },
+            { fpp1?.turnOff() },
+            { fpp2?.turnOff() },
+            { magnet?.turnOff() }
+        )
 
         notice.close()
-
         actionMagnet.reset()
 
     }

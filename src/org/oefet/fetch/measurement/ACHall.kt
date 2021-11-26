@@ -118,22 +118,25 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         gdSMU?.turnOn()
         fControl.start()
 
+        // Prepare repeat measurements for X and Y voltage values
         val xValues = Repeat.prepare(repeats, 1000) { lockIn.lockedX / totGain }
         val yValues = Repeat.prepare(repeats, 1000) { lockIn.lockedY / totGain }
 
         for (frequency in frequencies) {
 
-
+            // Adjust magnet frequency and wait enough time to stabilise
             stageSpinUp.start();
             fControl.target = frequency
 
             sleep(spin / 10)
             stageSpinUp.complete()
 
+            // Auto range and offset lock-in amplifier
             stageAutoRange.start()
             lockIn.autoRange()
             stageAutoRange.complete()
 
+            // Wait for lock-in to stabilise fully
             stageStabilise.start()
             sleep(spin)
 
@@ -175,12 +178,12 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
                        SG_CURRENT   to (sgSMU?.current ?: Double.NaN),
                        RMS_FIELD    to rmsField,
                        FREQUENCY    to frequency,
-                       X_VOLTAGE    to x - startX,
+                       X_VOLTAGE    to (x - startX),
                        X_ERROR      to eX,
-                       Y_VOLTAGE    to y - startX,
+                       Y_VOLTAGE    to (y - startX),
                        Y_ERROR      to eY,
                        HALL_VOLTAGE to hallValue,
-                       HALL_ERROR   to if (hallError.isFinite()) hallError else (eX + eY) / 2.0,
+                       HALL_ERROR   to (if (hallError.isFinite()) hallError else (eX + eY) / 2.0),
                        TEMPERATURE  to (tMeter?.temperature ?: Double.NaN)
                     )
 
@@ -198,10 +201,12 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     override fun onFinish() {
 
-        runRegardless { sdSMU.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { fControl.stop() }
+        runRegardless (
+            { sdSMU.turnOff() },
+            { sgSMU?.turnOff() },
+            { gdSMU?.turnOff() },
+            { fControl.stop() }
+        )
 
         actions.forEach { it.reset() }
 

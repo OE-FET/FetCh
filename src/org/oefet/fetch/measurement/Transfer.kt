@@ -126,16 +126,14 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
     override fun onFinish() {
 
         if (sdOff) {
-            runRegardless { sdSMU.turnOff() }
-            runRegardless { gdSMU?.turnOff() }
+            runRegardless( { sdSMU.turnOff() }, { gdSMU?.turnOff() } )
         }
 
         if (sgOff) {
             runRegardless { sgSMU.turnOff() }
         }
 
-        runRegardless { fpp1?.turnOff() }
-        runRegardless { fpp2?.turnOff() }
+        runRegardless ( { fpp1?.turnOff() }, { fpp2?.turnOff() } )
 
     }
 

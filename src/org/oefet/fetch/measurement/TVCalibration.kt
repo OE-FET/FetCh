@@ -144,10 +144,15 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     }
 
     override fun onFinish() {
-        runRegardless { heater.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { sdSMU.turnOff() }
+
+        runRegardless(
+            { heater.turnOff() },
+            { gdSMU?.turnOff() },
+            { sdSMU.turnOff() }
+        )
+
         actions.forEach { it.reset() }
+
     }
 
     override fun getColumns(): Array<Column<*>> {
