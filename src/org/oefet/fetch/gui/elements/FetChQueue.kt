@@ -192,10 +192,8 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             if (grid.showAsConfirmation()) {
 
                 input.update()
-                measurement.loadInstruments()
 
                 val multiAction = measurement.createSweepAction()
-                measurement.loadInstruments()
                 multiAction.setSweepValues(measurement.getValues())
                 multiAction.addActions(measurement.queue.actions)
 
@@ -207,7 +205,6 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
                     if (grid.showAsConfirmation()) {
 
                         input.update()
-                        measurement.loadInstruments()
                         multiAction.clearActions()
                         multiAction.addActions(measurement.queue.actions)
                         multiAction.setSweepValues(measurement.getValues())
