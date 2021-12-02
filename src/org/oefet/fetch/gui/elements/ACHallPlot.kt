@@ -1,18 +1,24 @@
 package org.oefet.fetch.gui.elements
 
+import jisa.gui.Colour
+import jisa.gui.Series
 import jisa.gui.Series.Dash.DASHED
-import jisa.maths.matrices.RealMatrix
 import jisa.results.ResultTable
 import org.oefet.fetch.measurement.ACHall
+import org.oefet.fetch.results.ACHallResult
 import kotlin.math.absoluteValue
 
-class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?) : FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]") {
+class ACHallPlot(data: ResultTable, optimised: ResultTable?) : FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]") {
 
     val HALL_ERROR   = data.findColumn(ACHall.HALL_ERROR)
     val HALL_VOLTAGE = data.findColumn(ACHall.HALL_VOLTAGE)
     val SD_CURRENT   = data.findColumn(ACHall.SD_CURRENT)
+    val FREQUENCY    = data.findColumn(ACHall.FREQUENCY)
 
-    constructor(data: ResultTable) : this(data, null, null)
+    val VS_COLOURS   = arrayOf(Colour.ORANGE, Colour.GREEN, Colour.CORNFLOWERBLUE, Colour.PURPLE)
+    val PO_COLOURS   = arrayOf(Colour.RED, Colour.TEAL, Colour.BLUE, Colour.MAROON)
+
+    constructor(data: ResultTable) : this(data, null)
 
     init {
 
@@ -23,25 +29,27 @@ class ACHallPlot(data: ResultTable, optimised: RealMatrix?, faraday: RealMatrix?
 
         createSeries()
             .setName("Vector Subtracted")
-            .polyFit(1)
             .watch(data, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - zero }, { it[HALL_ERROR] })
+            .split(FREQUENCY, "VS (%s Hz)")
+            .setColourSequence(*VS_COLOURS)
+            .polyFit(1)
 
         if (optimised != null) {
 
             createSeries()
                 .setName("Phase Optimised")
+                .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_HALL, ACHallResult.ROT_ERROR)
+                .setMarkerShape(Series.Shape.SQUARE)
+                .split(ACHallResult.ROT_FREQUENCY, "PO (%s Hz)")
+                .setColourSequence(*PO_COLOURS)
                 .polyFit(1)
-                .addPoints(data.toMatrix(SD_CURRENT), optimised, data.toMatrix(HALL_ERROR))
-
-        }
-
-        if (faraday != null) {
 
             createSeries()
                 .setName("Faraday Voltage")
                 .setMarkerVisible(false)
                 .setLineDash(DASHED)
-                .addPoints(data.toMatrix(SD_CURRENT), faraday)
+                .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_FARADAY)
+                .split(ACHallResult.ROT_FREQUENCY, "FV (%s Hz)")
 
         }
 

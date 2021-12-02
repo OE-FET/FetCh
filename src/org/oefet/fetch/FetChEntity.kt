@@ -17,13 +17,12 @@ import kotlin.reflect.KProperty
 
 abstract class FetChEntity : Measurement() {
 
-    private    val errors  = LinkedList<String>()
-    protected  val setters = LinkedList<() -> Unit>()
+    private val errors  = LinkedList<String>()
+    private val setters = LinkedList<() -> Unit>()
+    private val columns = LinkedList<Column<*>>()
 
     open fun createDisplay(data: ResultTable): Element {
-        return FetChPlot(name).apply {
-            createSeries().watchAll(data)
-        }
+        return FetChPlot(name).apply { createSeries().watchAll(data) }
     }
 
     fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
@@ -91,7 +90,7 @@ abstract class FetChEntity : Measurement() {
     fun <I : Instrument> requiredInstrument(name: String, type: KClass<I>): RDelegate<I> {
 
         val config = addInstrument(name, type.java)
-        val del    = RDelegate<I>(config)
+        val del = RDelegate<I>(config)
 
         setters += { del.setNow(errors) }
 
@@ -121,7 +120,6 @@ abstract class FetChEntity : Measurement() {
 
     fun userInput(section: String, name: String, defaultValue: Int): PDelegate<Int> {
         return userInput(IntegerParameter(section, name, null, defaultValue))
-
     }
 
     fun userInput(name: String, defaultValue: Int): PDelegate<Int> {
@@ -149,24 +147,44 @@ abstract class FetChEntity : Measurement() {
         return userInput("Basic", name, defaultValue)
     }
 
-    fun <I> customInput(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit) : PDelegate<I> {
+    fun <I> customInput(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit): PDelegate<I> {
         return userInput(CustomParameter(tag, element, getter, setter))
     }
 
-    fun <I> customInput(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit, reader: (String?) -> I?, writer: (I) -> String) : PDelegate<I> {
-        return userInput(CustomParameter(tag, element, getter, setter, { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() }, { b, v -> b.stringValue(tag).set(writer(v)) }))
+    fun <I> customInput(
+        tag: String,
+        element: Element,
+        getter: () -> I,
+        setter: (I) -> Unit,
+        reader: (String?) -> I?,
+        writer: (I) -> String
+    ): PDelegate<I> {
+
+        return userInput(CustomParameter(
+            tag,
+            element,
+            getter,
+            setter,
+            { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() },
+            { b, v -> b.stringValue(tag).set(writer(v)) }
+        ))
+
     }
 
-    fun customInput(checkGrid: CheckGrid) : PDelegate<Array<BooleanArray>> {
+    fun customInput(checkGrid: CheckGrid): PDelegate<Array<BooleanArray>> {
 
-        return customInput(checkGrid.title, checkGrid, checkGrid::getValues, checkGrid::setValues,
-            { it?.split(";")?.map{ it.split(",").map(String::toBoolean).toBooleanArray() }?.toTypedArray() },
+        return customInput(
+            checkGrid.title,
+            checkGrid,
+            checkGrid::getValues,
+            checkGrid::setValues,
+            { it?.split(";")?.map { it.split(",").map(String::toBoolean).toBooleanArray() }?.toTypedArray() },
             { it.joinToString(";") { it.joinToString(",") } }
         )
 
     }
 
-    fun <I> customInput(fields: Fields, field: Field<I>) : PDelegate<I> {
+    fun <I> customInput(fields: Fields, field: Field<I>): PDelegate<I> {
         return customInput(field.text, fields, field::get, field::set)
     }
 
@@ -181,7 +199,13 @@ abstract class FetChEntity : Measurement() {
     }
 
     fun runRegardless(vararg toRun: () -> Unit) {
-        for (run in toRun) { try { run() } catch (e: Throwable) { e.printStackTrace() } }
+        for (run in toRun) {
+            try {
+                run()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
     }
 
     class MDelegate<T, M>(private val parameter: Parameter<T>, private val map: (T) -> M) {

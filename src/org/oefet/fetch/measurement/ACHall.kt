@@ -13,6 +13,10 @@ import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.results.ACHallResult
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.companionObject
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.jvmErasure
 
 class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
@@ -27,6 +31,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
     private val spin        by userInput("Magnets", "Spin-Up Time [s]", 600.0) map { (it * 1e3).toInt() }
     private val currents    by userInput("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))
     private val gates       by userInput("Source-Gate", "Voltage [V]", Range.manual(0.0))
+    
+    private val totGain get() = paGain * exGain
 
     // Instruments
     private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
@@ -44,44 +50,26 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     private lateinit var fControl: FControl
 
-    private val totGain get() = paGain * exGain
-
     companion object {
 
-        val SD_VOLTAGE = DoubleColumn("SD Voltage", "V")
-        val SD_CURRENT = DoubleColumn("SD Current", "A")
-        val SG_VOLTAGE = DoubleColumn("SG Voltage", "V")
-        val SG_CURRENT = DoubleColumn("SG Current", "A")
-        val RMS_FIELD = DoubleColumn("RMS Field Strength", "T")
-        val FREQUENCY = DoubleColumn("Field Frequency", "Hz")
-        val X_VOLTAGE = DoubleColumn("X Voltage", "V")
-        val X_ERROR = DoubleColumn("X Error", "V")
-        val Y_VOLTAGE = DoubleColumn("Y Voltage", "V")
-        val Y_ERROR = DoubleColumn("Y Error", "V")
+        val SD_VOLTAGE   = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT   = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE   = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT   = DoubleColumn("SG Current", "A")
+        val RMS_FIELD    = DoubleColumn("RMS Field Strength", "T")
+        val FREQUENCY    = DoubleColumn("Field Frequency", "Hz")
+        val X_VOLTAGE    = DoubleColumn("X Voltage", "V")
+        val X_ERROR      = DoubleColumn("X Error", "V")
+        val Y_VOLTAGE    = DoubleColumn("Y Voltage", "V")
+        val Y_ERROR      = DoubleColumn("Y Error", "V")
         val HALL_VOLTAGE = DoubleColumn("Hall Voltage", "V")
-        val HALL_ERROR = DoubleColumn("Hall Voltage Error", "V")
-        val TEMPERATURE = DoubleColumn("Temperature", "K")
+        val HALL_ERROR   = DoubleColumn("Hall Voltage Error", "V")
+        val TEMPERATURE  = DoubleColumn("Temperature", "K")
 
     }
 
     override fun getColumns(): Array<Column<*>> {
-
-        return arrayOf(
-            SD_VOLTAGE,
-            SD_CURRENT,
-            SG_VOLTAGE,
-            SG_CURRENT,
-            RMS_FIELD,
-            FREQUENCY,
-            X_VOLTAGE,
-            X_ERROR,
-            Y_VOLTAGE,
-            Y_ERROR,
-            HALL_VOLTAGE,
-            HALL_ERROR,
-            TEMPERATURE
-        )
-
+        return this::class.companionObject?.memberProperties?.filter { Column::class.isInstance(it.returnType.jvmErasure) }?.map { (it as KProperty1<ACHall, Column<*>>).get(this) }?.toTypedArray() ?: emptyArray()
     }
 
     override fun run(results: ResultTable) {

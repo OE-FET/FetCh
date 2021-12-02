@@ -13,7 +13,7 @@ import org.oefet.fetch.measurement.Log
 
 object Dashboard : Grid("Dashboard", 3) {
 
-    private val plots  = ArrayList<Plot>()
+    private val plots  = ArrayList<Element>()
     private val shown  = ArrayList<Boolean>()
     private val logged = ArrayList<Boolean>()
 
@@ -51,7 +51,7 @@ object Dashboard : Grid("Dashboard", 3) {
 
             if (!Log.isRunning) {
 
-                val input = Fields("Change Logging Interval")
+                val input    = Fields("Change Logging Interval")
                 val interval = input.addIntegerField("Interval [ms]", Log.interval)
 
                 if (input.showAsConfirmation()) {

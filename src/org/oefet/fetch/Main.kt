@@ -3,12 +3,18 @@ package org.oefet.fetch
 import jisa.Util
 import jisa.control.Connection
 import jisa.gui.GUI
+import jisa.results.Column
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.Splash
 import org.oefet.fetch.gui.tabs.Connections
 import java.io.FileOutputStream
 import java.io.OutputStream
 import java.io.PrintStream
+
+fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
+    addData(mapOf(*data))
+}
 
 fun main() {
 

@@ -126,6 +126,10 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
         return quantities.find { it::class == type } as Quantity<S>?
     }
 
+    fun <S> findQuantities(type: KClass<out Quantity<out S>>): List<Quantity<S>> {
+        return quantities.filterIsInstance<Quantity<S>>().filter{ it::class == type }
+    }
+
     fun <S> findParameter(type: KClass<out Quantity<out S>>): Quantity<S>? {
         return parameters.find { it::class == type } as Quantity<S>?
     }
