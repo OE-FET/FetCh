@@ -2,6 +2,7 @@ package org.oefet.fetch.gui.elements
 
 import jisa.experiment.queue.ActionQueue
 import jisa.experiment.queue.MeasurementAction
+import jisa.experiment.queue.SweepAction
 import jisa.gui.GUI
 import jisa.gui.Grid
 import jisa.gui.MeasurementConfigurator
@@ -209,17 +210,13 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
                         multiAction.addActions(measurement.queue.actions)
                         multiAction.setSweepValues(measurement.getValues())
 
-                        multiAction.children.forEach {
-                            if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
-                        }
+                        setUpDisplay(multiAction)
 
                     }
 
                 }
 
-                multiAction.children.forEach {
-                    if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
-                }
+                setUpDisplay(multiAction)
 
                 queue.addAction(multiAction)
 
@@ -228,6 +225,15 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         } catch (e: Throwable) {
             e.printStackTrace()
             GUI.errorAlert(e.message)
+        }
+
+    }
+
+    private fun setUpDisplay(action: SweepAction<*>) {
+
+        action.children.forEach {
+            if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
+            if (it is SweepAction<*>) setUpDisplay(it)
         }
 
     }

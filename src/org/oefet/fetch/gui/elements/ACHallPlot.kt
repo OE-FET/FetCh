@@ -10,6 +10,7 @@ import kotlin.math.absoluteValue
 
 class ACHallPlot(data: ResultTable, optimised: ResultTable?) : FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]") {
 
+    val FARADAY       = data.findColumn(ACHall.FARADAY)
     val HALL_ERROR   = data.findColumn(ACHall.HALL_ERROR)
     val HALL_VOLTAGE = data.findColumn(ACHall.HALL_VOLTAGE)
     val SD_CURRENT   = data.findColumn(ACHall.SD_CURRENT)
@@ -22,14 +23,20 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?) : FetChPlot("AC Hal
 
     init {
 
+        val dataF = if (FARADAY != null) {
+            data.filter { !it[FARADAY] }
+        } else {
+            data
+        }
+
         isMouseEnabled = true
         pointOrdering  = Sort.ORDER_ADDED
 
-        val zero by lazy { data.minByOrNull { it[SD_CURRENT].absoluteValue }?.get(HALL_VOLTAGE) ?: 0.0 }
+        val zero by lazy { dataF.minByOrNull { it[SD_CURRENT].absoluteValue }?.get(HALL_VOLTAGE) ?: 0.0 }
 
         createSeries()
             .setName("Vector Subtracted")
-            .watch(data, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - zero }, { it[HALL_ERROR] })
+            .watch(dataF, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - zero }, { it[HALL_ERROR] })
             .split(FREQUENCY, "VS (%s Hz)")
             .setColourSequence(*VS_COLOURS)
             .polyFit(1)
