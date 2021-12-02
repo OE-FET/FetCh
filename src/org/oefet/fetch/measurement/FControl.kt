@@ -1,6 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.control.PIDController
+import jisa.control.Synch
 import jisa.devices.interfaces.DCPower
 import jisa.devices.interfaces.LockIn
 
@@ -28,6 +29,10 @@ class FControl(private val lockIn: LockIn, private val dcPower: DCPower) : PIDCo
     override fun stop() {
         dcPower.turnOff()
         super.stop()
+    }
+
+    fun waitForStableFrequency(pctRange: Double, time: Int) {
+        Synch.waitForParamStable(lockIn::getFrequency, pctRange, time, 1000)
     }
 
 }

@@ -32,7 +32,7 @@ object Analysis : BorderDisplay("Analysis") {
         )
 
         sidebar.add(
-            SpecificAnalysis(Temperature::class, Device::class, Gate::class, MaxConductivity::class),
+            SpecificAnalysis(Frequency::class, Temperature::class, Device::class, Gate::class, MaxConductivity::class),
             "Hall Analysis",
             "Plot quantities in ways useful for Hall analysis",
             Icon.HALL.blackImage

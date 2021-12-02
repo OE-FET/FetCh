@@ -17,6 +17,7 @@ import kotlin.math.*
 
 class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC Hall", Icon.CIRCLES.blackImage, data) {
 
+    val FARADAY      = data.findColumn(ACHall.FARADAY)
     val FREQUENCY    = data.findColumn(ACHall.FREQUENCY)
     val HALL_VOLTAGE = data.findColumn(ACHall.HALL_VOLTAGE)
     val RMS_FIELD    = data.findColumn(ACHall.RMS_FIELD)
@@ -53,6 +54,17 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
     init {
 
+        val faraday: ResultTable?
+        val data:    ResultTable
+
+        if (FARADAY != null) {
+            faraday = this.data.filter { it[FARADAY] }.takeIf { it.rowCount > 1 }
+            data    = this.data.filter { !it[FARADAY] }
+        } else {
+            faraday = null
+            data    = this.data
+        }
+
         for ((frequency, data) in data.split(FREQUENCY)) {
 
             val parameters = ArrayList(parameters)
@@ -88,6 +100,18 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
             addQuantity(HallPhase(minTheta, 0.0, parameters, possibleParameters))
 
+            val sign = if (faraday != null) {
+
+                val freq    = faraday.toList(FREQUENCY)
+                val signage = faraday.toMatrix(X_VOLTAGE, Y_VOLTAGE).rotate2D(minTheta)
+                val fVolt   = signage.getRow(1).toList()
+                val fit     = Fitting.linearFit(freq, fVolt)
+                if (fit.gradient >= 0) +1 else -1
+
+            } else {
+                +1
+            }
+
             // Calculate error weightings
             val hallErrors = data.toMatrix(X_ERROR, Y_ERROR).rowQuadratures.toList()
             val weights    = hallErrors.map { x -> x.pow(-2) }
@@ -96,6 +120,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
             // Determine whether to use the PO or VS hall fitting
             val hallFit = if (minVolts != null) {
+
                 val rotatedHall     = minVolts.getRow(0).toList()
                 val faradayVoltages = minVolts.getRow(1).toList()
 
@@ -112,13 +137,14 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
                 }
 
                 Fitting.linearFitWeighted(currents, rotatedHall, weights) ?: Fitting.linearFit(currents, rotatedHall)
+
             } else {
                 Fitting.linearFitWeighted(currents, vectorHall, weights) ?: Fitting.linearFit(currents, vectorHall)
             }
 
 
             // Calculate parameters from fitting
-            val hallValue       = hallFit.gradient * thickness / rmsField
+            val hallValue       = sign * hallFit.gradient * thickness / rmsField
             val hallError       = hallFit.gradientError * thickness / rmsField
             val hallQuantity    = HallCoefficient(hallValue, hallError, parameters, possibleParameters)
             val density         = hallQuantity.pow(-1) * (100.0).pow(-3) / 1.6e-19
