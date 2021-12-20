@@ -25,16 +25,22 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?) : FetChPlot("AC Hal
 
     init {
 
+        println("1")
+
         val filter = if (FARADAY != null) {
             Predicate<Row> { !it[FARADAY] }
         } else {
             Predicate<Row> { true }
         }
 
+        println("2")
+
         isMouseEnabled = true
         pointOrdering  = Sort.ORDER_ADDED
 
         val zero by lazy { data.filter(filter).minByOrNull { it[SD_CURRENT].absoluteValue }?.get(HALL_VOLTAGE) ?: 0.0 }
+
+        println("3")
 
         createSeries()
             .setName("Vector Subtracted")
@@ -44,26 +50,39 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?) : FetChPlot("AC Hal
             .setColourSequence(*VS_COLOURS)
             .polyFit(1)
 
-        if (optimised != null) {
 
-            createSeries()
-                .setName("Phase Optimised")
-                .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_HALL, ACHallResult.ROT_ERROR)
-                .filter(filter)
-                .setMarkerShape(Series.Shape.SQUARE)
-                .split(ACHallResult.ROT_FREQUENCY, "PO (%s Hz)")
-                .setColourSequence(*PO_COLOURS)
-                .polyFit(1)
+        println("4")
 
-            createSeries()
-                .setName("Faraday Voltage")
-                .setMarkerVisible(false)
-                .setLineDash(DASHED)
-                .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_FARADAY)
-                .filter(filter)
-                .split(ACHallResult.ROT_FREQUENCY, "FV (%s Hz)")
+        try {
 
+            if (optimised != null) {
+
+                createSeries()
+                    .setName("Phase Optimised")
+                    .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_HALL, ACHallResult.ROT_ERROR)
+                    .setMarkerShape(Series.Shape.SQUARE)
+                    .split(ACHallResult.ROT_FREQUENCY, "PO (%s Hz)")
+                    .setColourSequence(*PO_COLOURS)
+                    .polyFit(1)
+
+                println("5")
+
+                createSeries()
+                    .setName("Faraday Voltage")
+                    .setMarkerVisible(false)
+                    .setLineDash(DASHED)
+                    .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_FARADAY)
+                    .split(ACHallResult.ROT_FREQUENCY, "FV (%s Hz)")
+
+                println("6")
+
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
+        println("7")
 
 
     }

@@ -103,10 +103,10 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
             val sign = if (faraday != null) {
 
                 val freq    = faraday.toList(FREQUENCY)
-                val signage = faraday.toMatrix(X_VOLTAGE, Y_VOLTAGE).rotate2D(minTheta)
+                val signage = faraday.toMatrix(X_VOLTAGE, Y_VOLTAGE).transpose().rotate2D(minTheta)
                 val fVolt   = signage.getRow(1).toList()
                 val fit     = Fitting.linearFit(freq, fVolt)
-                if (fit.gradient >= 0) +1 else -1
+                if ((fit?.gradient ?: 1.0) >= 0) +1 else -1
 
             } else {
                 +1

@@ -123,11 +123,11 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         stageSpinUp.start();
 
         fControl.target = hallFrequencies.maxOrNull() ?: 1.0
-        fControl.waitForStableFrequency(2.5, 60000)
+        fControl.waitForStableFrequency(25.0, 60000)
 
         // Auto range and offset lock-in amplifier
         stageAutoRange.start()
-        lockIn.autoRange()
+        lockIn.autoRange(0.66)
         stageAutoRange.complete()
 
         stageSpinUp.complete()
@@ -138,7 +138,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
             stageSpinUp.start();
 
             fControl.target = frequency
-            fControl.waitForStableFrequency(2.5, 60000)
+            fControl.waitForStableFrequency(25.0, 60000)
 
             stageSpinUp.complete()
 
@@ -200,13 +200,13 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
             lockIn.timeConstant = 10.0 / (faraFrequencies.minOrNull() ?: 1.0)
 
-            val xValues = Repeat.prepare(((lockIn.timeConstant * 10) * 1000).toInt(), 1000) { lockIn.lockedX / totGain }
-            val yValues = Repeat.prepare(((lockIn.timeConstant * 10) * 1000).toInt(), 1000) { lockIn.lockedY / totGain }
+            val xValues = Repeat.prepare((lockIn.timeConstant * 10).toInt(), 1000) { lockIn.lockedX / totGain }
+            val yValues = Repeat.prepare((lockIn.timeConstant * 10).toInt(), 1000) { lockIn.lockedY / totGain }
 
             for (frequency in faraFrequencies) {
 
                 fControl.target = frequency
-                fControl.waitForStableFrequency(2.5, 60)
+
                 sleep(((lockIn.timeConstant * 10) * 1000).toInt())
 
                 Repeat.runTogether(xValues, yValues)
