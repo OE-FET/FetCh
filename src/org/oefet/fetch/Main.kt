@@ -13,7 +13,7 @@ import java.io.OutputStream
 import java.io.PrintStream
 
 fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
-    addData(mapOf(*data))
+    mapRow(mapOf(*data))
 }
 
 fun main() {

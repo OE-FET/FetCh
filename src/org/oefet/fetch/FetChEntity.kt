@@ -26,7 +26,7 @@ abstract class FetChEntity : Measurement() {
     }
 
     fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
-        addData(mapOf(*data))
+        mapRow(mapOf(*data))
     }
 
     /**

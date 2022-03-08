@@ -15,6 +15,7 @@ import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.FetChResult
 import java.io.File
 import java.util.*
+import kotlin.reflect.KClass
 
 /**
  * Page for loading in and viewing previous results
@@ -22,6 +23,7 @@ import java.util.*
 object FileLoad : BorderDisplay("Results") {
 
     private val fileList = ListDisplay<FetChResult>("Loaded Results")
+    private val cached   = HashMap<FetChResult, Grid>()
 
     private val progress = Progress("Loading Files").apply {
         status = "Reading and processing selected files, please wait..."
@@ -48,6 +50,7 @@ object FileLoad : BorderDisplay("Results") {
         fileList.addDefaultMenuItem("Remove Result") { listItem ->
             results -= listItem.getObject()
             listItem.remove()
+            cached.remove(listItem.getObject())
             updateDisplay()
         }
 
@@ -63,10 +66,15 @@ object FileLoad : BorderDisplay("Results") {
                 fileList.clear()
                 results.clear()
                 names.clear()
+                cached.clear()
                 System.gc()
             }
         }
 
+        fileList.addToolbarMenuButton("Filter").apply {
+            addItem("Remove") { filter(false) }
+            addItem("Retain") { filter(true) }
+        }
     }
 
     private fun updateDisplay() {
@@ -76,7 +84,7 @@ object FileLoad : BorderDisplay("Results") {
             // If nothing is selected, then show an empty pane
             centreElement = Grid()
 
-        } else {
+        } else if (!cached.containsKey(fileList.selected.getObject())) {
 
             val selected = fileList.selected.getObject()
             val params   = Display("Parameters")
@@ -123,14 +131,107 @@ object FileLoad : BorderDisplay("Results") {
             val row  = Grid(2, params, selected?.getPlot() ?: Measurements.createElement(selected.data))
             val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
 
-            centreElement = grid
+            centreElement    = grid
+            cached[selected] = grid
 
+        } else {
+            centreElement = cached[fileList.selected.getObject()]
         }
 
     }
 
     private fun toDisplay(quantity: Quantity<*>) : Boolean {
         return quantity::class !in notDisplayed
+    }
+
+    private fun filter(retain: Boolean) {
+
+        val types  = results.flatMap { r -> r.parameters.map { p -> p::class } }.distinct()
+        val values = LinkedHashMap<Quantity<*>, List<*>>()
+
+        for (type in types) {
+
+            val typeExample     = results.flatMap { r -> r.parameters }.find { it::class == type } as Quantity<*>
+            val typeValues      = results.flatMap { r -> r.parameters }.filter { it::class == type }.map { it.value }.distinct().sortedBy { it as Comparable<Any> } + null
+            values[typeExample] = typeValues
+
+        }
+
+        val grid       = Grid(if (retain) "Retain by Filter" else "Remove by Filter", 5);
+        grid.maxHeight = 500.0
+        val responses = LinkedHashMap<Quantity<*>, MutableList<Field<Boolean>>>()
+
+        for ((type, options) in values) {
+
+            responses[type] = ArrayList<Field<Boolean>>()
+
+            val fields = Fields(type.name)
+
+            for (option in options) {
+                responses[type]!!.add(fields.addCheckBox(if (option == null) "None" else "$option ${type.unit}", retain))
+            }
+
+            grid.add(fields)
+
+        }
+
+        if (grid.showAsConfirmation()) {
+
+            val toRemove = LinkedHashSet<FetChResult>()
+
+            if (retain) {
+
+                for ((quantity, fields) in responses) {
+
+                    val selected = values[quantity]!!.withIndex().filterIndexed { i, _ -> fields[i].value }.map { it.value }
+
+                        toRemove += results.filter {
+
+                            val found = it.parameters.find { it::class == quantity::class }
+
+                            if (found == null) {
+                                null !in selected
+                            } else {
+                                found.value !in selected
+                            }
+
+                        }
+
+                }
+
+            } else {
+
+                val selected = LinkedHashMap<KClass<out Quantity<*>>, List<*>>()
+
+                for ((quantity, fields) in responses) {
+                    selected[quantity::class] = values[quantity]!!.withIndex().filterIndexed { i, _ -> fields[i].value }.map { it.value }
+                }
+
+                toRemove += results.filter {
+
+                    r -> r.parameters.all {
+                        p -> (p.value in selected[p::class]!!) || selected[p::class]!!.isEmpty()
+                    } && selected.filter {
+                        null in it.value && selected[it.key]!!.isNotEmpty()
+                    }.all {
+                        it.key !in r.parameters.map { it::class }
+                    }
+
+                }
+
+            }
+
+            for (result in toRemove) {
+
+                fileList.filter { it.getObject() in toRemove }.forEach { it.remove() }
+                cached.clear()
+                results.removeAll(toRemove)
+                updateDisplay()
+
+            }
+
+        }
+
     }
 
     fun getQuantities(): List<Quantity<*>> {

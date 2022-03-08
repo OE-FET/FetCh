@@ -85,7 +85,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
         // Configure initial source modes
         sdSMU.voltage  = sdVoltages.first()
-        sgSMU?.voltage  = sgVoltages.first()
+        sgSMU?.voltage = sgVoltages.first()
         gdSMU?.voltage = 0.0
 
         sdSMU.turnOn()

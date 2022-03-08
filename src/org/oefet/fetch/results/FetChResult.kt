@@ -1,8 +1,8 @@
 package org.oefet.fetch.results
 
 import javafx.scene.image.Image
+import jisa.gui.Element
 import jisa.results.ResultTable
-import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.*
 import java.util.*
 import java.util.List.copyOf
@@ -54,21 +54,21 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
 
         val intTime = data.getAttribute("Integration Time")?.removeSuffix("s")?.toDouble() ?: Double.NaN
         val delTime = data.getAttribute("Delay Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
-        val hhTime = data.getAttribute("Heater Hold Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
-        val ghTime = data.getAttribute("Gate Hold Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
-        val aCount = data.getAttribute("Averaging Count")?.toDouble() ?: Double.NaN
+        val hhTime  = data.getAttribute("Heater Hold Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
+        val ghTime  = data.getAttribute("Gate Hold Time")?.removeSuffix("ms")?.toDouble() ?: Double.NaN
+        val aCount  = data.getAttribute("Averaging Count")?.toDouble() ?: Double.NaN
 
         if (intTime.isFinite()) parameters += IntegrationTime(intTime)
         if (delTime.isFinite()) parameters += DelayTime(delTime)
-        if (hhTime.isFinite()) parameters += HeaterHoldTime(hhTime)
-        if (ghTime.isFinite()) parameters += GateHoldTime(ghTime)
-        if (aCount.isFinite()) parameters += AveragingCount(aCount)
+        if (hhTime.isFinite())  parameters += HeaterHoldTime(hhTime)
+        if (ghTime.isFinite())  parameters += GateHoldTime(ghTime)
+        if (aCount.isFinite())  parameters += AveragingCount(aCount)
 
     }
 
     abstract fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>>
 
-    open fun getPlot(): FetChPlot? {
+    open fun getPlot(): Element? {
         return null
     }
 

@@ -51,27 +51,27 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
 
             for (quantity in typeQuantities) {
 
-                val row = table.startRow()
+                table.addRow { row ->
 
-                for ((index, pType) in varied.withIndex()) {
+                    for ((index, pType) in varied.withIndex()) {
 
-                    val column = columns[index] as Column<Any>
-                    val param  = quantity.getParameter(pType::class)
+                        val column = columns[index] as Column<Any>
+                        val param  = quantity.getParameter(pType::class)
 
-                    row[column] = when (param?.value) {
+                        row[column] = when (param?.value) {
 
-                        null                                     -> null
-                        is String, is Int, is Boolean, is Number -> param.value
-                        else                                     -> param.value.toString()
+                            null                                     -> null
+                            is String, is Int, is Boolean, is Number -> param.value
+                            else                                     -> param.value.toString()
+
+                        }
 
                     }
 
+                    row[valueColumn] = quantity.value
+                    row[errorColumn] = quantity.error
+
                 }
-
-                row.set(valueColumn, quantity.value)
-                row.set(errorColumn, quantity.error)
-
-                row.endRow()
 
             }
 

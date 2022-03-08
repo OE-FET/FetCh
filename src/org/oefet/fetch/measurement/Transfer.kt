@@ -84,8 +84,8 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
         fpp2?.turnOff()
 
         // Configure initial source modes
-        sdSMU.voltage = sdVoltages.first()
-        sgSMU.voltage = sgVoltages.first()
+        sdSMU.voltage  = sdVoltages.first()
+        sgSMU.voltage  = sgVoltages.first()
         gdSMU?.voltage = 0.0
 
         sdSMU.turnOn()
