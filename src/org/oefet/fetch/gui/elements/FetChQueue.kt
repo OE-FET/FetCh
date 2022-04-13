@@ -207,7 +207,9 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
                         input.update()
                         multiAction.clearActions()
+                        multiAction.clearFinalActions()
                         multiAction.addActions(measurement.queue.actions)
+                        multiAction.addFinalActions(measurement.generateFinalActions())
                         multiAction.setSweepValues(measurement.getValues())
 
                         setUpDisplay(multiAction)

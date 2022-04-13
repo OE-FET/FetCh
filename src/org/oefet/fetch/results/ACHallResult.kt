@@ -9,6 +9,7 @@ import jisa.results.ResultList
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.ACHallPlot
 import org.oefet.fetch.mapRow
+import org.oefet.fetch.mapRows
 import org.oefet.fetch.measurement.ACHall
 import org.oefet.fetch.quantities.*
 import java.util.*
@@ -120,14 +121,10 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
                 val fVolt   = signage.getRow(1).toList()
                 val fit     = Fitting.linearFit(freq, fVolt)
 
-                for ((f, v) in freq.zip(fVolt)) {
-
-                    this.faraday.mapRow(
-                        FAR_FREQUENCY to f,
-                        FAR_VOLTAGE   to v
-                    )
-
-                }
+                this.faraday.mapRows(
+                    FAR_FREQUENCY to freq,
+                    FAR_VOLTAGE   to fVolt
+                )
 
                 fit?.gradient?.sign ?: +1.0
 

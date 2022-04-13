@@ -29,6 +29,10 @@ abstract class FetChEntity : Measurement() {
         mapRow(mapOf(*data))
     }
 
+    fun ResultTable.mapRows(vararg data: Pair<Column<*>, Iterable<Any>>) {
+        mapRows(mapOf(*data))
+    }
+
     /**
      * Checks that everything required for this measurement is present. Returns all missing instrument errors as
      * a list of strings. Measurement will only go ahead if this list is empty.

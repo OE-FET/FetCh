@@ -30,6 +30,10 @@ abstract class FetChSweep<T>(private val name: String, private val tag: String) 
      */
     abstract fun generateForValue(value: T, actions: List<Action<*>>): List<Action<*>>
 
+    open fun generateFinalActions(): List<Action<*>> {
+        return emptyList()
+    }
+
     /**
      * Returns the human-readable formatted string representation of given sweep value.
      *
@@ -82,7 +86,10 @@ abstract class FetChSweep<T>(private val name: String, private val tag: String) 
     }
 
     fun createSweepAction(): SweepAction<T> {
-        return SweepAction(name, getValues(), this::generate).apply { setFormatter(this@FetChSweep::formatValue) }
+        return SweepAction(name, getValues(), this::generate).apply {
+            setFormatter(this@FetChSweep::formatValue)
+            addFinalActions(generateFinalActions())
+        }
     }
 
 }

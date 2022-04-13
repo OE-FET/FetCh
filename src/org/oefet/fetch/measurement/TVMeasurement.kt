@@ -23,11 +23,10 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
     private val avgDelay   by userInput("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
     private val order      by userChoice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
     private val heaterV    by userInput("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
-    private val symHV      by userInput("Heater", "Sweep Both Ways", false)
     private val heaterHold by userInput("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
     private val gates      by userInput("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
-    private val symSGV     by userInput("Gate", "Sweep Both Ways", false)
     private val gateHold   by userInput("Gate", "Hold Time [s]", 1.0) map { (it * 1e3).toInt() }
+    private val gateOff    by userInput("Gate", "Auto Off", true)
 
     // Instruments
     private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
@@ -95,7 +94,10 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
         heater.turnOff()
         tvMeter.turnOff()
         gdSMU?.turnOff()
-        sgSMU?.turnOff()
+
+        if (gateOff) {
+            sgSMU?.turnOff()
+        }
 
         // Configure voltage channels to source initial values (or 0V in the case of ground channel)
         heater.voltage = heaterV.first()
@@ -129,7 +131,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
                     actionHeater.start()
 
-                    for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
+                    for (heaterVoltage in heaterV) {
 
                         heater.voltage = heaterVoltage
                         heater.turnOn()
@@ -165,7 +167,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
             ORDER_HEATER_GATE -> {
 
-                for (heaterVoltage in if (symHV) heaterV.mirror() else heaterV) {
+                for (heaterVoltage in heaterV) {
 
                     actionHeater.start()
 
@@ -205,7 +207,10 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
                     actionGate.reset()
 
-                    sgSMU?.turnOff()
+                    if (gateOff) {
+                        sgSMU?.turnOff()
+                    }
+
                     sleep(gateHold)
 
                 }
@@ -220,10 +225,13 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
         runRegardless(
             { heater.turnOff() },
-            { sgSMU?.turnOff() },
             { gdSMU?.turnOff() },
             { tvMeter.turnOff() }
         )
+
+        if (gateOff) {
+            runRegardless { sgSMU?.turnOff() }
+        }
 
     }
 

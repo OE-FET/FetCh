@@ -10,8 +10,7 @@ import org.oefet.fetch.quantities.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TVResult(data: ResultTable) :
-    FetChResult("Thermal Voltage Measurement", "Thermal Voltage", Images.getImage("fire.png"), data) {
+class TVResult(data: ResultTable) : FetChResult("Thermal Voltage Measurement", "Thermal Voltage", Images.getImage("fire.png"), data) {
 
     val SET_GATE              = data.findColumn(TVMeasurement.SET_GATE)
     val TEMPERATURE           = data.findColumn(TVMeasurement.TEMPERATURE)
@@ -46,15 +45,15 @@ class TVResult(data: ResultTable) :
     override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
 
         val calibrationLeft = otherQuantities.filter {
-            it is LeftStripResistance
-            && it.isCompatibleWith(quantities.first())
-            && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
+            (it is LeftStripResistance
+                    && it.isCompatibleWith(quantities.first())
+                    && (it.getParameter(Drain::class)?.value ?: 1.0) == 0.0)
         }
 
         val calibrationRight = otherQuantities.filter {
-            it is RightStripResistance
-            && it.isCompatibleWith(quantities.first())
-            && it.getParameter(Drain::class)?.value ?: 1.0 == 0.0
+            (it is RightStripResistance
+                    && it.isCompatibleWith(quantities.first())
+                    && (it.getParameter(Drain::class)?.value ?: 1.0) == 0.0)
         }
 
         if (calibrationLeft.isEmpty() || calibrationRight.isEmpty()) {

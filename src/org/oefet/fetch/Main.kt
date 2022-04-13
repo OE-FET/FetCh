@@ -16,6 +16,10 @@ fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
     mapRow(mapOf(*data))
 }
 
+fun ResultTable.mapRows(vararg data: Pair<Column<*>, Iterable<Any>>) {
+    mapRows(mapOf(*data))
+}
+
 fun main() {
 
     val sysOut = System.out
