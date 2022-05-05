@@ -149,6 +149,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
                             GATE_VOLTAGE          to (sgSMU?.voltage ?: Double.NaN),
                             GATE_CURRENT          to (sgSMU?.current ?: Double.NaN),
                             HEATER_VOLTAGE        to heater.voltage,
+                            HEATER_CURRENT        to heater.current,
                             THERMAL_VOLTAGE       to tvVoltage.mean,
                             THERMAL_VOLTAGE_ERROR to tvVoltage.standardDeviation,
                             THERMAL_CURRENT       to (if (tvMeter is IMeter) (tvMeter as IMeter).current else Double.NaN)
@@ -198,6 +199,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
                             GATE_VOLTAGE          to (sgSMU?.voltage ?: Double.NaN),
                             GATE_CURRENT          to (sgSMU?.current ?: Double.NaN),
                             HEATER_VOLTAGE        to heater.voltage,
+                            HEATER_CURRENT        to heater.current,
                             THERMAL_VOLTAGE       to tvVoltage.mean,
                             THERMAL_VOLTAGE_ERROR to tvVoltage.standardDeviation,
                             THERMAL_CURRENT       to (if (tvMeter is IMeter) (tvMeter as IMeter).current else Double.NaN)
