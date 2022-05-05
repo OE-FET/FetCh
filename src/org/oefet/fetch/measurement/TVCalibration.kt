@@ -43,7 +43,7 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         val GROUND_CURRENT      = DoubleColumn("Ground Current", "A")
         val HEATER_VOLTAGE      = DoubleColumn("Heater Voltage", "V")
         val HEATER_CURRENT      = DoubleColumn("Heater Current", "A")
-        val HEATER_POWER        = DoubleColumn("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] }
+        val HEATER_POWER        = DoubleColumn("Heater Power", "W")
         val STRIP_VOLTAGE       = DoubleColumn("Strip Voltage", "V")
         val STRIP_VOLTAGE_ERROR = DoubleColumn("Strip Voltage Error", "V")
         val STRIP_CURRENT       = DoubleColumn("Strip Current", "A")
@@ -123,12 +123,17 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
                 stripMeasurement.run()
 
+                val hVoltage  = heater.voltage
+                val hCurrent  = heater.current
+                val hPower    = hVoltage * hCurrent
+
                 results.mapRow(
                     SET_HEATER_VOLTAGE  to heaterVoltage,
                     SET_STRIP_CURRENT   to stripCurrent,
                     GROUND_CURRENT      to (gdSMU?.current ?: Double.NaN),
-                    HEATER_VOLTAGE      to heater.voltage,
-                    HEATER_CURRENT      to heater.current,
+                    HEATER_VOLTAGE      to hVoltage,
+                    HEATER_CURRENT      to hCurrent,
+                    HEATER_POWER        to hPower,
                     STRIP_VOLTAGE       to stripMeasurement.mean,
                     STRIP_VOLTAGE_ERROR to stripMeasurement.standardDeviation,
                     STRIP_CURRENT       to sdSMU.current,
