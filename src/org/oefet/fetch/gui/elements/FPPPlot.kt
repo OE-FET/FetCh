@@ -1,12 +1,8 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.experiment.ResultTable
 import jisa.gui.Series.Dash.DOTTED
+import jisa.results.ResultTable
 import org.oefet.fetch.measurement.Conductivity
-import org.oefet.fetch.measurement.Conductivity.Companion.FPP1_VOLTAGE
-import org.oefet.fetch.measurement.Conductivity.Companion.FPP2_VOLTAGE
-import org.oefet.fetch.measurement.Conductivity.Companion.FPP_VOLTAGE
-import org.oefet.fetch.measurement.Conductivity.Companion.SD_CURRENT
 
 class FPPPlot(data: ResultTable) : FetChPlot("Conductivity", "Drain Current [A]", "Voltage [V]") {
 
@@ -38,7 +34,7 @@ class FPPPlot(data: ResultTable) : FetChPlot("Conductivity", "Drain Current [A]"
             .watch(data, SD_CURRENT, FPP2_VOLTAGE)
 
         createSeries()
-            .setName("FPP Difference")
+            .setName("Difference")
             .polyFit(1)
             .watch(data, SD_CURRENT, FPP_VOLTAGE)
 

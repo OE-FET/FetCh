@@ -3,13 +3,17 @@ package org.oefet.fetch.sweep
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.SMU
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
+import jisa.experiment.queue.SimpleAction
 import jisa.gui.Colour
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.ResultTable
 import org.oefet.fetch.action.FetChAction
+import org.oefet.fetch.action.VoltageHold.Companion.SD_VOLTAGE
+import org.oefet.fetch.action.VoltageHold.Companion.SG_VOLTAGE
+import org.oefet.fetch.action.VoltageHold.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 
@@ -17,16 +21,25 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
     var task: RTask? = null
 
-    val interval  by input("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val time      by input("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
-    val count     by input("Timing", "No. Stress Intervals", 10)
-    val useSD     by input("Source-Drain", "Enabled", false)
-    val sdVoltage by input("Source-Drain", "Voltage [V]", 50.0)
-    val useSG     by input("Source-Gate", "Enabled", false)
-    val sgVoltage by input("Source-Gate", "Voltage [V]", 50.0)
+    val interval  by userInput("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val time      by userInput("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
+    val count     by userInput("Timing", "No. Stress Intervals", 10)
+    val useSD     by userInput("Source-Drain", "Enabled", false)
+    val sdVoltage by userInput("Source-Drain", "Voltage [V]", 50.0)
+    val offSD     by userChoice("Source-Drain", "Auto Turn Off", "At each step", "Only at end", "Never")
+    val useSG     by userInput("Source-Gate", "Enabled", false)
+    val sgVoltage by userInput("Source-Gate", "Voltage [V]", 50.0)
+    val offSG     by userChoice("Source-Gate", "Auto Turn Off", "At each step", "Only at end", "Never")
 
-    val sdSMU by optionalConfig("Source-Drain Channel", SMU::class) requiredIf { useSD }
-    val sgSMU by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { useSG }
+    val gdSMU by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    val sdSMU by optionalInstrument("Source-Drain Channel", SMU::class) requiredIf { useSD }
+    val sgSMU by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { useSG }
+
+    companion object {
+        const val AUTO_OFF_ALL  = 0;
+        const val AUTO_OFF_END  = 1;
+        const val AUTO_OFF_NONE = 2;
+    }
 
     override fun getValues(): List<Int> {
         return Range.step(time, time * (count + 1), time).array().map { it.toInt() }
@@ -36,8 +49,41 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, sdSMU, sgSMU))
+        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, gdSMU, sdSMU, sgSMU, offSD, offSG))
+
+        if (useSD && offSD == AUTO_OFF_ALL) {
+            list += SimpleAction("Turn Off SD Channel") {
+                sdSMU?.turnOff()
+            }
+        }
+
+        if (useSG && offSG == AUTO_OFF_ALL) {
+            list += SimpleAction("Turn Off SG Channel") {
+                sgSMU?.turnOff()
+            }
+        }
+
         list += actions
+
+        return list
+
+    }
+
+    override fun generateFinalActions(): List<Action<*>> {
+
+        val list = ArrayList<Action<*>>()
+
+        if (useSD && offSD in arrayOf(AUTO_OFF_END, AUTO_OFF_ALL)) {
+            list += SimpleAction("Turn Off SD Channel") {
+                sdSMU?.turnOff()
+            }
+        }
+
+        if (useSG && offSG in arrayOf(AUTO_OFF_END, AUTO_OFF_ALL)) {
+            list += SimpleAction("Turn Off SG Channel") {
+                sgSMU?.turnOff()
+            }
+        }
 
         return list
 
@@ -54,18 +100,21 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         val sdVoltage: Double,
         val useSG: Boolean,
         val sgVoltage: Double,
+        val gdSMU: SMU?,
         val sdSMU: SMU?,
-        val sgSMU: SMU?
+        val sgSMU: SMU?,
+        val offSD: Int,
+        val offSG: Int
     ) : FetChAction("Hold") {
 
         var task: RTask? = null
 
-        override fun createPlot(data: ResultTable): FetChPlot {
+        override fun createDisplay(data: ResultTable): FetChPlot {
 
             return FetChPlot("Hold Voltages", "Time [s]", "Voltage [V]").apply {
-                createSeries().watch(data, 0, 1).setName("Source-Drain").setMarkerVisible(false)
+                createSeries().watch(data, TIME, SD_VOLTAGE).setName("Source-Drain").setMarkerVisible(false)
                     .setColour(Colour.ORANGERED)
-                createSeries().watch(data, 0, 2).setName("Source-Gate").setMarkerVisible(false)
+                createSeries().watch(data, TIME, SG_VOLTAGE).setName("Source-Gate").setMarkerVisible(false)
                     .setColour(Colour.CORNFLOWERBLUE)
                 isLegendVisible = true
             }
@@ -100,11 +149,10 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
 
             task?.start()
 
-            sdSMU?.turnOff()
-            sgSMU?.turnOff()
-
-            sdSMU?.voltage = 0.0
-            sgSMU?.voltage = 0.0
+            if (useSD || useSG) {
+                gdSMU?.turnOn()
+                gdSMU?.voltage = 0.0
+            }
 
             if (useSD) {
                 sdSMU?.voltage = sdVoltage
@@ -121,17 +169,15 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         }
 
         override fun onFinish() {
-            runRegardless { sdSMU?.turnOff() }
-            runRegardless { sgSMU?.turnOff() }
             task?.stop()
         }
 
-        override fun getColumns(): Array<Col> {
+        override fun getColumns(): Array<Column<*>> {
 
             return arrayOf(
-                Col("Time", "s"),
-                Col("Source-Drain Voltage", "V"),
-                Col("Source-Gate Voltage", "V")
+                TIME,
+                SD_VOLTAGE,
+                SG_VOLTAGE
             )
 
         }

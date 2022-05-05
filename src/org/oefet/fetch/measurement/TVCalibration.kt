@@ -5,49 +5,49 @@ import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.enums.AMode
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVCPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.TVCResult
 
 class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
 
     // Parameters
-    private val avgCount by input("Basic", "Averaging Count",1)
-    private val avgDelay by input("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
-    private val probe    by choice("Basic", "Strip", "Left", "Right")
-    private val heaterV  by input("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
-    private val holdHV   by input("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
-    private val currents by input("Resistive Thermometer", "Current [A]", Range.linear(0.0, 100e-6, 11))
-    private val holdSI   by input("Resistive Thermometer", "Hold Time", 0.5) map { (it * 1e3).toInt() }
+    private val avgCount by userInput("Basic", "Averaging Count",1)
+    private val avgDelay by userInput("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
+    private val probe    by userChoice("Basic", "Strip", "Left", "Right")
+    private val heaterV  by userInput("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
+    private val holdHV   by userInput("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
+    private val currents by userInput("Resistive Thermometer", "Current [A]", Range.linear(0.0, 100e-6, 11))
+    private val holdSI   by userInput("Resistive Thermometer", "Hold Time", 0.5) map { (it * 1e3).toInt() }
 
     // Instruments
-    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val heater by requiredConfig("Heater Channel", SMU::class)
-    private val sdSMU  by requiredConfig("Strip Source-Drain Channel", SMU::class)
-    private val fpp1   by optionalConfig("Four-Point Probe Channel 1", VMeter::class)
-    private val fpp2   by optionalConfig("Four-Point Probe Channel 2", VMeter::class)
-    private val tMeter by optionalConfig("Thermometer", TMeter::class)
+    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val heater by requiredInstrument("Heater Channel", SMU::class)
+    private val sdSMU  by requiredInstrument("Strip Source-Drain Channel", SMU::class)
+    private val fpp1   by optionalInstrument("Four-Point Probe Channel 1", VMeter::class)
+    private val fpp2   by optionalInstrument("Four-Point Probe Channel 2", VMeter::class)
+    private val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
     private val actionHeater = MeasurementSubAction("Hold Heater")
     private val actionSweep  = MeasurementSubAction("Sweep Current")
 
     companion object {
 
-        val SET_HEATER_VOLTAGE  = Col("Set Heater Voltage", "V")
-        val SET_STRIP_CURRENT   = Col("Set Strip Current", "A")
-        val GROUND_CURRENT      = Col("Ground Current", "A")
-        val HEATER_VOLTAGE      = Col("Heater Voltage", "V")
-        val HEATER_CURRENT      = Col("Heater Current", "A")
-        val HEATER_POWER        = Col("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] }
-        val STRIP_VOLTAGE       = Col("Strip Voltage", "V")
-        val STRIP_VOLTAGE_ERROR = Col("Strip Voltage Error", "V")
-        val STRIP_CURRENT       = Col("Strip Current", "A")
-        val TEMPERATURE         = Col("Temperature", "K")
+        val SET_HEATER_VOLTAGE  = DoubleColumn("Set Heater Voltage", "V")
+        val SET_STRIP_CURRENT   = DoubleColumn("Set Strip Current", "A")
+        val GROUND_CURRENT      = DoubleColumn("Ground Current", "A")
+        val HEATER_VOLTAGE      = DoubleColumn("Heater Voltage", "V")
+        val HEATER_CURRENT      = DoubleColumn("Heater Current", "A")
+        val HEATER_POWER        = DoubleColumn("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] }
+        val STRIP_VOLTAGE       = DoubleColumn("Strip Voltage", "V")
+        val STRIP_VOLTAGE_ERROR = DoubleColumn("Strip Voltage Error", "V")
+        val STRIP_CURRENT       = DoubleColumn("Strip Current", "A")
+        val TEMPERATURE         = DoubleColumn("Temperature", "K")
 
     }
 
@@ -55,12 +55,12 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         return listOf(actionHeater, actionSweep)
     }
 
-    override fun createPlot(data: ResultTable): TVCPlot {
+    override fun createDisplay(data: ResultTable): TVCPlot {
         return TVCPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): TVCResult {
-        return TVCResult(data, extra)
+    override fun processResults(data: ResultTable): TVCResult {
+        return TVCResult(data)
     }
 
     override fun run(results: ResultTable) {
@@ -123,16 +123,16 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
                 stripMeasurement.run()
 
-                results.addData(
-                    heaterVoltage,
-                    stripCurrent,
-                    gdSMU?.current ?: Double.NaN,
-                    heater.voltage,
-                    heater.current,
-                    stripMeasurement.mean,
-                    stripMeasurement.standardDeviation,
-                    sdSMU.current,
-                    tMeter?.temperature ?: Double.NaN
+                results.mapRow(
+                    SET_HEATER_VOLTAGE  to heaterVoltage,
+                    SET_STRIP_CURRENT   to stripCurrent,
+                    GROUND_CURRENT      to (gdSMU?.current ?: Double.NaN),
+                    HEATER_VOLTAGE      to heater.voltage,
+                    HEATER_CURRENT      to heater.current,
+                    STRIP_VOLTAGE       to stripMeasurement.mean,
+                    STRIP_VOLTAGE_ERROR to stripMeasurement.standardDeviation,
+                    STRIP_CURRENT       to sdSMU.current,
+                    TEMPERATURE         to (tMeter?.temperature ?: Double.NaN)
                 )
 
             }
@@ -144,13 +144,18 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     }
 
     override fun onFinish() {
-        runRegardless { heater.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { sdSMU.turnOff() }
+
+        runRegardless(
+            { heater.turnOff() },
+            { gdSMU?.turnOff() },
+            { sdSMU.turnOff() }
+        )
+
         actions.forEach { it.reset() }
+
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SET_HEATER_VOLTAGE,

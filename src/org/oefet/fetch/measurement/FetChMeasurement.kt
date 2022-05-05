@@ -1,17 +1,16 @@
 package org.oefet.fetch.measurement
 
-import jisa.experiment.ResultTable
+import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.FetChResult
-import org.oefet.fetch.results.SimpleResultFile
+import org.oefet.fetch.results.SimpleResult
 
-abstract class FetChMeasurement(private val name: String, label: String, val tag: String) : FetChEntity() {
+abstract class FetChMeasurement(private val name: String, fileLabel: String, val tag: String) : FetChEntity() {
 
-    private val labelProperty = StringParameter("Basic", "Name", null, label)
+    private val labelProperty = StringParameter("Basic", "Name", null, fileLabel)
 
-    open fun processResults(data: ResultTable, extra: List<Quantity>): FetChResult {
-        return SimpleResultFile(name, tag, data, extra)
+    open fun processResults(data: ResultTable): FetChResult {
+        return SimpleResult(name, tag, data)
     }
 
     override fun start() {

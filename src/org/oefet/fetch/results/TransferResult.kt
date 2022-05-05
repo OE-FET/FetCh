@@ -1,10 +1,9 @@
 package org.oefet.fetch.results
 
-import jisa.experiment.ResultTable
 import jisa.maths.functions.Function
 import jisa.maths.interpolation.Interpolation
+import jisa.results.ResultTable
 import org.oefet.fetch.EPSILON
-import org.oefet.fetch.gui.elements.TransferPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.Transfer
 import org.oefet.fetch.quantities.*
@@ -13,8 +12,7 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TransferResult(data: ResultTable, extraParams: List<Quantity> = emptyList()) :
-    FetChResult("Transfer Measurement", "Transfer", Images.getImage("transfer.png"), data, extraParams) {
+class TransferResult(data: ResultTable) : FetChResult("Transfer Measurement", "Transfer", Images.getImage("transfer.png"), data) {
 
     val SET_SD_VOLTAGE = data.findColumn(Transfer.SET_SD_VOLTAGE)
     val SET_SG_VOLTAGE = data.findColumn(Transfer.SET_SG_VOLTAGE)
@@ -53,27 +51,27 @@ class TransferResult(data: ResultTable, extraParams: List<Quantity> = emptyList(
 
             for ((drain, data) in data.split(SET_SD_VOLTAGE)) {
 
-                val fb = data.splitTwoWaySweep { it[SET_SG_VOLTAGE] }
+                val fb = data.directionalSplit { it[SET_SG_VOLTAGE] }
 
                 val function: (Double) -> Double
                 val gradFwd:  Function?
                 val gradBwd:  Function?
 
-                val vGFwd  = fb.forward.getColumns(SET_SG_VOLTAGE)
-                val iDFwd  = fb.forward.getColumns(SD_CURRENT)
-                val vGBwd  = fb.backward.getColumns(SET_SG_VOLTAGE)
-                val iDBwd  = fb.backward.getColumns(SD_CURRENT)
+                val vGFwd  = fb[0].toMatrix(SET_SG_VOLTAGE)
+                val iDFwd  = fb[0].toMatrix(SD_CURRENT)
+                val vGBwd  = fb[1].toMatrix(SET_SG_VOLTAGE)
+                val iDBwd  = fb[1].toMatrix(SD_CURRENT)
                 val linear = abs(drain) < data.getMax { abs(it[SET_SG_VOLTAGE]) }
 
                 if (linear) {
 
-                    gradFwd = if (fb.forward.numRows > 1) {
+                    gradFwd = if (fb[0].rowCount > 1) {
 
                         Interpolation.interpolate1D(vGFwd, iDFwd.map { x -> abs(x) }).derivative()
 
                     } else null
 
-                    gradBwd = if (fb.backward.numRows > 1) {
+                    gradBwd = if (fb[1].rowCount > 1) {
 
                         Interpolation.interpolate1D(vGBwd, iDBwd.map { x -> abs(x) }).derivative()
 
@@ -83,11 +81,11 @@ class TransferResult(data: ResultTable, extraParams: List<Quantity> = emptyList(
 
                 } else {
 
-                    gradFwd = if (fb.forward.numRows > 1) {
+                    gradFwd = if (fb[0].rowCount > 1) {
                         Interpolation.interpolate1D(vGFwd, iDFwd.map { x -> sqrt(abs(x)) }).derivative()
                     } else null
 
-                    gradBwd = if (fb.backward.numRows > 1) {
+                    gradBwd = if (fb[1].rowCount > 1) {
                         Interpolation.interpolate1D(vGBwd, iDBwd.map { x -> sqrt(abs(x)) }).derivative()
                     } else null
 
@@ -130,6 +128,6 @@ class TransferResult(data: ResultTable, extraParams: List<Quantity> = emptyList(
 
     }
 
-    override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> = emptyList()
+    override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> = emptyList()
 
 }

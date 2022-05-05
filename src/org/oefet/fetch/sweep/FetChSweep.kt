@@ -1,10 +1,11 @@
 package org.oefet.fetch.sweep
 
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
+
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.ActionQueue
 import jisa.experiment.queue.SweepAction
+import jisa.results.Column
+import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
 
 abstract class FetChSweep<T>(private val name: String, private val tag: String) : FetChEntity() {
@@ -28,6 +29,10 @@ abstract class FetChSweep<T>(private val name: String, private val tag: String) 
      * @return The complete list of actions for this sweep value (including automatically added actions)
      */
     abstract fun generateForValue(value: T, actions: List<Action<*>>): List<Action<*>>
+
+    open fun generateFinalActions(): List<Action<*>> {
+        return emptyList()
+    }
 
     /**
      * Returns the human-readable formatted string representation of given sweep value.
@@ -57,7 +62,7 @@ abstract class FetChSweep<T>(private val name: String, private val tag: String) 
         return this.name
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
         return emptyArray()
     }
 
@@ -81,7 +86,10 @@ abstract class FetChSweep<T>(private val name: String, private val tag: String) 
     }
 
     fun createSweepAction(): SweepAction<T> {
-        return SweepAction(name, getValues(), this::generate).apply { setFormatter(this@FetChSweep::formatValue) }
+        return SweepAction(name, getValues(), this::generate).apply {
+            setFormatter(this@FetChSweep::formatValue)
+            addFinalActions(generateFinalActions())
+        }
     }
 
 }

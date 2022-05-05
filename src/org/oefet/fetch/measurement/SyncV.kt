@@ -5,53 +5,52 @@ import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.enums.Icon
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.SyncPlot
 import org.oefet.fetch.quantities.Quantity
-import org.oefet.fetch.quantities.SimpleQuantity
 import org.oefet.fetch.results.FetChResult
-import org.oefet.fetch.results.OutputResult
 
 class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
     // Parameters
-    val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
-    val voltages by input("Source-Drain", "Voltage [V]", Range.linear(0, 60))
-    val symVSD   by input("Source-Drain", "Sweep Both Ways", true)
-    val offset   by input("Source-Gate", "Offset [V]", 0.0)
+    val delTime  by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
+    val voltages by userInput("Source-Drain", "Voltage [V]", Range.linear(0, 60))
+    val symVSD   by userInput("Source-Drain", "Sweep Both Ways", true)
+    val offset   by userInput("Source-Gate", "Offset [V]", 0.0)
 
     // Instruments
-    val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
-    val sgSMU  by requiredConfig("Source-Gate Channel", SMU::class)
-    val fpp1   by optionalConfig("Four-Point-Probe Channel 1", VMeter::class)
-    val fpp2   by optionalConfig("Four-Point-Probe Channel 2", VMeter::class)
-    val tMeter by optionalConfig("Thermometer", TMeter::class)
+    val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
+    val sgSMU  by requiredInstrument("Source-Gate Channel", SMU::class)
+    val fpp1   by optionalInstrument("Four-Point-Probe Channel 1", VMeter::class)
+    val fpp2   by optionalInstrument("Four-Point-Probe Channel 2", VMeter::class)
+    val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
     companion object {
-        val SET_SD_VOLTAGE = Col("Set SD Voltage", "V")
-        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
-        val SD_VOLTAGE     = Col("SD Voltage", "V")
-        val SD_CURRENT     = Col("SD Current", "A")
-        val SG_VOLTAGE     = Col("SG Voltage", "V")
-        val SG_CURRENT     = Col("SG Current", "A")
-        val FPP_1          = Col("Four Point Probe 1", "V")
-        val FPP_2          = Col("Four Point Probe 2", "V")
-        val TEMPERATURE    = Col("Temperature", "K")
-        val GROUND_CURRENT = Col("Ground Current", "A")
+        val SET_SD_VOLTAGE = DoubleColumn("Set SD Voltage", "V")
+        val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
+        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT     = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT     = DoubleColumn("SG Current", "A")
+        val FPP_1          = DoubleColumn("Four Point Probe 1", "V")
+        val FPP_2          = DoubleColumn("Four Point Probe 2", "V")
+        val TEMPERATURE    = DoubleColumn("Temperature", "K")
+        val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
     }
 
-    override fun createPlot(data: ResultTable): SyncPlot {
+    override fun createDisplay(data: ResultTable): SyncPlot {
         return SyncPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): FetChResult {
+    override fun processResults(data: ResultTable): FetChResult {
 
-        return object : FetChResult("Synced Voltage Measurement", "VSync", Icon.CLOCK.blackImage, data, extra) {
+        return object : FetChResult("Synced Voltage Measurement", "VSync", Icon.CLOCK.blackImage, data) {
 
-            override fun calculateHybrids(otherQuantities: List<Quantity>): List<Quantity> {
+            override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
                 return emptyList()
             }
 
@@ -59,7 +58,7 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
     }
 
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SET_SD_VOLTAGE,
@@ -109,17 +108,17 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
 
             sleep(delTime)
 
-            results.addData(
-                vSD,
-                vSG,
-                sdSMU.voltage,
-                sdSMU.current,
-                sgSMU.voltage,
-                sgSMU.current,
-                fpp1?.voltage ?: Double.NaN,
-                fpp2?.voltage ?: Double.NaN,
-                tMeter?.temperature ?: Double.NaN,
-                gdSMU?.current ?: Double.NaN
+            results.mapRow(
+                SET_SD_VOLTAGE to vSD,
+                SET_SG_VOLTAGE to vSG,
+                SD_VOLTAGE     to sdSMU.voltage,
+                SD_CURRENT     to sdSMU.current,
+                SG_VOLTAGE     to sgSMU.voltage,
+                SG_CURRENT     to sgSMU.current,
+                FPP_1          to (fpp1?.voltage ?: Double.NaN),
+                FPP_2          to (fpp2?.voltage ?: Double.NaN),
+                TEMPERATURE    to (tMeter?.temperature ?: Double.NaN),
+                GROUND_CURRENT to (gdSMU?.current ?: Double.NaN)
             )
 
         }

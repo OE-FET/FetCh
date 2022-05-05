@@ -6,15 +6,15 @@ import jisa.devices.interfaces.EMController
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
-import jisa.experiment.Col
-import jisa.experiment.ResultTable
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.DCHallPlot
-import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.DCHallResult
 
 /**
@@ -22,30 +22,39 @@ import org.oefet.fetch.results.DCHallResult
  */
 class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
+    // Notice display to show when magnet is ramping down
     private val notice = Doc("Ramping Down").apply {
-        addHeading("Ramping Down Magnet").setAlignment(Doc.Align.CENTRE).setColour(Colour.RED)
-        addText("This measurement has been interrupted and so the electromagnet\nis now safely returning itself to a zero current state.").setAlignment(Doc.Align.CENTRE)
-        addText("Please Wait...").setAlignment(Doc.Align.CENTRE)
+
+        addHeading("Ramping Down Magnet")
+            .setAlignment(Doc.Align.CENTRE)
+            .setColour(Colour.RED)
+
+        addText("This measurement has been interrupted and so the electromagnet\nis now safely returning itself to a zero current state.")
+            .setAlignment(Doc.Align.CENTRE)
+
+        addText("Please Wait...")
+            .setAlignment(Doc.Align.CENTRE)
+
     }
 
     // Parameter inputs to ask the user for
-    private val delTime  by input("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
-    private val repTime  by input("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
-    private val repeats  by input("Basic", "Repeats", 50)
-    private val fields   by input("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
-    private val currents by input("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))
-    private val gates    by input("Source-Gate", "Voltage [V]", Range.manual(0.0))
+    private val delTime  by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
+    private val repTime  by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
+    private val repeats  by userInput("Basic", "Repeats", 50)
+    private val fields   by userInput("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
+    private val currents by userInput("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))
+    private val gates    by userInput("Source-Gate", "Voltage [V]", Range.manual(0.0))
 
     // Instrument configurations to ask user for
-    private val gdSMU  by optionalConfig("Ground Channel (SPA)", SMU::class)
-    private val sdSMU  by requiredConfig("Source-Drain Channel", SMU::class)
-    private val sgSMU  by optionalConfig("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
-    private val hvm1   by requiredConfig("Hall Voltmeter 1", VMeter::class)
-    private val hvm2   by optionalConfig("Hall Voltmeter 2", VMeter::class)
-    private val fpp1   by optionalConfig("Four-Point Probe 1", VMeter::class)
-    private val fpp2   by optionalConfig("Four-Point Probe 2", VMeter::class)
-    private val tMeter by optionalConfig("Thermometer", TMeter::class)
-    private val magnet by optionalConfig("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
+    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
+    private val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
+    private val hvm1   by requiredInstrument("Hall Voltmeter 1", VMeter::class)
+    private val hvm2   by optionalInstrument("Hall Voltmeter 2", VMeter::class)
+    private val fpp1   by optionalInstrument("Four-Point Probe 1", VMeter::class)
+    private val fpp2   by optionalInstrument("Four-Point Probe 2", VMeter::class)
+    private val tMeter by optionalInstrument("Thermometer", TMeter::class)
+    private val magnet by optionalInstrument("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
 
     private val actionMagnet  = MeasurementSubAction("Ramp Magnet")
     private val actionCurrent = MeasurementSubAction("Sweep Current")
@@ -55,38 +64,44 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     companion object {
 
-        val SET_SD_CURRENT = Col("Set SD Current", "A")
-        val SET_SG_VOLTAGE = Col("Set SG Voltage", "V")
-        val SD_VOLTAGE     = Col("SD Voltage", "V")
-        val SD_CURRENT     = Col("SD Current", "A")
-        val SG_VOLTAGE     = Col("SG Voltage", "V")
-        val SG_CURRENT     = Col("SG Current", "A")
-        val FIELD          = Col("Field Strength", "T")
-        val HALL_1         = Col("Hall Voltage 1", "V")
-        val HALL_1_ERROR   = Col("Hall Voltage 1 Error", "V")
-        val HALL_2         = Col("Hall Voltage 2", "V")
-        val HALL_2_ERROR   = Col("Hall Voltage 2 Error", "V")
-        val FPP_1          = Col("Four-Point Probe 1", "V")
-        val FPP_1_ERROR    = Col("Four-Point Probe 1 Error", "V")
-        val FPP_2          = Col("Four-Point Probe 2", "V")
-        val FPP_2_ERROR    = Col("Four-Point Probe 2 Error", "V")
-        val TEMPERATURE    = Col("Temperature", "K")
+        val SET_SD_CURRENT = DoubleColumn("Set SD Current", "A")
+        val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
+        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
+        val SD_CURRENT     = DoubleColumn("SD Current", "A")
+        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
+        val SG_CURRENT     = DoubleColumn("SG Current", "A")
+        val FIELD          = DoubleColumn("Field Strength", "T")
+        val HALL_1         = DoubleColumn("Hall Voltage 1", "V")
+        val HALL_1_ERROR   = DoubleColumn("Hall Voltage 1 Error", "V")
+        val HALL_2         = DoubleColumn("Hall Voltage 2", "V")
+        val HALL_2_ERROR   = DoubleColumn("Hall Voltage 2 Error", "V")
+        val FPP_1          = DoubleColumn("Four-Point Probe 1", "V")
+        val FPP_1_ERROR    = DoubleColumn("Four-Point Probe 1 Error", "V")
+        val FPP_2          = DoubleColumn("Four-Point Probe 2", "V")
+        val FPP_2_ERROR    = DoubleColumn("Four-Point Probe 2 Error", "V")
+        val TEMPERATURE    = DoubleColumn("Temperature", "K")
 
     }
 
-    override fun createPlot(data: ResultTable): DCHallPlot {
+    /**
+     * This method defines what plot should be made from a given set of DC Hall data.
+     */
+    override fun createDisplay(data: ResultTable): DCHallPlot {
         return DCHallPlot(data)
     }
 
-    override fun processResults(data: ResultTable, extra: List<Quantity>): DCHallResult {
-        return DCHallResult(data, extra)
+    /**
+     * This method defined how to process a given set of DC Hall data.
+     */
+    override fun processResults(data: ResultTable): DCHallResult {
+        return DCHallResult(data)
     }
 
     /**
      * Defines the structure of the result table for this measurement - i.e. it returns the columns that the results
      * table should have.
      */
-    override fun getColumns(): Array<Col> {
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             SET_SD_CURRENT,
@@ -170,23 +185,23 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     // Run all four repeat measurements side-by-side
                     Repeat.runTogether(hvm1Values, hvm2Values, fpp1Values, fpp2Values)
 
-                    results.addData(
-                        current,                             // Source-Drain Current (Set Value)
-                        gate,                                // Source-Gate Voltage (Set Value)
-                        sdSMU.voltage,                       // Source-Drain Voltage
-                        sdSMU.current,                       // Source-Drain Current (Measured Value)
-                        sgSMU?.voltage ?: Double.NaN,        // Source-Gate Voltage (Measured Value) - NaN if not used
-                        sgSMU?.current ?: Double.NaN,        // Source-Gate Current - NaN if not used
-                        magnet?.field ?: fields.first(),     // Magnetic field
-                        hvm1Values.mean,                     // Hall voltage 1 value (mean)
-                        hvm1Values.standardDeviation,        // Hall voltage 1 error (std. deviation)
-                        hvm2Values.mean,                     // Hall voltage 2 value (mean)
-                        hvm2Values.standardDeviation,        // Hall voltage 2 error (std. deviation)
-                        fpp1Values.mean,                     // FPP1
-                        fpp1Values.standardDeviation,        // FPP1 Error
-                        fpp2Values.mean,                     // FPP2
-                        fpp2Values.standardDeviation,        // FPP2 Error
-                        tMeter?.temperature ?: Double.NaN    // Temperature - NaN if not used
+                    results.mapRow(
+                        SET_SD_CURRENT to current,                             // Source-Drain Current (Set Value)
+                        SET_SG_VOLTAGE to gate,                                // Source-Gate Voltage (Set Value)
+                        SD_VOLTAGE     to sdSMU.voltage,                       // Source-Drain Voltage
+                        SD_CURRENT     to sdSMU.current,                       // Source-Drain Current (Measured Value)
+                        SG_VOLTAGE     to (sgSMU?.voltage ?: Double.NaN),      // Source-Gate Voltage (Measured Value) - NaN if not used
+                        SG_CURRENT     to (sgSMU?.current ?: Double.NaN),      // Source-Gate Current - NaN if not used
+                        FIELD          to (magnet?.field ?: fields.first()),   // Magnetic field
+                        HALL_1         to hvm1Values.mean,                     // Hall voltage 1 value (mean)
+                        HALL_1_ERROR   to hvm1Values.standardDeviation,        // Hall voltage 1 error (std. deviation)
+                        HALL_2         to hvm2Values.mean,                     // Hall voltage 2 value (mean)
+                        HALL_2_ERROR   to hvm2Values.standardDeviation,        // Hall voltage 2 error (std. deviation)
+                        FPP_1          to fpp1Values.mean,                     // FPP1
+                        FPP_1_ERROR    to fpp1Values.standardDeviation,        // FPP1 Error
+                        FPP_2          to fpp2Values.mean,                     // FPP2
+                        FPP_2_ERROR    to fpp2Values.standardDeviation,        // FPP2 Error
+                        TEMPERATURE    to (tMeter?.temperature ?: Double.NaN)  // Temperature - NaN if not used
                     )
 
                 }
@@ -224,17 +239,18 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
 
         // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
         // failing would prevent the rest from running.
-        runRegardless { sdSMU.turnOff() }
-        runRegardless { gdSMU?.turnOff() }
-        runRegardless { sgSMU?.turnOff() }
-        runRegardless { hvm1.turnOff() }
-        runRegardless { hvm2?.turnOff() }
-        runRegardless { fpp1?.turnOff() }
-        runRegardless { fpp2?.turnOff() }
-        runRegardless { magnet?.turnOff() }
+        runRegardless (
+            { sdSMU.turnOff() },
+            { gdSMU?.turnOff() },
+            { sgSMU?.turnOff() },
+            { hvm1.turnOff() },
+            { hvm2?.turnOff() },
+            { fpp1?.turnOff() },
+            { fpp2?.turnOff() },
+            { magnet?.turnOff() }
+        )
 
         notice.close()
-
         actionMagnet.reset()
 
     }
@@ -246,7 +262,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
      */
     override fun newResults(path: String?): ResultTable {
         val results =  super.newResults(path)
-        results.setAttribute("Field Sweep", if (fields.max() != fields.min()) "true" else "false")
+        results.setAttribute("Field Sweep", if (fields.maxOrNull() != fields.minOrNull()) "true" else "false")
         return results
     }
 
