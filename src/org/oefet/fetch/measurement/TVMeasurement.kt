@@ -198,7 +198,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
                         val hCurrent  = heater.current
                         val hPower    = hVoltage * hCurrent
 
-                        results.addData(
+                        results.mapRow(
                             MEAS_NO               to count++,
                             SET_GATE              to gateVoltage,
                             SET_HEATER            to heaterVoltage,
