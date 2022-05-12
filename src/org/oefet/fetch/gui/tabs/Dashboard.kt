@@ -135,8 +135,6 @@ object Dashboard : Grid("Dashboard", 3) {
 
             }
 
-            plot.isSliderVisible = true
-
             val show = !Settings.dashboard.hasValue(plot.title) || Settings.dashboard.booleanValue(plot.title).get()
             val log  = !Settings.logged.hasValue(plot.title)    || Settings.logged.booleanValue(plot.title).get()
 

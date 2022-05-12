@@ -94,7 +94,7 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
                 val plot    = FetChPlot("${value.name} vs ${xColumn.name}", xColumn.title, value.title)
                 val splitBy = params.filter { it != xColumn }
                 val symbols = processed.parameters.filterIndexed { i, _ -> params[i] != xColumn }.map { it.symbol }
-                val series  = plot.createSeries().watch(table, xColumn, value, error).setName(value.name).setLineVisible(false).setColour(Series.defaultColours[n % Series.defaultColours.size])
+                val series  = plot.createSeries().watch(table, xColumn, value, error).setName(value.name).setLineVisible(false).setColour(Series.defaultColours[n % Series.defaultColours.size]).setPointOrder(Series.Ordering.X_AXIS)
 
                 if (splitBy.isNotEmpty()) {
 

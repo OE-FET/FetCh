@@ -8,7 +8,6 @@ import jisa.enums.AMode
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
-import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVCPlot
@@ -36,7 +35,8 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     private val actionHeater = MeasurementSubAction("Hold Heater")
     private val actionSweep  = MeasurementSubAction("Sweep Current")
 
-    companion object {
+    /** Result Table Columns */
+    companion object Columns {
 
         val SET_HEATER_VOLTAGE  = DoubleColumn("Set Heater Voltage", "V")
         val SET_STRIP_CURRENT   = DoubleColumn("Set Strip Current", "A")
@@ -48,79 +48,104 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         val STRIP_VOLTAGE_ERROR = DoubleColumn("Strip Voltage Error", "V")
         val STRIP_CURRENT       = DoubleColumn("Strip Current", "A")
         val TEMPERATURE         = DoubleColumn("Temperature", "K")
+        val COLUMN_ORDER        = arrayOf(
+            SET_HEATER_VOLTAGE,
+            SET_STRIP_CURRENT,
+            GROUND_CURRENT,
+            HEATER_VOLTAGE,
+            HEATER_CURRENT,
+            HEATER_POWER,
+            STRIP_VOLTAGE,
+            STRIP_VOLTAGE_ERROR,
+            STRIP_CURRENT,
+            TEMPERATURE
+        )
 
     }
 
+    /**
+     * Sub-actions to show within the action in the queue GUI
+     */
     override fun getActions(): List<Action<*>> {
         return listOf(actionHeater, actionSweep)
     }
 
+    /**
+     * What to show when running (plot)
+     */
     override fun createDisplay(data: ResultTable): TVCPlot {
         return TVCPlot(data)
     }
 
+    /**
+     * What class should FetCh use to process data from this type of measurement?
+     */
     override fun processResults(data: ResultTable): TVCResult {
         return TVCResult(data)
     }
 
     override fun run(results: ResultTable) {
 
+        // Add measurement information to results file header
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Averaging Count", avgCount.toString())
         results.setAttribute("Probe Number", probe.toString())
         results.setAttribute("Heater Hold Time", "$holdHV ms")
         results.setAttribute("Delay Time", "$holdSI ms")
 
+        // Make sure it is all off to begin with
         gdSMU?.turnOff()
         heater.turnOff()
         sdSMU.turnOff()
 
+        // Set initial values for everything
         gdSMU?.voltage          = 0.0
         heater.voltage          = heaterV.first()
         sdSMU.current           = currents.first()
         sdSMU.averageMode       = AMode.NONE
         sdSMU.averageCount      = 1
 
+        // Turn on the ground channel if there is one
         gdSMU?.turnOn()
 
+        // Determine how the FPP voltage should be determined based on which voltmeters have been configured
         val voltage = if (fpp1 != null && fpp2 != null) {
-
-            { fpp2!!.voltage - fpp1!!.voltage }
-
+            { fpp2!!.voltage - fpp1!!.voltage }  // Two voltage probes: assume they measure a separate probe each, relative to a common potential/ground
         } else if (fpp1 != null) {
-
-            { fpp1!!.voltage }
-
+            { fpp1!!.voltage }                   // Single voltage probe: assume it measures the voltage between two probes
         } else if (fpp2 != null) {
-
-            { fpp2!!.voltage }
-
+            { fpp2!!.voltage }                   // Single voltage probe: assume it measures the voltage between two probes
         } else {
-
-            { sdSMU.voltage }
-
+            { sdSMU.voltage }                   // No separate voltage probe: use voltage from source-drain SMU
         }
 
+        // Prepare an averaging measurement for the voltage
         val stripMeasurement = Repeat.prepare(avgCount, avgDelay) { voltage() }
 
         for (heaterVoltage in heaterV) {
 
+            // Tell the queue that we've started the heater portion of the measurement (to update GUI)
             actionHeater.start()
 
+            // Set the heater voltage, turn on the heater and wait for the heater hold time
             heater.voltage = heaterVoltage
             heater.turnOn()
             sleep(holdHV)
 
+            // Tell the queue that we've finished the heater portion
             actionHeater.reset()
 
+            // Let the queue know we've started the current sweep portion
             actionSweep.start()
 
             for (stripCurrent in currents) {
 
+                // Set current, turn on and wait for the current hold time
                 sdSMU.current = stripCurrent
                 sdSMU.turnOn()
                 sleep(holdSI)
 
+                // Perform the repeat/averaging measurement
                 stripMeasurement.run()
 
                 val hVoltage  = heater.voltage
@@ -142,47 +167,46 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
             }
 
+            // Tell the queue that we've finished the sweep portion
             actionSweep.reset()
 
         }
 
     }
 
+    /**
+     * Gets run after measurement has finished regardless of whether it was successful, interrupted or threw an error.
+     */
     override fun onFinish() {
 
+        // Turn off everything, ignore exceptions
         runRegardless(
             { heater.turnOff() },
             { gdSMU?.turnOff() },
             { sdSMU.turnOff() }
         )
 
+        // Reset all sub-actions
         actions.forEach { it.reset() }
 
     }
 
-    override fun getColumns(): Array<Column<*>> {
-
-        return arrayOf(
-            SET_HEATER_VOLTAGE,
-            SET_STRIP_CURRENT,
-            GROUND_CURRENT,
-            HEATER_VOLTAGE,
-            HEATER_CURRENT,
-            HEATER_POWER,
-            STRIP_VOLTAGE,
-            STRIP_VOLTAGE_ERROR,
-            STRIP_CURRENT,
-            TEMPERATURE
-        )
-
+    override fun getColumns(): Array<DoubleColumn> {
+        return COLUMN_ORDER
     }
 
+    /**
+     * Gets run if the measurement is interrupted
+     */
     override fun onInterrupt() {
-
+        // Nothing special to do here
     }
 
+    /**
+     * Gets run if the measurement encounters an error
+     */
     override fun onError() {
-
+        // Nothing special to do here
     }
 
 }

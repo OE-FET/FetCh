@@ -13,7 +13,7 @@ class TVHTPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Temperature Di
     init {
 
         isMouseEnabled = true
-        pointOrdering  = Sort.ORDER_ADDED
+        
 
 
         createSeries()

@@ -51,8 +51,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
     private val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
     private val hvm1   by requiredInstrument("Hall Voltmeter 1", VMeter::class)
     private val hvm2   by optionalInstrument("Hall Voltmeter 2", VMeter::class)
-    private val fpp1   by optionalInstrument("Four-Point Probe 1", VMeter::class)
-    private val fpp2   by optionalInstrument("Four-Point Probe 2", VMeter::class)
+    private val hvm3   by optionalInstrument("Hall Voltmeter 3", VMeter::class)
+    private val hvm4   by optionalInstrument("Hall Voltmeter 4", VMeter::class)
     private val tMeter by optionalInstrument("Thermometer", TMeter::class)
     private val magnet by optionalInstrument("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
 
@@ -75,10 +75,10 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         val HALL_1_ERROR   = DoubleColumn("Hall Voltage 1 Error", "V")
         val HALL_2         = DoubleColumn("Hall Voltage 2", "V")
         val HALL_2_ERROR   = DoubleColumn("Hall Voltage 2 Error", "V")
-        val FPP_1          = DoubleColumn("Four-Point Probe 1", "V")
-        val FPP_1_ERROR    = DoubleColumn("Four-Point Probe 1 Error", "V")
-        val FPP_2          = DoubleColumn("Four-Point Probe 2", "V")
-        val FPP_2_ERROR    = DoubleColumn("Four-Point Probe 2 Error", "V")
+        val HALL_3         = DoubleColumn("Hall Voltage 3", "V")
+        val HALL_3_ERROR   = DoubleColumn("Hall Voltage 3 Error", "V")
+        val HALL_4         = DoubleColumn("Hall Voltage 4", "V")
+        val HALL_4_ERROR   = DoubleColumn("Hall Voltage 4 Error", "V")
         val TEMPERATURE    = DoubleColumn("Temperature", "K")
 
     }
@@ -115,10 +115,10 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
             HALL_1_ERROR,
             HALL_2,
             HALL_2_ERROR,
-            FPP_1,
-            FPP_1_ERROR,
-            FPP_2,
-            FPP_2_ERROR,
+            HALL_3,
+            HALL_3_ERROR,
+            HALL_4,
+            HALL_4_ERROR,
             TEMPERATURE
         )
 
@@ -142,8 +142,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         sgSMU?.turnOff()
         hvm1.turnOff()
         hvm2?.turnOff()
-        fpp1?.turnOff()
-        fpp2?.turnOff()
+        hvm3?.turnOff()
+        hvm4?.turnOff()
 
         // Set the initial values of voltage and current
         gdSMU?.voltage = 0.0
@@ -156,14 +156,14 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
         sgSMU?.turnOn()
         hvm1.turnOn()
         hvm2?.turnOn()
-        fpp1?.turnOn()
-        fpp2?.turnOn()
+        hvm3?.turnOn()
+        hvm4?.turnOn()
 
         // Prepare repeat measurements
         val hvm1Values = Repeat.prepare(repeats, repTime) { hvm1.voltage }
         val hvm2Values = Repeat.prepare(repeats, repTime) { hvm2?.voltage ?: Double.NaN }
-        val fpp1Values = Repeat.prepare(repeats, repTime) { fpp1?.voltage ?: Double.NaN }
-        val fpp2Values = Repeat.prepare(repeats, repTime) { fpp2?.voltage ?: Double.NaN }
+        val hvm3Values = Repeat.prepare(repeats, repTime) { hvm3?.voltage ?: Double.NaN }
+        val hvm4Values = Repeat.prepare(repeats, repTime) { hvm4?.voltage ?: Double.NaN }
 
         for (gate in gates) {
 
@@ -183,7 +183,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                     sleep(delTime)
 
                     // Run all four repeat measurements side-by-side
-                    Repeat.runTogether(hvm1Values, hvm2Values, fpp1Values, fpp2Values)
+                    Repeat.runTogether(hvm1Values, hvm2Values, hvm3Values, hvm4Values)
 
                     results.mapRow(
                         SET_SD_CURRENT to current,                             // Source-Drain Current (Set Value)
@@ -197,10 +197,10 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
                         HALL_1_ERROR   to hvm1Values.standardDeviation,        // Hall voltage 1 error (std. deviation)
                         HALL_2         to hvm2Values.mean,                     // Hall voltage 2 value (mean)
                         HALL_2_ERROR   to hvm2Values.standardDeviation,        // Hall voltage 2 error (std. deviation)
-                        FPP_1          to fpp1Values.mean,                     // FPP1
-                        FPP_1_ERROR    to fpp1Values.standardDeviation,        // FPP1 Error
-                        FPP_2          to fpp2Values.mean,                     // FPP2
-                        FPP_2_ERROR    to fpp2Values.standardDeviation,        // FPP2 Error
+                        HALL_3         to hvm3Values.mean,                     // Hall voltage 3 value (mean)
+                        HALL_3_ERROR   to hvm3Values.standardDeviation,        // Hall voltage 3 error (std. deviation)
+                        HALL_4         to hvm4Values.mean,                     // Hall voltage 4 value (mean)
+                        HALL_4_ERROR   to hvm4Values.standardDeviation,        // Hall voltage 4 error (std. deviation)
                         TEMPERATURE    to (tMeter?.temperature ?: Double.NaN)  // Temperature - NaN if not used
                     )
 
@@ -245,8 +245,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
             { sgSMU?.turnOff() },
             { hvm1.turnOff() },
             { hvm2?.turnOff() },
-            { fpp1?.turnOff() },
-            { fpp2?.turnOff() },
+            { hvm3?.turnOff() },
+            { hvm4?.turnOff() },
             { magnet?.turnOff() }
         )
 

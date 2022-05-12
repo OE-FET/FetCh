@@ -34,8 +34,8 @@ class DCHallResult(data: ResultTable) :
     val FIELD = data.findColumn(DCHall.FIELD)
     val HALL_1 = data.findColumn(DCHall.HALL_1)
     val HALL_2 = data.findColumn(DCHall.HALL_2)
-    val FPP_1 = data.findColumn(DCHall.FPP_1)
-    val FPP_2 = data.findColumn(DCHall.FPP_2)
+    val FPP_1 = data.findColumn(DCHall.HALL_3)
+    val FPP_2 = data.findColumn(DCHall.HALL_4)
     val TEMPERATURE = data.findColumn(DCHall.TEMPERATURE)
 
     init {

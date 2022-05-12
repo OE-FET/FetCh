@@ -4,7 +4,6 @@ import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
 import jisa.maths.Range
-import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
@@ -28,7 +27,8 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
     val fpp2   by optionalInstrument("Four-Point-Probe Channel 2", VMeter::class)
     val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
-    companion object {
+    companion object Columns {
+
         val SET_SD_VOLTAGE = DoubleColumn("Set SD Voltage", "V")
         val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
         val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
@@ -39,19 +39,8 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
         val FPP_2          = DoubleColumn("Four Point Probe 2", "V")
         val TEMPERATURE    = DoubleColumn("Temperature", "K")
         val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
-    }
 
-    override fun createDisplay(data: ResultTable): OutputPlot {
-        return OutputPlot(data)
-    }
-
-    override fun processResults(data: ResultTable): OutputResult {
-        return OutputResult(data)
-    }
-
-    override fun getColumns(): Array<Column<*>> {
-
-        return arrayOf(
+        val COLUMN_ORDER   = arrayOf(
             SET_SD_VOLTAGE,
             SET_SG_VOLTAGE,
             SD_VOLTAGE,
@@ -66,28 +55,39 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
     }
 
+    override fun createDisplay(data: ResultTable): OutputPlot {
+        return OutputPlot(data)
+    }
+
+    override fun processResults(data: ResultTable): OutputResult {
+        return OutputResult(data)
+    }
+
+    override fun getColumns(): Array<DoubleColumn> = COLUMN_ORDER
+
     override fun run(results: ResultTable) {
 
+        // Record the integration and delay times
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
 
+        // If we are allowed to turn off the SD channel, then start off with it off
         if (sdOff) {
             sdSMU.turnOff()
             gdSMU?.turnOff()
         }
 
+        // If we are allowed to turn off the SG channel, then start off with it off
         if (sgOff) {
             sgSMU?.turnOff()
         }
-
-        fpp1?.turnOff()
-        fpp2?.turnOff()
 
         // Configure initial source modes
         sdSMU.voltage  = sdVoltages.first()
         sgSMU?.voltage = sgVoltages.first()
         gdSMU?.voltage = 0.0
 
+        // Make sure everything that is configured for use is now turned on
         sdSMU.turnOn()
         sgSMU?.turnOn()
         gdSMU?.turnOn()
@@ -96,14 +96,16 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
 
         for (vSG in sgVoltages) {
 
+            // Set source-gate voltage
             sgSMU?.voltage = vSG
 
             for (vSD in sdVoltages) {
 
+                // Set source-drain voltage and wait for the delay time
                 sdSMU.voltage = vSD
-
                 sleep(delTime)
 
+                // Measure and record values in results table
                 results.mapRow(
                     SET_SD_VOLTAGE to vSD,
                     SET_SG_VOLTAGE to vSG,
@@ -117,6 +119,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
                     GROUND_CURRENT to (gdSMU?.current ?: NaN)
                 )
 
+                // Check if we have been instructed to stop
                 checkPoint()
 
             }

@@ -256,8 +256,8 @@ object Measure : Grid("Measurement", 1) {
             topRow.remove(element)
             bottomRow.remove(table)
 
-            element = Plot("Results")
-            table = Table("Results")
+            element = Plot("Results", "", "")
+            table   = Table("Results")
 
             topRow.add(element, 1)
             bottomRow.add(table)

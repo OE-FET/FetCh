@@ -21,14 +21,6 @@ class TransferPlot(data: ResultTable) : FetChPlot("Transfer Curve", "SG Voltage 
     init {
 
         isMouseEnabled = true
-        yAxisType = AxisType.LOGARITHMIC
-        pointOrdering = Sort.ORDER_ADDED
-
-        if (data.rowCount > 0) {
-            legendRows = data.getUniqueValues(SET_SG_VOLTAGE).size
-        } else {
-            legendColumns = 2
-        }
 
         createSeries()
             .setMarkerVisible(false)

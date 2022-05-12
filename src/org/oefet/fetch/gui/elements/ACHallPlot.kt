@@ -1,13 +1,15 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.gui.*
+import jisa.gui.Colour
+import jisa.gui.Grid
+import jisa.gui.Series
 import jisa.gui.Series.Dash.DOTTED
+import jisa.gui.Tabs
 import jisa.results.ResultTable
 import jisa.results.Row
 import org.oefet.fetch.measurement.ACHall
 import org.oefet.fetch.results.ACHallResult
 import java.util.function.Predicate
-import kotlin.math.absoluteValue
 
 class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTable?) : Tabs("AC Hall") {
 
@@ -33,13 +35,13 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTabl
         }
 
         plot1.isMouseEnabled = true
-        plot1.pointOrdering  = Plot.Sort.ORDER_ADDED
 
-        val zero by lazy { data.filter(filter).minByOrNull { it[SD_CURRENT].absoluteValue }?.get(HALL_VOLTAGE) ?: 0.0 }
+        val vsZero by lazy { data.filter(filter).getMin { it[HALL_VOLTAGE] } ?: 0.0 }
+        val vsMax  by lazy { (data.filter(filter).getMax { it[HALL_VOLTAGE] } ?: 0.0) - vsZero }
 
         plot1.createSeries()
             .setName("Vector Subtracted")
-            .watch(data, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - zero }, { it[HALL_ERROR] })
+            .watch(data, { it[SD_CURRENT] }, { it[HALL_VOLTAGE] - vsZero }, { it[HALL_ERROR] })
             .filter(filter)
             .split(FREQUENCY, "VS (%s Hz)")
             .setColourSequence(*VS_COLOURS)
@@ -50,9 +52,13 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTabl
 
             if (optimised != null) {
 
+                val poZero = optimised.getMin { it[ACHallResult.ROT_HALL] }
+                val vfZero = optimised.getMin { it[ACHallResult.ROT_FARADAY] }
+                val vfMax  = optimised.getMax { it[ACHallResult.ROT_FARADAY] }
+
                 plot1.createSeries()
                     .setName("Phase Optimised")
-                    .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_HALL, ACHallResult.ROT_ERROR)
+                    .watch(optimised, { it[ACHallResult.ROT_CURRENT] }, { it[ACHallResult.ROT_HALL] - poZero + 1.05 * vsMax }, { it[ACHallResult.ROT_ERROR] })
                     .setMarkerShape(Series.Shape.SQUARE)
                     .split(ACHallResult.ROT_FREQUENCY, "PO (%s Hz)")
                     .setColourSequence(*PO_COLOURS)
@@ -63,8 +69,7 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTabl
                     .setName("Faraday Voltage")
                     .setMarkerVisible(false)
                     .setLineDash(DOTTED)
-                    .setLineWidth(1.0)
-                    .watch(optimised, ACHallResult.ROT_CURRENT, ACHallResult.ROT_FARADAY)
+                    .watch(optimised, { it[ACHallResult.ROT_CURRENT] }, { it[ACHallResult.ROT_FARADAY] - 1.05 * vfMax })
                     .split(ACHallResult.ROT_FREQUENCY, "FV (%s Hz)")
 
 
