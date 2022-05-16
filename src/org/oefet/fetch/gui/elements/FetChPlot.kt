@@ -11,10 +11,21 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         addSaveButton("Save")
         addToolbarSeparator()
 
-        addToolbarMenuButton("Scaling").apply {
-            addItem("Linear") { isYAxisLogarithmic = false }
-            addItem("Logarithmic") { isYAxisLogarithmic = true }
-        }
+// Disable until log axes work properly in new plotting implementation
+//        addToolbarMenuButton("Scaling").apply {
+//
+//            addItem("Linear") {
+//                isYAxisLogarithmic = false
+//                isMouseEnabled     = true
+//            }
+//
+//            addItem("Logarithmic") {
+//                isYAxisLogarithmic = true
+//                autoRangeX()
+//                autoRangeY()
+//            }
+//
+//        }
 
         addToolbarMenuButton("Display").apply {
             addItem("Markers Only") { series.forEach { it.setLineVisible(false).isMarkerVisible = true } }
@@ -26,7 +37,6 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
 
         addToolbarButton("⛶") {
             val copy = copy()
-            copy.isMouseEnabled = true
             copy.show()
         }
 

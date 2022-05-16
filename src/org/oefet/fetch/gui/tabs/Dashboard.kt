@@ -110,22 +110,6 @@ object Dashboard : Grid("Dashboard", 3) {
                 .setColour(Series.defaultColours[(i - 1) % Series.defaultColours.size])
                 .setAutoReduction(500, 1000)
 
-            plot.addToolbarButton("Full") {
-
-                val fullPlot = FetChPlot(col.name, "Time [s]", col.title)
-
-                fullPlot.isLegendVisible = false
-
-                fullPlot.createSeries()
-                    .watch(log, time, col)
-                    .setMarkerVisible(false)
-                    .setLineVisible(true)
-                    .setColour(Series.defaultColours[(i-1) % Series.defaultColours.size])
-
-                fullPlot.show()
-
-            }
-
             if (col.name.contains("ILM200")) {
 
                 plot.addToolbarMenuButton("Sample Rate").apply {
