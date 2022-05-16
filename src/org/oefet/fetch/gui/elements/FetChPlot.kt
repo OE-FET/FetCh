@@ -24,6 +24,12 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
 
         addToolbarSeparator()
 
+        addToolbarButton("⛶") {
+            val copy = copy()
+            copy.isMouseEnabled = true
+            copy.show()
+        }
+
     }
 
 }
