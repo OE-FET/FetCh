@@ -16,31 +16,31 @@ object Measure : Grid("Measurement", 1) {
 
     val materials = mapOf(
         "CYTOP" to 2.05,
-        "PMMA" to 2.22,
-        "SiO2" to 3.9,
+        "PMMA"  to 2.22,
+        "SiO2"  to 3.9,
         "Other" to Double.NaN
     )
 
-    val queue = ActionQueue()
+    val queue     = ActionQueue()
     val queueList = FetChQueue("Measurements", queue).apply { maxHeight = 500.0 }
-    val bigQueue = FetChQueue("Measurements", queue)
-    val basic = Fields("Measurement Parameters")
-    val name = basic.addTextField("Name")
-    val dir = basic.addDirectorySelect("Output Directory")
-    val topRow = SwapGrid("Top Row")
+    val bigQueue  = FetChQueue("Measurements", queue)
+    val basic     = Fields("Measurement Parameters")
+    val name      = basic.addTextField("Name")
+    val dir       = basic.addDirectorySelect("Output Directory")
+    val topRow    = SwapGrid("Top Row")
     val bottomRow = Grid(1)
 
     init {
         basic.addSeparator()
     }
 
-    val length = basic.addDoubleField("Channel Length [m]")
-    val fppLength = basic.addDoubleField("FPP Separation [m]")
-    val width = basic.addDoubleField("Channel Width [m]")
-    val cThick = basic.addDoubleField("Channel Thickness [m]")
-    val dThick = basic.addDoubleField("Dielectric Thickness [m]")
+    val length     = basic.addDoubleField("Channel Length [m]")
+    val fppLength  = basic.addDoubleField("FPP Separation [m]")
+    val width      = basic.addDoubleField("Channel Width [m]")
+    val cThick     = basic.addDoubleField("Channel Thickness [m]")
+    val dThick     = basic.addDoubleField("Dielectric Thickness [m]")
     val dielectric = basic.addChoice("Dielectric Material", *materials.keys.toTypedArray())
-    val dielConst = basic.addDoubleField("Dielectric Constant", 1.0)
+    val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
 
     val bigQueueButton: Button
 
@@ -53,9 +53,9 @@ object Measure : Grid("Measurement", 1) {
 
     val hidden = addToolbarButton("Hidden Actions", ::editHidden)
 
-    val baseFile: String get() = Util.joinPath(dir.get().trim(), name.get().trim())
-    var table: Table? = null
-    var element: Element? = null
+    val baseFile: String get() = Util.joinPath(dir.value.trim(), name.value.trim())
+    var table:    Table?       = null
+    var element:  Element?     = null
 
     private var log: ResultTable? = null
 
@@ -165,7 +165,7 @@ object Measure : Grid("Measurement", 1) {
 
         if (value.isFinite()) {
             dielConst.isDisabled = true
-            dielConst.value = value
+            dielConst.value      = value
         } else {
             dielConst.isDisabled = false
         }
