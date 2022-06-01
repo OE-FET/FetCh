@@ -20,7 +20,8 @@ class TransferPlot(data: ResultTable) : FetChPlot("Transfer Curve", "SG Voltage 
 
     init {
 
-        isMouseEnabled = true
+        isMouseEnabled     = true
+        isYAxisLogarithmic = true
 
         createSeries()
             .setMarkerVisible(false)

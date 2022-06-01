@@ -11,21 +11,20 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         addSaveButton("Save")
         addToolbarSeparator()
 
-// Disable until log axes work properly in new plotting implementation
-//        addToolbarMenuButton("Scaling").apply {
-//
-//            addItem("Linear") {
-//                isYAxisLogarithmic = false
-//                isMouseEnabled     = true
-//            }
-//
-//            addItem("Logarithmic") {
-//                isYAxisLogarithmic = true
-//                autoRangeX()
-//                autoRangeY()
-//            }
-//
-//        }
+        addToolbarMenuButton("Scaling").apply {
+
+            addItem("Linear") {
+                isYAxisLogarithmic = false
+                isMouseEnabled     = true
+            }
+
+            addItem("Logarithmic") {
+                isYAxisLogarithmic = true
+                autoRangeX()
+                autoRangeY()
+            }
+
+        }
 
         addToolbarMenuButton("Display").apply {
             addItem("Markers Only") { series.forEach { it.setLineVisible(false).isMarkerVisible = true } }
