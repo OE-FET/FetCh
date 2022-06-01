@@ -22,7 +22,7 @@ abstract class FetChEntity : Measurement() {
     private val columns = LinkedList<Column<*>>()
 
     open fun createDisplay(data: ResultTable): Element {
-        return FetChPlot(name).apply { createSeries().watchAll(data) }
+        return FetChPlot(name).apply {  }
     }
 
     fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
@@ -32,6 +32,8 @@ abstract class FetChEntity : Measurement() {
     fun ResultTable.mapRows(vararg data: Pair<Column<*>, Iterable<Any>>) {
         mapRows(mapOf(*data))
     }
+
+    operator fun <T> Column<T>.rangeTo(value: T): Pair<Column<T>, T> = this to value
 
     /**
      * Checks that everything required for this measurement is present. Returns all missing instrument errors as

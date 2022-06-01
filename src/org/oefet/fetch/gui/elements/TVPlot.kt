@@ -19,7 +19,7 @@ class TVPlot(data: ResultTable) : FetChPlot("Thermal Voltage", "Heater Power [W]
     init {
 
         isMouseEnabled = true
-        pointOrdering  = Sort.ORDER_ADDED
+        
 
         if (THERMAL_VOLTAGE_ERROR != null) {
 
@@ -60,7 +60,7 @@ class TVCPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration", "Hea
     init {
 
         isMouseEnabled  = true
-        pointOrdering   = Sort.ORDER_ADDED
+        
         isLegendVisible = false
 
         if (STRIP_VOLTAGE_ERROR != null) {
@@ -103,7 +103,7 @@ class TVCResultPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration"
     init {
 
         isMouseEnabled  = true
-        pointOrdering   = Sort.ORDER_ADDED
+        
         isLegendVisible = false
 
         val POWER = DoubleColumn("Heater Power")

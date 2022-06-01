@@ -19,7 +19,6 @@ class FPPPlot(data: ResultTable) : FetChPlot("Conductivity", "Drain Current [A]"
     init {
 
         isMouseEnabled = true
-        pointOrdering  = Sort.ORDER_ADDED
 
         createSeries()
             .setName("Probe 1")
@@ -37,7 +36,6 @@ class FPPPlot(data: ResultTable) : FetChPlot("Conductivity", "Drain Current [A]"
             .setName("Difference")
             .polyFit(1)
             .watch(data, SD_CURRENT, FPP_VOLTAGE)
-
 
     }
 

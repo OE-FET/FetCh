@@ -112,7 +112,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             }
 
             input.addAll(measurement.getExtraTabs())
-            (input.elements.first() as Grid).addAll(measurement.getCustomParams())
+            (input.elements.filterIsInstance<Grid>().first()).addAll(measurement.getCustomParams())
 
             if (input.showInput()) {
 

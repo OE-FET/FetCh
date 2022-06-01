@@ -191,7 +191,6 @@ object Analysis : BorderDisplay("Analysis") {
         for (plot in output.plots) {
 
             when (f) {
-                0 -> plot.saveSVG(Util.joinPath(dir, "${plot.title.toLowerCase().replace(" ", "-")}.svg"), w, h)
                 1 -> plot.savePNG(Util.joinPath(dir, "${plot.title.toLowerCase().replace(" ", "-")}.png"), w, h)
                 2 -> plot.saveTex(Util.joinPath(dir, "${plot.title.toLowerCase().replace(" ", "-")}.tex"))
             }

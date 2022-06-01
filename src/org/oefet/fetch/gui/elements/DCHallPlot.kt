@@ -20,7 +20,6 @@ class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Vo
     init {
 
         isMouseEnabled = true
-        pointOrdering  = Sort.ORDER_ADDED
 
         val noField = (data.getUniqueValues(FIELD).size == 0 && data.getUniqueValues(SET_SD_CURRENT).size > 0) || data.getAttribute("Field Sweep") == "false"
 

@@ -1,6 +1,5 @@
 package org.oefet.fetch.gui.elements
 
-import jisa.Util
 import jisa.gui.Plot
 
 open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : Plot(title, xLabel, yLabel) {
@@ -13,8 +12,18 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         addToolbarSeparator()
 
         addToolbarMenuButton("Scaling").apply {
-            addItem("Linear") { yAxisType = AxisType.LINEAR }
-            addItem("Logarithmic") { yAxisType = AxisType.LOGARITHMIC }
+
+            addItem("Linear") {
+                isYAxisLogarithmic = false
+                isMouseEnabled     = true
+            }
+
+            addItem("Logarithmic") {
+                isYAxisLogarithmic = true
+                autoRangeX()
+                autoRangeY()
+            }
+
         }
 
         addToolbarMenuButton("Display").apply {
@@ -26,14 +35,8 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         addToolbarSeparator()
 
         addToolbarButton("⛶") {
-
-            copy().apply {
-
-                show()
-                Util.sleep(250)
-                isMaximised = true
-
-            }
+            val copy = copy()
+            copy.show()
         }
 
     }

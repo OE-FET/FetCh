@@ -22,8 +22,8 @@ class SyncPlot(data: ResultTable) : FetChPlot("Synced Voltage Curve", "Voltage [
     init {
 
         isMouseEnabled = true
-        yAxisType      = AxisType.LOGARITHMIC
-        pointOrdering  = Sort.ORDER_ADDED
+        isYAxisLogarithmic = true
+        
 
         createSeries()
             .setName("Drain")

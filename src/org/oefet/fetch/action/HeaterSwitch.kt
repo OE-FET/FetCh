@@ -16,7 +16,7 @@ class HeaterSwitch : FetChAction("Heater Switch") {
     val on  by userInput ("Basic", "On", false)
     val ips by requiredInstrument("IPS", EMController::class)
 
-    val plot = FetChPlot("Heater Switch").apply { isLegendVisible = false; pointOrdering = Plot.Sort.ORDER_ADDED; }
+    val plot = FetChPlot("Heater Switch").apply { isLegendVisible = false; }
 
     override fun createDisplay(data: ResultTable): FetChPlot = plot
 
