@@ -59,7 +59,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
     init {
 
-        val noOptim = if (this.data.attributes.containsKey("No Optimisation")) this.data.getAttribute("No Optimisation").toBoolean() else true
+        val noOptim = if (this.data.attributes.containsKey("No Optimisation")) this.data.getAttribute("No Optimisation").toBoolean() else false
 
         val faraday: ResultTable?
         val data:    ResultTable
