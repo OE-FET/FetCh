@@ -21,7 +21,7 @@ class TransferPlot(data: ResultTable) : FetChPlot("Transfer Curve", "SG Voltage 
     init {
 
         isMouseEnabled     = true
-        isYAxisLogarithmic = true
+        yAxisType          = AxisType.LOGARITHMIC
 
         createSeries()
             .setMarkerVisible(false)

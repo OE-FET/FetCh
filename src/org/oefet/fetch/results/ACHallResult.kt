@@ -59,7 +59,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
     init {
 
-        val noOptim = if (this.data.attributes.containsKey("No Optimisation")) this.data.getAttribute("No Optimisation").toBoolean() else false
+        val noOptim = if (this.data.attributes.containsKey("No Optimisation")) this.data.getAttribute("No Optimisation").toBoolean() else true
 
         val faraday: ResultTable?
         val data:    ResultTable
@@ -93,10 +93,9 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
                 val rotated = voltages.rotate2D(theta)
                 val reFit   = Fitting.linearFit(currents, rotated.getRowMatrix(0))
                 val imFit   = Fitting.linearFit(currents, rotated.getRowMatrix(1))
-                val func    = reFit.function
                 val param   = try {
-                    currents.mapIndexed { index, current -> abs(func.value(current) - rotated[0,index]) }.sum() / abs(reFit.gradient)
-                } catch (e: Throwable) { continue }
+                    imFit.gradient.absoluteValue / reFit.gradient.absoluteValue
+                } catch (e: Exception) { continue }
 
                 if (param < minParam) {
                     minParam = param

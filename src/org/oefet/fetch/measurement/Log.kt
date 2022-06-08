@@ -4,10 +4,7 @@ import jisa.Util
 import jisa.control.Connection
 import jisa.control.RTask
 import jisa.devices.interfaces.*
-import jisa.results.Column
-import jisa.results.DoubleColumn
-import jisa.results.ResultStream
-import jisa.results.ResultTable
+import jisa.results.*
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Dashboard
 import java.util.*
@@ -26,7 +23,7 @@ object Log {
         logTasks.clear()
 
         val columns = LinkedList<Column<*>>()
-        columns.add(DoubleColumn("Time", "s"))
+        columns.add(LongColumn("Time", "UTC ms"))
 
         for (connection in Connection.getAllConnections()) {
 
@@ -169,7 +166,7 @@ object Log {
         }
 
         logger.stop()
-        log = ResultStream(path, *(columns.toArray(Array(0) { DoubleColumn("", "") })))
+        log = ResultStream(path, *(columns.toArray(Array<Column<*>?>(0) { null })))
         logger.start()
 
         Dashboard.watchLog(log!!)
@@ -197,31 +194,37 @@ object Log {
 
     private fun log(log: ResultTable, task: RTask) {
 
-        val data = Array(logTasks.size + 1) { 0.0 }
-        data[0] = task.secFromStart
+        try {
 
-        for ((i, logTask) in logTasks.withIndex()) {
+            val data = Array<Any>(logTasks.size + 1) { 0.0 }
+            data[0]  = System.currentTimeMillis()
 
-            if (Dashboard.isLogged(i)) {
+            for ((i, logTask) in logTasks.withIndex()) {
 
-                data[i + 1] = try {
-                    logTask()
-                } catch (e: Exception) {
-                    Double.NaN
+                if (Dashboard.isLogged(i)) {
+
+                    data[i + 1] = try {
+                        logTask()
+                    } catch (e: Exception) {
+                        Double.NaN
+                    }
+
+                } else {
+
+                    data[i + 1] = Double.NaN
+
                 }
-
-            } else {
-
-                data[i + 1] = Double.NaN
 
             }
 
-        }
+            log.addData(*data)
 
-        log.addData(*data)
+            if ((task.count % 500) == 0) {
+                Util.runAsync { System.gc() }
+            }
 
-        if ((task.count % 500) == 0) {
-            Util.runAsync { System.gc() }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
     }

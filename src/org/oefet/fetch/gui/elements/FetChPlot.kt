@@ -14,12 +14,12 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         addToolbarMenuButton("Scaling").apply {
 
             addItem("Linear") {
-                isYAxisLogarithmic = false
+                yAxisType = AxisType.LINEAR
                 isMouseEnabled     = true
             }
 
             addItem("Logarithmic") {
-                isYAxisLogarithmic = true
+                yAxisType = AxisType.LOGARITHMIC
                 autoRangeX()
                 autoRangeY()
             }
@@ -35,8 +35,7 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
         addToolbarSeparator()
 
         addToolbarButton("⛶") {
-            val copy = copy()
-            copy.show()
+            copy().show()
         }
 
     }

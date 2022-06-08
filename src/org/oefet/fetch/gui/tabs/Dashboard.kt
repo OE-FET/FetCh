@@ -7,6 +7,7 @@ import jisa.gui.*
 import jisa.results.Column
 import jisa.results.ResultList
 import jisa.results.ResultTable
+import jisa.results.RowEvaluable
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.measurement.Log
@@ -93,18 +94,25 @@ object Dashboard : Grid("Dashboard", 3) {
         shown.clear()
         logged.clear()
 
-        val time = log.getColumn(0) as Column<Double>
+        val time = log.getColumn(0) as Column<Number>
+
+        val tEval = if (time.units == "UTC ms") {
+            RowEvaluable { it[time].toDouble() / 1e3 }
+        } else {
+            RowEvaluable { it[time].toDouble() }
+        }
 
         for (i in 1 until log.columnCount) {
 
             val col = log.getColumn(i) as Column<Double>
 
-            val plot = FetChPlot(col.name, "Time [s]", col.title)
+            val plot = FetChPlot(col.name, "Time", col.title)
 
             plot.isLegendVisible = false
+            plot.xAxisType       = Plot.AxisType.TIME
 
             plot.createSeries()
-                .watch(log, time, col)
+                .watch(log, tEval, { it[col] })
                 .setMarkerVisible(false)
                 .setLineVisible(true)
                 .setColour(Series.defaultColours[(i - 1) % Series.defaultColours.size])
@@ -240,17 +248,24 @@ object Dashboard : Grid("Dashboard", 3) {
 
         val grid = Grid("Log File", 3)
 
-        val time = log.getColumn(0) as Column<Double>
+        val time = log.getColumn(0) as Column<Number>
+
+        val tEval = if (time.units == "UTC ms") {
+            RowEvaluable { it[time].toDouble() / 1e3 }
+        } else {
+            RowEvaluable { it[time].toDouble() }
+        }
 
         for (i in 1 until log.columnCount) {
 
             val col  = log.getColumn(i) as Column<Double>
-            val plot = FetChPlot(col.name, "Time [s]", col.title)
+            val plot = FetChPlot(col.name, "Time", col.title)
 
             plot.isLegendVisible = false
+            plot.xAxisType       = Plot.AxisType.TIME
 
             plot.createSeries()
-                .watch(log, time, col)
+                .watch(log, tEval, { it[col] })
                 .setMarkerVisible(false)
                 .setLineVisible(true).colour = Series.defaultColours[(i - 1) % Series.defaultColours.size]
 
