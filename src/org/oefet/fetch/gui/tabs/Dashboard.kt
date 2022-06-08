@@ -248,9 +248,9 @@ object Dashboard : Grid("Dashboard", 3) {
 
         val grid = Grid("Log File", 3)
 
-        val time = log.getColumn(0) as Column<Number>
-
-        val tEval = if (time.units == "UTC ms") {
+        val time  = log.getColumn(0) as Column<Number>
+        val isUTC = time.units == "UTC ms"
+        val tEval = if (isUTC) {
             RowEvaluable { it[time].toDouble() / 1e3 }
         } else {
             RowEvaluable { it[time].toDouble() }
@@ -262,7 +262,14 @@ object Dashboard : Grid("Dashboard", 3) {
             val plot = FetChPlot(col.name, "Time", col.title)
 
             plot.isLegendVisible = false
-            plot.xAxisType       = Plot.AxisType.TIME
+
+            if (isUTC) {
+                plot.xAxisType = Plot.AxisType.TIME
+                plot.xUnit     = null
+            } else {
+                plot.xAxisType = Plot.AxisType.LINEAR
+                plot.xUnit     = "s"
+            }
 
             plot.createSeries()
                 .watch(log, tEval, { it[col] })
