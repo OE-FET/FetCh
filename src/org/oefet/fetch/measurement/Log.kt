@@ -161,6 +161,22 @@ object Log {
 
                 }
 
+                is MSwitch      -> {
+
+                    for (channel in inst.channels) {
+                        columns.add(DoubleColumn("$name ${channel.channelName} State"))
+                        logTasks.add { if (channel.isOn) 1.0 else 0.0 }
+                    }
+
+                }
+
+                is Switch       -> {
+
+                    columns.add(DoubleColumn("$name State"))
+                    logTasks.add { if (inst.isOn) 1.0 else 0.0 }
+
+                }
+
             }
 
         }
@@ -197,7 +213,7 @@ object Log {
         try {
 
             val data = Array<Any>(logTasks.size + 1) { 0.0 }
-            data[0]  = System.currentTimeMillis()
+            data[0] = System.currentTimeMillis()
 
             for ((i, logTask) in logTasks.withIndex()) {
 
