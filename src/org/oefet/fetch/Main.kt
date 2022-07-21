@@ -31,7 +31,7 @@ fun main() {
             System.getProperty("user.home"), "FetCh Logs", "log-${
                 LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS).format(
                     DateTimeFormatter.ISO_DATE_TIME
-                )
+                ).replace(":","-")
             }.txt"
         )
     )
