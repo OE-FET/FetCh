@@ -193,63 +193,10 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
             for (conductivity in conductivities) {
 
-                val params   = parameters + freq
+                val params   = parameters + conductivity.parameters.filter { c -> c::class !in parameters.map{ p -> p::class } } + freq
                 val mobility = hall.value.absoluteValue * conductivity.value * 100.0 * 10000.0
                 val error    = mobility * sqrt((hall.error / hall.value).pow(2) + (conductivity.error / conductivity.value).pow(2))
                 extras      += HallMobility(mobility, error, params)
-
-            }
-
-            val excluded = listOf(Temperature::class, Frequency::class)
-
-            if (otherQuantities.find { it is UnscreenedHall && it.isCompatibleWith(hall, excluded) } == null) {
-
-                val hls = otherQuantities
-                    .filter { it is HallCoefficient && it.isCompatibleWith(hall, excluded) && it.hasParameter(Temperature::class) }
-                    .map { it as HallCoefficient }
-
-                val lnrh = hls.map { ln(it.value) }
-                val rh05 = hls.map { it.value.pow(-0.5) }
-                val t025 = hls.map { it.getParameter(Temperature::class)?.value?.pow(-0.25) ?: 0.0 }
-
-                // Find peak conductivity value from corresponding conductivity data
-                val conds = otherQuantities
-                    .filter { it is Conductivity && it.isCompatibleWith(hall, excluded) }
-                    .map { it as Conductivity }
-
-                val maxC = conds.maxByOrNull { it.value }
-
-                val fit1 = Fitting.linearFit(t025, lnrh)
-                val fit2 = Fitting.linearFit(t025, rh05)
-
-                if (fit1 != null && fit2 != null && maxC != null) {
-
-                    val grad1   = SimpleQuantity(fit1.gradient, fit1.gradientError)
-                    val grad2   = SimpleQuantity(fit2.gradient, fit2.gradientError)
-                    val incp2   = SimpleQuantity(fit2.intercept, fit2.interceptError)
-
-                    val params  = parameters.filterNot { it is Temperature } +
-                            MaxConductivity(maxC.value, maxC.error, maxC.parameters, maxC.possibleParameters) +
-                            freq
-
-                    val pParams = possibleParameters.filterNot { it == Temperature::class }
-
-                    val t0 = (grad1 * 0.5).pow(4)
-                    val r0 = (incp2 + (grad2 / (grad1 * 0.5))).pow(-2)
-                    val n0 = (r0 * 1.6e-19).pow(-1) * (100.0).pow(-3)
-
-                    val unscreened = UnscreenedHall(r0.value, r0.error, params, pParams)
-
-                    extras += MottHoppingT0(t0.value, t0.error, params, pParams)
-                    extras += unscreened
-                    extras += BandLikeDensity(n0.value, n0.error, params, pParams)
-
-                    extras += conds.map {
-                        val mob = unscreened * it * 1e6
-                        UnscreenedHallMobility(mob.value, mob.error, it.parameters + freq, it.possibleParameters)
-                    }
-
-                }
 
             }
 
