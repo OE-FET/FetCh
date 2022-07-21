@@ -1,5 +1,6 @@
 package org.oefet.fetch.measurement
 
+import jisa.Util
 import jisa.control.Repeat
 import jisa.devices.interfaces.*
 import jisa.enums.Coupling
@@ -87,6 +88,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
     override fun run(results: ResultTable) {
 
+        message("Setting up measurement.")
+
         fControl = FControl(lockIn, dcPower)
 
         results.setAttribute("Integration Time", "$intTime s")
@@ -120,10 +123,14 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         val xValues = Repeat.prepare(repeats, 1000) { lockIn.lockedX / totGain }
         val yValues = Repeat.prepare(repeats, 1000) { lockIn.lockedY / totGain }
 
+        message("Spinning up magnets to max frequency.")
+
         stageSpinUp.start();
 
         fControl.target = hallFrequencies.maxOrNull() ?: 1.0
         fControl.waitForStableFrequency(25.0, 60000)
+
+        message("Auto ranging lock-in amplifier.")
 
         // Auto range and offset lock-in amplifier
         stageAutoRange.start()
@@ -133,6 +140,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         stageSpinUp.complete()
 
         for (frequency in hallFrequencies) {
+
+            message("Adjusting magnet frequency to $frequency Hz.")
 
             // Adjust magnet frequency and wait enough time to stabilise
             stageSpinUp.start();
@@ -151,12 +160,16 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
             for (current in currents) {
 
+                message("Sourcing current $current A.")
+
                 sdSMU.current = current
 
+                message("Waiting ${Util.msToString(delTime.toLong())} for lock-in to stabilise.")
                 stageStabilise.start()
                 sleep(delTime)
                 stageStabilise.reset()
 
+                message("Sampling locked voltages over ${Util.msToString(repeats * 1000L)}.")
                 stageMeasure.start()
                 Repeat.runTogether(xValues, yValues)
                 stageMeasure.reset()
@@ -172,6 +185,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
                 val hallValue = sqrt((x - startX).pow(2) + (y - startY).pow(2))
                 val hallError = sqrt(((x / r) * eX).pow(2) + ((y / r) * eY).pow(2))
+
+                message("Sampling complete, writing data to table.")
 
                 results.mapRow(
                     FARADAY      to false,
@@ -192,9 +207,13 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
         }
 
+        message("Main measurement complete.")
+
         sdSMU.turnOff()
 
         if (doFaraday) {
+
+            message("Starting Faraday sweep.")
 
             stageFaraday.start()
 
@@ -205,11 +224,17 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
 
             for (frequency in faraFrequencies) {
 
+                message("Adjusting magnet frequency to $frequency Hz.")
+
                 fControl.target = frequency
 
                 sleep(((lockIn.timeConstant * 10) * 1000).toInt())
 
+                message("Sampling locked voltages over ${Util.msToString((lockIn.timeConstant * 10).toLong() * 1000L)}")
+
                 Repeat.runTogether(xValues, yValues)
+
+                message("Sampling complete, writing data to table.")
 
                 results.mapRow(
                     FARADAY      to true,
@@ -229,6 +254,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
             }
 
             stageFaraday.complete()
+            message("Faraday sweep complete.")
 
         }
 

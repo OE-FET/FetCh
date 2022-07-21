@@ -7,6 +7,7 @@ import jisa.gui.CheckGrid
 import jisa.gui.Element
 import jisa.gui.Field
 import jisa.gui.Fields
+import jisa.logging.Logger
 import jisa.maths.Range
 import jisa.results.Column
 import jisa.results.ResultTable
@@ -61,6 +62,8 @@ abstract class FetChEntity : Measurement() {
 
     override fun start() {
 
+        Logger.addMessage("Running $name.")
+
         errors.clear()
         loadInstruments(true)
 
@@ -72,6 +75,18 @@ abstract class FetChEntity : Measurement() {
 
         super.start()
 
+    }
+
+    fun message(message: String) {
+        Logger.addMessage("$name: $message")
+    }
+
+    fun warning(message: String) {
+        Logger.addWarning("$name: $message")
+    }
+
+    fun error(message: String) {
+        Logger.addError("$name: $message")
     }
 
     override fun onError() {

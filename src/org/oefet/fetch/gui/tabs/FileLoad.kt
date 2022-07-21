@@ -226,9 +226,10 @@ object FileLoad : BorderDisplay("Results") {
                 fileList.filter { it.getObject() in toRemove }.forEach { it.remove() }
                 cached.clear()
                 results.removeAll(toRemove)
-                updateDisplay()
 
             }
+            
+            updateDisplay()
 
         }
 

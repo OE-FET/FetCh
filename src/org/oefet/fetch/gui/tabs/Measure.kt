@@ -6,6 +6,7 @@ import jisa.experiment.queue.ActionQueue
 import jisa.experiment.queue.ActionQueue.Result.*
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
+import jisa.logging.Logger
 import jisa.results.ResultTable
 import org.oefet.fetch.*
 import org.oefet.fetch.gui.elements.FetChQueue
@@ -16,31 +17,31 @@ object Measure : Grid("Measurement", 1) {
 
     val materials = mapOf(
         "CYTOP" to 2.05,
-        "PMMA"  to 2.22,
-        "SiO2"  to 3.9,
+        "PMMA" to 2.22,
+        "SiO2" to 3.9,
         "Other" to Double.NaN
     )
 
-    val queue     = ActionQueue()
+    val queue = ActionQueue()
     val queueList = FetChQueue("Measurements", queue).apply { maxHeight = 500.0 }
-    val bigQueue  = FetChQueue("Measurements", queue)
-    val basic     = Fields("Measurement Parameters")
-    val name      = basic.addTextField("Name")
-    val dir       = basic.addDirectorySelect("Output Directory")
-    val topRow    = SwapGrid("Top Row")
+    val bigQueue = FetChQueue("Measurements", queue)
+    val basic = Fields("Measurement Parameters")
+    val name = basic.addTextField("Name")
+    val dir = basic.addDirectorySelect("Output Directory")
+    val topRow = SwapGrid("Top Row")
     val bottomRow = Grid(1)
 
     init {
         basic.addSeparator()
     }
 
-    val length     = basic.addDoubleField("Channel Length [m]")
-    val fppLength  = basic.addDoubleField("FPP Separation [m]")
-    val width      = basic.addDoubleField("Channel Width [m]")
-    val cThick     = basic.addDoubleField("Channel Thickness [m]")
-    val dThick     = basic.addDoubleField("Dielectric Thickness [m]")
+    val length = basic.addDoubleField("Channel Length [m]")
+    val fppLength = basic.addDoubleField("FPP Separation [m]")
+    val width = basic.addDoubleField("Channel Width [m]")
+    val cThick = basic.addDoubleField("Channel Thickness [m]")
+    val dThick = basic.addDoubleField("Dielectric Thickness [m]")
     val dielectric = basic.addChoice("Dielectric Material", *materials.keys.toTypedArray())
-    val dielConst  = basic.addDoubleField("Dielectric Constant", 1.0)
+    val dielConst = basic.addDoubleField("Dielectric Constant", 1.0)
 
     val bigQueueButton: Button
 
@@ -54,8 +55,8 @@ object Measure : Grid("Measurement", 1) {
     val hidden = addToolbarButton("Hidden Actions", ::editHidden)
 
     val baseFile: String get() = Util.joinPath(dir.value.trim(), name.value.trim())
-    var table:    Table?       = null
-    var element:  Element?     = null
+    var table: Table? = null
+    var element: Element? = null
 
     private var log: ResultTable? = null
 
@@ -89,8 +90,8 @@ object Measure : Grid("Measurement", 1) {
     fun editHidden() {
 
         val measurements = Fields("Hidden Measurements")
-        val actions      = Fields("Hidden Actions")
-        val sweeps       = Fields("Hidden Sweeps")
+        val actions = Fields("Hidden Actions")
+        val sweeps = Fields("Hidden Sweeps")
 
         for (type in Measurements.types) {
             measurements.addCheckBox(type.name, Settings.hidden.booleanValue(type.name).getOrDefault(false))
@@ -147,7 +148,7 @@ object Measure : Grid("Measurement", 1) {
         action.data.setAttribute("Dielectric Thickness", "${dThick.value} m")
         action.data.setAttribute("Dielectric Permittivity", dielConst.value)
 
-        val table   = Table("Data", action.data)
+        val table = Table("Data", action.data)
         val element = (action.measurement as FetChEntity).createDisplay(action.data)
 
         topRow.remove(this.element)
@@ -165,7 +166,7 @@ object Measure : Grid("Measurement", 1) {
 
         if (value.isFinite()) {
             dielConst.isDisabled = true
-            dielConst.value      = value
+            dielConst.value = value
         } else {
             dielConst.isDisabled = false
         }
@@ -173,6 +174,8 @@ object Measure : Grid("Measurement", 1) {
     }
 
     private fun runMeasurement() {
+
+        Logger.addMessage("Starting measurement sequence");
 
         try {
 
@@ -191,12 +194,15 @@ object Measure : Grid("Measurement", 1) {
             }
 
             if (errors.isNotEmpty()) {
+                Logger.addError("Measurement sequence failed to start: ${errors.joinToString(", ")}.")
                 throw Exception("The following problem(s) occurred when trying to run:\n\n" + errors.joinToString("\n") { "- $it" })
             }
 
             queueList.setSelectedActions()
 
             val resume = if (queue.isInterrupted) {
+
+                Logger.addMessage("Previous measurement sequence was interrupted, offering choice to resume to user.")
 
                 GUI.choiceWindow(
                     "Start Point Selection",
@@ -210,20 +216,44 @@ object Measure : Grid("Measurement", 1) {
                 false
             }
 
+            if (resume) {
+                Logger.addMessage("User chose to resume.")
+            } else if (queue.isInterrupted) {
+                Logger.addMessage("User chose to not resume.")
+            }
+
             disable(true)
 
+            Logger.addMessage("Starting measurement log.")
             Log.start("${baseFile}-${System.currentTimeMillis()}-log.csv")
 
+            Logger.addMessage("Running measurement queue.")
             val result = if (resume) queue.resume() else queue.start()
 
+            Logger.addMessage("Stopping measurement log.")
             Log.stop()
 
             when (result) {
 
-                SUCCESS     -> GUI.infoAlert("Measurement sequence completed successfully")
-                INTERRUPTED -> GUI.warningAlert("Measurement sequence was stopped before completion")
-                ERROR       -> GUI.errorAlert("Measurement sequence completed with error(s)")
-                else        -> GUI.errorAlert("Unknown queue result")
+                SUCCESS     -> {
+                    Logger.addMessage("Measurement queue ended successfully.")
+                    GUI.infoAlert("Measurement sequence completed successfully")
+                }
+
+                INTERRUPTED -> {
+                    Logger.addMessage("Measurement queue was interrupted.")
+                    GUI.warningAlert("Measurement sequence was stopped before completion")
+                }
+
+                ERROR       -> {
+                    Logger.addMessage("Measurement queue ended with error(s).")
+                    GUI.errorAlert("Measurement sequence completed with error(s)")
+                }
+
+                else        -> {
+                    Logger.addMessage("Measurement queue ended in unknown state.")
+                    GUI.errorAlert("Unknown queue result")
+                }
 
             }
 
@@ -247,9 +277,9 @@ object Measure : Grid("Measurement", 1) {
     private fun disable(flag: Boolean) {
 
         toolbarStart.isDisabled = flag
-        toolbarStop.isDisabled  = !flag
-        queueList.isDisabled    = flag
-        bigQueue.isDisabled     = flag
+        toolbarStop.isDisabled = !flag
+        queueList.isDisabled = flag
+        bigQueue.isDisabled = flag
 
         if (flag) {
 
@@ -257,7 +287,7 @@ object Measure : Grid("Measurement", 1) {
             bottomRow.remove(table)
 
             element = Plot("Results", "", "")
-            table   = Table("Results")
+            table = Table("Results")
 
             topRow.add(element, 1)
             bottomRow.add(table)

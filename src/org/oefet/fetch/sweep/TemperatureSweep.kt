@@ -6,6 +6,7 @@ import jisa.devices.interfaces.TC
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
+import jisa.gui.Plot
 import jisa.gui.Series
 import jisa.maths.Range
 import jisa.results.Column
@@ -45,37 +46,33 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
         var task: RTask? = null
 
+        private var series: Series? = null
+
         override fun createDisplay(data: ResultTable): FetChPlot {
 
-            val plot =  FetChPlot("Change Temperature to $temperature K", "Time [s]", "Temperature [K]")
-
-            plot.createSeries()
-                .watch(data, { it[TIME] }, { (1 + (stabilityPct / 100.0)) * temperature })
-                .setMarkerVisible(false)
-                .setLineWidth(1.0)
-                .setLineDash(Series.Dash.DASHED)
-                .setColour(Colour.GREY)
-
-            plot.createSeries()
-                .watch(data, { it[TIME] }, { (1 - (stabilityPct / 100.0)) * temperature })
-                .setMarkerVisible(false)
-                .setLineWidth(1.0)
-                .setLineDash(Series.Dash.DASHED)
-                .setColour(Colour.GREY)
-
-            plot.createSeries()
-                .watch(data, TIME, TEMPERATURE)
-                .setMarkerVisible(false)
-                .setColour(Colour.RED)
-
-            plot.createSeries()
-                .watch(data, TIME, TEMPERATURE)
-                .filter { Util.isBetween(it[TEMPERATURE], (1 - (stabilityPct / 100.0)) * temperature, (1 + (stabilityPct / 100.0)) * temperature) }
-                .setMarkerVisible(false)
-                .setLineWidth(3.0)
-                .setColour(Colour.MEDIUMSEAGREEN)
+            val plot = FetChPlot("Change Temperature to $temperature K", "Time", "Temperature [K]")
 
             plot.isLegendVisible = false
+            plot.xAxisType = Plot.AxisType.TIME
+
+            plot.createSeries()
+                .watch(data, { it[TIME] / 1000.0 }, { (1 + (stabilityPct / 100.0)) * temperature })
+                .setMarkerVisible(false)
+                .setLineWidth(1.0)
+                .setLineDash(Series.Dash.DASHED)
+                .setColour(Colour.GREY)
+
+            plot.createSeries()
+                .watch(data, { it[TIME] / 1000.0 }, { (1 - (stabilityPct / 100.0)) * temperature })
+                .setMarkerVisible(false)
+                .setLineWidth(1.0)
+                .setLineDash(Series.Dash.DASHED)
+                .setColour(Colour.GREY)
+
+            series = plot.createSeries()
+                .watch(data, { it[TIME] / 1000.0 }, { it[TEMPERATURE] })
+                .setMarkerVisible(false)
+                .setColour(Colour.RED)
 
             return plot
 
@@ -87,7 +84,25 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
                 throw Exception("Temperature Controller is not configured")
             }
 
-            task = RTask(interval) { t -> results.addData(t.secFromStart, tControl.temperature) }
+            task = RTask(interval)  { _ ->
+
+                val t = tControl.temperature
+
+                results.addData(System.currentTimeMillis(), t)
+
+                if (Util.isBetween(
+                        t,
+                        (1 - (stabilityPct / 100.0)) * temperature,
+                        (1 + (stabilityPct / 100.0)) * temperature
+                    )
+                ) {
+                    series?.colour = Colour.TEAL
+                } else {
+                    series?.colour = Colour.RED
+                }
+
+            }
+
             task?.start()
 
             tControl.temperature = temperature

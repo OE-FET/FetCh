@@ -93,10 +93,8 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
                 val rotated = voltages.rotate2D(theta)
                 val reFit   = Fitting.linearFit(currents, rotated.getRowMatrix(0))
                 val imFit   = Fitting.linearFit(currents, rotated.getRowMatrix(1))
-                val chi2    =
-                    currents.zip(rotated.getRowMatrix(0)).sumOf { abs(reFit.function.value(it.first) - it.second) }
                 val param   = try {
-                    chi2 * imFit.gradient.absoluteValue / reFit.gradient.absoluteValue
+                    imFit.gradient.absoluteValue / reFit.gradient.absoluteValue
                 } catch (e: Exception) { continue }
 
                 if (param < minParam) {
@@ -155,10 +153,18 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
                 }
 
-                Fitting.linearFit(currents, rotatedHall)
+                if (weights.all { it.isFinite() && it > 0 }) {
+                    Fitting.linearFitWeighted(currents, rotatedHall, weights) ?: Fitting.linearFit(currents, rotatedHall)
+                } else {
+                    Fitting.linearFit(currents, rotatedHall)
+                }
 
             } else {
-                Fitting.linearFit(currents, vectorHall)
+                if (weights.all { it.isFinite() && it > 0 }) {
+                    Fitting.linearFitWeighted(currents, vectorHall, weights) ?: Fitting.linearFit(currents, vectorHall)
+                } else {
+                    Fitting.linearFit(currents, vectorHall)
+                }
             }
 
 
