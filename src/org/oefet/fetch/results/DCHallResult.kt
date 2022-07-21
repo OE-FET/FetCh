@@ -8,7 +8,6 @@ import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.DCHall
 import org.oefet.fetch.quantities.*
 import java.util.*
-import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.reflect.KClass
 
@@ -182,63 +181,6 @@ class DCHallResult(data: ResultTable) :
                 .map { it as Conductivity }
                 .map { hallQuantity * it * 1e6 }
                 .map { HallMobility(it.value, it.error, hallQuantity.parameters) }
-
-            // Check to see if fitting has already been done for extracting un-screened Hall coefficient
-            if (otherQuantities.none { it is UnscreenedHall && it.isCompatibleWith(hallQuantity, excluded) }) {
-
-                // Find all Hall coefficients in the same temperature sweep
-                val halls = otherQuantities.filter {
-                    it is HallCoefficient && it.isCompatibleWith(
-                        hallQuantity,
-                        excluded
-                    ) && it.hasParameter(Temperature::class)
-                }.map { it as HallCoefficient }
-
-                // Calculate values of ln(RH), 1/sqrt(RH) and T^(-1/4)
-                val lnrh = halls.map { ln(it.value) }
-                val rh05 = halls.map { it.value.pow(-0.5) }
-                val t025 = halls.map { it.getParameter(Temperature::class)?.value?.pow(-0.25) ?: 0.0 }
-
-                // Find peak conductivity value from corresponding conductivity data
-                val conds = otherQuantities
-                    .filter { it is Conductivity && it.isCompatibleWith(hallQuantity, excluded) }
-                    .map { it as Conductivity }
-
-                val maxC = conds.maxByOrNull { it.value }
-
-                // Do the two fits for extracting T0 and RH0
-                val fit1 = Fitting.linearFit(t025, lnrh)
-                val fit2 = Fitting.linearFit(t025, rh05)
-
-                // Only bother if the fitting worked and there's a peak value of conductivity to associate with it
-                if (fit1 != null && fit2 != null && maxC != null) {
-
-                    // Turn numbers in "Quantity" objects - allows for easy error propagation
-                    val grad1 = SimpleQuantity(fit1.gradient, fit1.gradientError)
-                    val grad2 = SimpleQuantity(fit2.gradient, fit2.gradientError)
-                    val incp2 = SimpleQuantity(fit2.intercept, fit2.interceptError)
-                    val params = parameters.filter { it !is Temperature }.toMutableList()
-                    val pParams = possibleParameters.filter { it != Temperature::class }
-
-                    params += maxC
-
-                    val t0 = (grad1 * 0.5).pow(4)
-                    val r0 = (incp2 + (grad2 / (grad1 * 0.5))).pow(-2)
-                    val n0 = (r0 * 1.6e-19).pow(-1) * (100.0).pow(-3)
-
-                    val unscreened = UnscreenedHall(r0.value, r0.error, params, pParams)
-                    extras += MottHoppingT0(t0.value, t0.error, params, pParams)
-                    extras += unscreened
-                    extras += BandLikeDensity(n0.value, n0.error, params, pParams)
-
-                    extras += conds.map {
-                        val mob = unscreened * it * 1e6
-                        UnscreenedHallMobility(mob.value, mob.error, it.parameters, it.possibleParameters)
-                    }
-
-                }
-
-            }
 
         }
 
