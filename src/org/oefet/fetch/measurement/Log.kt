@@ -70,38 +70,17 @@ object Log {
 
                 }
 
-                is MSMOTC       -> {
+                is PID           -> {
 
-                    for (tMeter in inst.sensors) {
-                        columns.add(DoubleColumn("$name ${tMeter.sensorName} Temperature", "K"))
-                        logTasks.add { tMeter.temperature }
+                    for (input in inst.inputs) {
+                        columns.add(DoubleColumn("$name ${input.name} ${input.valueName}", input.units))
+                        logTasks.add { input.value }
                     }
 
-                    for (tc in inst.outputs) {
-                        columns.add(DoubleColumn("$name ${tc.outputName} Heater Power", "%"))
-                        logTasks.add { tc.heaterPower }
+                    for (output in inst.outputs) {
+                        columns.add(DoubleColumn("$name ${output.name} ${output.valueName}", output.units))
+                        logTasks.add { output.value }
                     }
-
-                }
-
-                is MSTC         -> {
-
-                    for (tMeter in inst.sensors) {
-                        columns.add(DoubleColumn("$name ${tMeter.sensorName} Temperature", "K"))
-                        logTasks.add { tMeter.temperature }
-                    }
-
-                    columns.add(DoubleColumn("$name Heater Power", "%"))
-                    logTasks.add { inst.heaterPower }
-
-                }
-
-                is TC           -> {
-
-                    columns.add(DoubleColumn("$name Temperature", "K"))
-                    columns.add(DoubleColumn("$name Heater Power", "%"))
-                    logTasks.add { inst.temperature }
-                    logTasks.add { inst.heaterPower }
 
                 }
 

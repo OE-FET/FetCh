@@ -20,12 +20,12 @@ class TemperatureChange : FetChAction("Change Temperature") {
     val interval by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val stabilityPct by userInput("Stability", "Stays within [%]", 1.0)
     val stabilityTime by userInput("Stability", "For at least [s]", 600.0) map { it.toMSec().toLong() }
-    val tControl by requiredInstrument("Temperature Controller", TC::class)
+    val tControl by requiredInstrument("Temperature Controller", TC.Loop::class)
 
     private var series: Series? = null
 
     companion object {
-        val TIME        = LongColumn("Time", "UTC ms")
+        val TIME = LongColumn("Time", "UTC ms")
         val TEMPERATURE = DoubleColumn("Temperature", "K")
     }
 
@@ -63,7 +63,7 @@ class TemperatureChange : FetChAction("Change Temperature") {
 
         task = RTask(interval) { _ ->
 
-            val t = tControl.temperature
+            val t = tControl.input.value
 
             results.addData(System.currentTimeMillis(), t)
 
@@ -82,8 +82,8 @@ class TemperatureChange : FetChAction("Change Temperature") {
 
         task?.start()
 
-        tControl.temperature = temperature
-        tControl.useAutoHeater()
+        tControl.temperature  = temperature
+        tControl.isPIDEnabled = true
 
         tControl.waitForStableTemperature(temperature, stabilityPct, stabilityTime)
 

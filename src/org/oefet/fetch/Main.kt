@@ -26,6 +26,8 @@ fun ResultTable.mapRows(vararg data: Pair<Column<*>, Iterable<Any>>) {
 
 fun main() {
 
+    GUI.touch();
+
     Logger.start(
         Util.joinPath(
             System.getProperty("user.home"), "FetCh Logs", "log-${

@@ -14,19 +14,19 @@ import java.lang.Double.min
 class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
 
     // User input parameters
-    private val delTime  by userInput("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
-    private val type     by userChoice("Source-Drain", "Type", "Current Sweep", "Voltage Sweep")
-    private val values   by userInput("Source-Drain", "Values [A or V]", Range.linear(-10e-6, +10e-6, 11))
-    private val holdG    by userInput("Source-Gate", "Active", false)
-    private val gateV    by userInput("Source-Gate", "Voltage [V]", 50.0)
+    private val delTime by userInput("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
+    private val type    by userChoice("Source-Drain", "Type", "Current Sweep", "Voltage Sweep")
+    private val values  by userInput("Source-Drain", "Values [A or V]", Range.linear(-10e-6, +10e-6, 11))
+    private val holdG   by userInput("Source-Gate", "Active", false)
+    private val gateV   by userInput("Source-Gate", "Voltage [V]", 50.0)
 
     // Instruments
-    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
-    private val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
-    private val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { holdG }
-    private val fpp1   by optionalInstrument("Four-Point Probe Channel 1", VMeter::class)
-    private val fpp2   by optionalInstrument("Four-Point Probe Channel 2", VMeter::class)
-    private val tMeter by optionalInstrument("Thermometer", TMeter::class)
+    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val sdSMU   by requiredInstrument("Source-Drain Channel", SMU::class)
+    private val sgSMU   by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { holdG }
+    private val fpp1    by optionalInstrument("Four-Point Probe Channel 1", VMeter::class)
+    private val fpp2    by optionalInstrument("Four-Point Probe Channel 2", VMeter::class)
+    private val tMeter  by optionalInstrument("Thermometer", TMeter::class)
 
     companion object {
 

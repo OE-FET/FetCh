@@ -23,7 +23,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
     val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val stabilityPct  by userInput("Temperature", "Stays within [%]", 1.0)
     val stabilityTime by userInput("Temperature", "For at least [s]", 600.0) map { it.toMSec().toLong() }
-    val tControl      by requiredInstrument("Temperature Controller", TC::class)
+    val tControl      by requiredInstrument("Temperature Controller", TC.Loop::class)
 
 
     override fun getValues(): List<Double> = temperatures.array().toList()
@@ -33,7 +33,6 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
         val list = LinkedList<Action<*>>()
 
         list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime, tControl))
-
         list += actions
 
         return list
@@ -42,10 +41,15 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
     override fun formatValue(value: Double): String = "$value K"
 
-    class SweepPoint(val temperature: Double, val interval: Long, val stabilityPct: Double, val stabilityTime: Long, val tControl: TC?) : FetChAction("Change Temperature") {
+    class SweepPoint(
+        val temperature: Double,
+        val interval: Long,
+        val stabilityPct: Double,
+        val stabilityTime: Long,
+        val loop: TC.Loop?
+    ) : FetChAction("Change Temperature") {
 
-        var task: RTask? = null
-
+        private var task:   RTask?  = null
         private var series: Series? = null
 
         override fun createDisplay(data: ResultTable): FetChPlot {
@@ -80,35 +84,29 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
 
         override fun run(results: ResultTable) {
 
-            if (tControl == null) {
+            if (loop == null) {
                 throw Exception("Temperature Controller is not configured")
             }
 
-            task = RTask(interval)  { _ ->
+            val min = (1 - (stabilityPct / 100.0)) * temperature
+            val max = (1 + (stabilityPct / 100.0)) * temperature
 
-                val t = tControl.temperature
+            task = RTask(interval) { _ ->
+
+                val t = loop.temperature
 
                 results.addData(System.currentTimeMillis(), t)
 
-                if (Util.isBetween(
-                        t,
-                        (1 - (stabilityPct / 100.0)) * temperature,
-                        (1 + (stabilityPct / 100.0)) * temperature
-                    )
-                ) {
-                    series?.colour = Colour.TEAL
-                } else {
-                    series?.colour = Colour.RED
-                }
+                series?.colour = if (Util.isBetween(t, min, max)) { Colour.TEAL } else { Colour.RED }
 
             }
 
             task?.start()
 
-            tControl.temperature = temperature
-            tControl.useAutoHeater()
+            loop.setPoint     = temperature
+            loop.isPIDEnabled = true
 
-            tControl.waitForStableTemperature(temperature, stabilityPct, stabilityTime)
+            loop.waitForStableTemperature(temperature, stabilityPct, stabilityTime)
 
         }
 
