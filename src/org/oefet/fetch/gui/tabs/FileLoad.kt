@@ -87,7 +87,7 @@ object FileLoad : BorderDisplay("Results") {
         } else if (!cached.containsKey(fileList.selected.getObject())) {
 
             val selected = fileList.selected.getObject()
-            val params   = Display("Parameters")
+            val params   = DataDisplay("Parameters")
 
             for (type in selected.quantities.map{ it::class }.distinct()) {
 
@@ -157,8 +157,10 @@ object FileLoad : BorderDisplay("Results") {
 
         }
 
-        val grid       = Grid(if (retain) "Retain by Filter" else "Remove by Filter", 5);
-        grid.maxHeight = 500.0
+        val grid         = Grid(if (retain) "Retain by Filter" else "Remove by Filter", 3);
+        grid.setWindowSize(1000.0, 700.0);
+        grid.setGrowth(true, false)
+
         val responses = LinkedHashMap<Quantity<*>, MutableList<Field<Boolean>>>()
 
         for ((type, options) in values) {
