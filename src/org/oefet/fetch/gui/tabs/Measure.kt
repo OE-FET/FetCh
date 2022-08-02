@@ -154,7 +154,7 @@ object Measure : Grid("Measurement", 1) {
         topRow.remove(this.element)
         bottomRow.remove(this.table)
 
-        this.table   = table.apply { minHeight = 400.0 }
+        this.table   = table.apply { minHeight = 300.0 }
         this.element = element
 
         topRow.add(element, 1)
@@ -289,7 +289,7 @@ object Measure : Grid("Measurement", 1) {
             bottomRow.remove(table)
 
             element = Plot("Results", "", "")
-            table   = Table("Results").apply { minHeight = 400.0 }
+            table   = Table("Results").apply { minHeight = 300.0 }
 
             topRow.add(element, 1)
             bottomRow.add(table)
