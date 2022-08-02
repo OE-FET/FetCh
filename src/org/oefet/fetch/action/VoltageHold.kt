@@ -1,16 +1,17 @@
 package org.oefet.fetch.action
 
+import javafx.scene.image.Image
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.SMU
-
-import jisa.results.ResultTable
-import jisa.results.DoubleColumn
 import jisa.gui.Colour
+import jisa.gui.GUI
 import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class VoltageHold : FetChAction("Hold") {
+class VoltageHold : FetChAction("Hold", Image(GUI::class.java.getResource("images/smu.png").toString())) {
 
     var task: RTask? = null
 

@@ -4,6 +4,7 @@ import jisa.Util
 import jisa.control.Repeat
 import jisa.devices.interfaces.*
 import jisa.enums.Coupling
+import jisa.enums.Icon
 import jisa.enums.Input
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
@@ -17,7 +18,7 @@ import kotlin.Double.Companion.NaN
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
+class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon.CIRCLES.blackImage) {
 
     // User input parameters
     private val intTime         by userInput("Basic", "Integration Time [s]", 100.0)

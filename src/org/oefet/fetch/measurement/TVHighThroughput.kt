@@ -12,10 +12,11 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVHTPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.TVHighThroughputResult
 
 class TVHighThroughput :
-    FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput") {
+    FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput", Images.getImage("fire.png")) {
 
     private val repTime by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
     private val repeats by userInput("Basic", "Repeats", 50)

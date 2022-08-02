@@ -15,12 +15,13 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.DCHallPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.DCHallResult
 
 /**
  * Measurement class for DC Hall measurements.
  */
-class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall") {
+class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Images.getImage("hall.png")) {
 
     // Notice display to show when magnet is ramping down
     private val notice = Doc("Ramping Down").apply {

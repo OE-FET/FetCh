@@ -1,10 +1,10 @@
 package org.oefet.fetch.action
 
 import jisa.devices.interfaces.ProbeStation
-
 import jisa.results.ResultTable
+import org.oefet.fetch.gui.images.Images
 
-class PositionChange : FetChAction("Change Position") {
+class PositionChange : FetChAction("Change Position", Images.getImage("calibration.png")) {
 
     val pControl      by requiredInstrument("Position Controller", ProbeStation::class)
     val xposition     by userInput("Position", "x Position [m]", 1e-3)

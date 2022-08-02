@@ -3,6 +3,7 @@ package org.oefet.fetch.action
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.TC
+import jisa.enums.Icon
 import jisa.gui.Colour
 import jisa.gui.Plot
 import jisa.gui.Series
@@ -12,7 +13,7 @@ import jisa.results.LongColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class TemperatureChange : FetChAction("Change Temperature") {
+class TemperatureChange : FetChAction("Change Temperature", Icon.THERMOMETER.blackImage) {
 
     var task: RTask? = null
 

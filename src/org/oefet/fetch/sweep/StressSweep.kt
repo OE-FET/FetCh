@@ -3,6 +3,7 @@ package org.oefet.fetch.sweep
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.SMU
+import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.experiment.queue.SimpleAction
@@ -17,7 +18,7 @@ import org.oefet.fetch.action.VoltageHold.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 
-class StressSweep : FetChSweep<Int>("Stress", "S") {
+class StressSweep : FetChSweep<Int>("Stress", "S", Icon.CLOCK.blackImage) {
 
     var task: RTask? = null
 
@@ -105,7 +106,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S") {
         val sgSMU: SMU?,
         val offSD: Int,
         val offSG: Int
-    ) : FetChAction("Hold") {
+    ) : FetChAction("Hold", Icon.CLOCK.blackImage) {
 
         var task: RTask? = null
 

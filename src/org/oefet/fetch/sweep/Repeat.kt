@@ -1,9 +1,10 @@
 package org.oefet.fetch.sweep
 
+import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.maths.Range
 
-class Repeat : FetChSweep<Int>("Repeat", "N") {
+class Repeat : FetChSweep<Int>("Repeat", "N", Icon.REPEAT.blackImage) {
 
     val count by userInput("Basic", "Count", 5)
 

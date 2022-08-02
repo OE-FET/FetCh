@@ -11,9 +11,10 @@ import jisa.maths.Range
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVCPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.TVCResult
 
-class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration") {
+class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration", Images.getImage("calibration.png")) {
 
     // Parameters
     private val avgCount by userInput("Basic", "Averaging Count",1)

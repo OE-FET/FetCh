@@ -13,7 +13,9 @@ object Sweeps {
 
     class Config<T>(private val example: FetChSweep<T>) {
 
-        val name = example.name
+        val name   = example.name
+        val image  = example.image
+        val mClass = example::class
 
         fun create(): FetChSweep<T> {
             return example::class.primaryConstructor!!.call()

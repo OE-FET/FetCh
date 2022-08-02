@@ -1,11 +1,13 @@
 package org.oefet.fetch.sweep
 
+import javafx.scene.image.Image
 import jisa.devices.interfaces.VSource
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
+import jisa.gui.GUI
 import jisa.maths.Range
 
-class VoltageSweep : FetChSweep<Double>("Voltage Sweep", "V") {
+class VoltageSweep : FetChSweep<Double>("Voltage Sweep", "V", Image(GUI::class.java.getResource("images/smu.png").toString())) {
 
     private val voltages by userInput("Voltages", "Voltage [V]", Range.linear(0, 60))
     private val off      by userInput("Voltages", "Turn Off Afterwards?", true)

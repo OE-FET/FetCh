@@ -5,6 +5,7 @@ import jisa.experiment.queue.MeasurementAction
 import jisa.experiment.queue.SweepAction
 import jisa.gui.GUI
 import jisa.gui.Grid
+import jisa.gui.ListDisplay
 import jisa.gui.MeasurementConfigurator
 import jisa.gui.queue.ActionQueueDisplay
 import org.oefet.fetch.Actions
@@ -19,22 +20,46 @@ import org.oefet.fetch.sweep.FetChSweep
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
 
+    private val measurements = ListDisplay<Measurements.Config>("Add Measurement").apply { minHeight = 500.0; minWidth = 500.0; }
+    private val actions      = ListDisplay<Actions.Config>("Add Action").apply { minHeight = 500.0; minWidth = 500.0; }
+    private val sweeps       = ListDisplay<Sweeps.Config<*>>("Add Sweep").apply { minHeight = 500.0; minWidth = 500.0; }
+
     /**
      * Button for adding actions to the queue
      */
     private val addButton = addToolbarMenuButton("Add...").apply {
 
-        addSeparator("Measurements")
+        updateTypes()
 
-        for (type in Measurements.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addItem(type.name) { askMeasurement(type.createMeasurement()) }
+        addItem("Action...") {
 
-        addSeparator("Actions")
+            if (actions.showAsConfirmation()) {
+                askAction(actions.selected.getObject().create())
+            }
 
-        for (type in Actions.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addItem(type.name) { askAction(type.create()) }
+        }
 
-        addSeparator("Sweeps")
+        addItem("Measurement...") {
 
-        for (type in Sweeps.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addItem(type.name) { askSweep(type.create()) }
+            if (!measurements.isShowing) {
+
+                if (measurements.showAsConfirmation()) {
+                    askMeasurement(measurements.selected.getObject().createMeasurement())
+                }
+
+            } else {
+                measurements.show()
+            }
+
+        }
+
+        addItem("Sweep...") {
+
+            if (sweeps.showAsConfirmation()) {
+                askSweep(sweeps.selected.getObject().create())
+            }
+
+        }
 
     }
 
@@ -99,6 +124,19 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             dnButton.isDisabled   = disabled
             rmButton.isDisabled   = disabled
         }
+
+    @Synchronized
+    fun updateTypes() {
+
+        measurements.clear()
+        actions.clear()
+        sweeps.clear()
+
+        for (type in Measurements.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) measurements.add(type, type.name, type.mClass.simpleName, type.image)
+        for (type in Actions.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) actions.add(type, type.name, type.mClass.simpleName, type.image)
+        for (type in Sweeps.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) sweeps.add(type, type.name, type.mClass.simpleName, type.image)
+
+    }
 
     private fun askMeasurement(measurement: FetChMeasurement) {
 

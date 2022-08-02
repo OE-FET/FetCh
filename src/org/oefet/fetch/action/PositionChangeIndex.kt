@@ -3,8 +3,9 @@ package org.oefet.fetch.action
 import jisa.devices.interfaces.ProbeStation
 
 import jisa.results.ResultTable
+import org.oefet.fetch.gui.images.Images
 
-class PositionChangeIndex : FetChAction("Change Position to Index") {
+class PositionChangeIndex : FetChAction("Change Position to Index", Images.getImage("calibration.png")) {
 
     val pControl    by requiredInstrument("Position Controller", ProbeStation::class)
     val countX      by userInput("Sample Setup", "Number of Devices in x Direction", 6)

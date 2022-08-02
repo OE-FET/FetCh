@@ -1,17 +1,19 @@
 package org.oefet.fetch.action
 
+import javafx.scene.image.Image
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.IMeter
 import jisa.devices.interfaces.VSource
 import jisa.gui.Colour
 import jisa.gui.Element
+import jisa.gui.GUI
 import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class Stabilise : FetChAction("Current Stabilisation") {
+class Stabilise : FetChAction("Current Stabilisation", Image(GUI::class.java.getResource("images/smu.png").toString())) {
 
     private val setVoltage by userInput("Set Voltage [V]", 1.0)
     private val pctRange   by userInput("Stable to [%]", 1.0)

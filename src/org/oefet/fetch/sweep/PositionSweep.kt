@@ -7,9 +7,10 @@ import jisa.experiment.queue.SimpleAction
 import jisa.gui.CheckGrid
 import jisa.gui.Fields
 import org.oefet.fetch.action.PositionCalibration
+import org.oefet.fetch.gui.images.Images
 
 
-class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P") {
+class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P", Images.getImage("calibration.png")) {
 
     val fineLift by userInput("Sample Setup", "Fine Lift [m]", 0.02)
     val useCalibration by userInput("Sample Setup", "Use values from 3-point calibration", true)

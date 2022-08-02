@@ -2,11 +2,12 @@ package org.oefet.fetch.action
 
 import jisa.Util
 import jisa.control.RTask
+import jisa.enums.Icon
 import jisa.gui.Progress
 import jisa.results.Column
 import jisa.results.ResultTable
 
-class Wait : FetChAction("Wait") {
+class Wait : FetChAction("Wait", Icon.CLOCK.blackImage) {
 
     var task: RTask? = null
 

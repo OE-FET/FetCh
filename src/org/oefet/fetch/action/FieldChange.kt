@@ -2,15 +2,15 @@ package org.oefet.fetch.action
 
 import jisa.control.RTask
 import jisa.devices.interfaces.EMController
-
-import jisa.results.ResultTable
-import jisa.results.DoubleColumn
+import jisa.enums.Icon
 import jisa.gui.Colour
 import jisa.gui.Series
 import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
-class FieldChange : FetChAction("Change Field") {
+class FieldChange : FetChAction("Change Field", Icon.MAGNET.blackImage) {
 
     var task: RTask? = null
 

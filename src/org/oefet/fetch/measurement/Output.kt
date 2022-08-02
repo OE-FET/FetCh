@@ -7,10 +7,11 @@ import jisa.maths.Range
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.OutputResult
 import kotlin.Double.Companion.NaN
 
-class Output : FetChMeasurement("Output Measurement", "Output", "Output") {
+class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images.getImage("output.png")) {
 
     // Parameters
     val delTime    by userInput("Basic", "Delay Time [s]", 0.5) map { it.toMSec() }

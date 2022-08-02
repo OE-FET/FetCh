@@ -1,10 +1,11 @@
 package org.oefet.fetch.action
 
-import jisa.Util
+import javafx.scene.image.Image
 import jisa.devices.interfaces.VSource
+import jisa.gui.GUI
 import jisa.results.ResultTable
 
-class VoltageSet : FetChAction("Set Voltage") {
+class VoltageSet : FetChAction("Set Voltage", Image(GUI::class.java.getResource("images/smu.png").toString())) {
 
     private val voltage by userInput("Voltage [V]", 10.0)
     private val off     by userInput("Turn Off?", false)

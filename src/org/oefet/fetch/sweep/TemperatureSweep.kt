@@ -3,6 +3,7 @@ package org.oefet.fetch.sweep
 import jisa.Util
 import jisa.control.RTask
 import jisa.devices.interfaces.TC
+import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
@@ -17,7 +18,7 @@ import org.oefet.fetch.action.TemperatureChange.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 
-class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
+class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERMOMETER.blackImage) {
 
     val temperatures  by userInput("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
     val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
@@ -47,7 +48,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T") {
         val stabilityPct: Double,
         val stabilityTime: Long,
         val loop: TC.Loop?
-    ) : FetChAction("Change Temperature") {
+    ) : FetChAction("Change Temperature", Icon.THERMOMETER.blackImage) {
 
         private var task:   RTask?  = null
         private var series: Series? = null

@@ -1,5 +1,6 @@
 package org.oefet.fetch
 
+import javafx.scene.image.Image
 import jisa.devices.Configuration
 import jisa.devices.interfaces.Instrument
 import jisa.experiment.Measurement
@@ -21,6 +22,7 @@ abstract class FetChEntity : Measurement() {
     private val errors  = LinkedList<String>()
     private val setters = LinkedList<() -> Unit>()
     private val columns = LinkedList<Column<*>>()
+    abstract val image: Image
 
     open fun createDisplay(data: ResultTable): Element {
         return FetChPlot(name).apply {  }

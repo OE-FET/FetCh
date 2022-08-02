@@ -3,13 +3,12 @@ package org.oefet.fetch.action
 import jisa.control.RTask
 import jisa.devices.interfaces.EMController
 import jisa.devices.power.IPS120
-import jisa.results.ResultTable
+import jisa.enums.Icon
 import jisa.gui.Colour
-import jisa.gui.Plot
+import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
-import java.lang.Exception
 
-class HeaterSwitch : FetChAction("Heater Switch") {
+class HeaterSwitch : FetChAction("Heater Switch", Icon.RESISTOR.blackImage) {
 
     var task: RTask? = null
 

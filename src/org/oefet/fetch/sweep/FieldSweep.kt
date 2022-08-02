@@ -2,6 +2,7 @@ package org.oefet.fetch.sweep
 
 import jisa.control.RTask
 import jisa.devices.interfaces.EMController
+import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
 import jisa.gui.Colour
@@ -16,7 +17,7 @@ import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.gui.tabs.Measure
 import java.util.*
 
-class FieldSweep : FetChSweep<Double>("Field Sweep", "B") {
+class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage) {
 
     val fields    by userInput("Field", "Set-Points [T]", Range.step(-1, +1, 0.5))
     val interval  by userInput("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
@@ -39,7 +40,7 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B") {
 
     override fun formatValue(value: Double): String = "$value T"
 
-    class SweepPoint(val field: Double, val interval: Long, val fControl: EMController?) : FetChAction("Change Field") {
+    class SweepPoint(val field: Double, val interval: Long, val fControl: EMController?) : FetChAction("Change Field", Icon.MAGNET.blackImage) {
 
         var task: RTask? = null
 

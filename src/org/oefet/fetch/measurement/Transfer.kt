@@ -9,9 +9,10 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TransferPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.TransferResult
 
-class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer") {
+class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer", Images.getImage("transfer.png")) {
 
     // Parameters
     val delTime    by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }

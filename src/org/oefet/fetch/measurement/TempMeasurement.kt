@@ -2,10 +2,11 @@ package org.oefet.fetch.measurement
 
 import jisa.control.Repeat
 import jisa.devices.interfaces.TMeter
+import jisa.enums.Icon
 import jisa.results.Col
 import jisa.results.ResultTable
 
-class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Temp") {
+class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Temp", Icon.THERMOMETER.blackImage) {
 
     private val pctMargin by userInput("Temperature Stabilization", "Percentage range for temperature to stay within",0.3, )
     private val duration by userInput("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0, ) map { (it * 1e3).toLong() }

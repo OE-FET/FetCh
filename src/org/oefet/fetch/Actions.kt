@@ -13,7 +13,9 @@ object Actions {
 
     class Config(private val example: FetChAction) {
 
-        val name = example.name
+        val name   = example.name
+        val image  = example.image
+        val mClass = example::class
 
         fun create(): FetChAction {
             return example::class.primaryConstructor!!.call()

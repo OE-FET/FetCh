@@ -14,9 +14,10 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.TVResult
 
-class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage") {
+class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "Thermal Voltage", Images.getImage("fire.png")) {
 
     // User input parameters
     private val avgCount   by userInput("Basic", "Averaging Count", 1)

@@ -1,11 +1,12 @@
 package org.oefet.fetch.measurement
 
+import javafx.scene.image.Image
 import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
 import org.oefet.fetch.results.FetChResult
 import org.oefet.fetch.results.SimpleResult
 
-abstract class FetChMeasurement(private val name: String, fileLabel: String, val tag: String) : FetChEntity() {
+abstract class FetChMeasurement(private val name: String, fileLabel: String, val tag: String, override val image: Image) : FetChEntity() {
 
     private val labelProperty = StringParameter("Basic", "Name", null, fileLabel)
 

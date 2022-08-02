@@ -2,11 +2,12 @@ package org.oefet.fetch.action
 
 import jisa.control.RTask
 import jisa.devices.interfaces.Switch
+import jisa.enums.Icon
 import jisa.gui.Doc
 import jisa.gui.Element
 import jisa.results.ResultTable
 
-class Switch : FetChAction("Relay Switch") {
+class Switch : FetChAction("Relay Switch", Icon.DEVICE.blackImage) {
 
     var task: RTask? = null
 

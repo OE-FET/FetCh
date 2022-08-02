@@ -1,6 +1,7 @@
 package org.oefet.fetch.sweep
 
 
+import javafx.scene.image.Image
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.ActionQueue
 import jisa.experiment.queue.SweepAction
@@ -8,7 +9,7 @@ import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
 
-abstract class FetChSweep<T>(private val name: String, private val tag: String) : FetChEntity() {
+abstract class FetChSweep<T>(private val name: String, private val tag: String, override val image: Image) : FetChEntity() {
 
     val queue = ActionQueue()
 

@@ -10,10 +10,11 @@ import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.SyncPlot
+import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.FetChResult
 
-class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync") {
+class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync", Images.getImage("output.png")) {
 
     // Parameters
     val delTime  by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }

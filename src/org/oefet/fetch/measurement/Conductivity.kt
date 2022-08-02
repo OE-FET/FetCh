@@ -3,6 +3,7 @@ package org.oefet.fetch.measurement
 import jisa.devices.interfaces.SMU
 import jisa.devices.interfaces.TMeter
 import jisa.devices.interfaces.VMeter
+import jisa.enums.Icon
 import jisa.maths.Range
 import jisa.results.Column
 import jisa.results.DoubleColumn
@@ -11,7 +12,7 @@ import org.oefet.fetch.gui.elements.FPPPlot
 import org.oefet.fetch.results.CondResult
 import java.lang.Double.min
 
-class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity") {
+class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity", Icon.ELECTRICITY.blackImage) {
 
     // User input parameters
     private val delTime by userInput("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }

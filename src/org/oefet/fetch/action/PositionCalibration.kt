@@ -4,8 +4,9 @@ import jisa.devices.interfaces.ProbeStation
 import jisa.gui.Field
 import jisa.gui.Fields
 import jisa.results.ResultTable
+import org.oefet.fetch.gui.images.Images
 
-class PositionCalibration : FetChAction("3-point Position Calibration") {
+class PositionCalibration : FetChAction("3-point Position Calibration", Images.getImage("calibration.png")) {
 
     private val grossLift    by userInput("Setup", "Gross Distance [m]", 3e-3)
     private val fineLift    by userInput("Setup", "Fine Distance [m]", 3e-4)

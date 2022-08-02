@@ -31,6 +31,7 @@ object Measurements {
         val type   = example.tag
         val name   = example.name
         val mClass = example::class
+        val image  = example.image
         val rClass = (example::processResults).reflect()?.returnType?.jvmErasure
 
         fun createMeasurement(): FetChMeasurement                                             = mClass.primaryConstructor!!.call()
