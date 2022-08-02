@@ -11,7 +11,7 @@ import jisa.results.BooleanColumn
 import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
-import org.oefet.fetch.gui.elements.ACHallPlot
+import org.oefet.fetch.gui.elements.SimpleACHallPlot
 import org.oefet.fetch.results.ACHallResult
 import kotlin.Double.Companion.NaN
 import kotlin.math.pow
@@ -284,8 +284,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall") {
         return ACHallResult(data)
     }
 
-    override fun createDisplay(data: ResultTable): ACHallPlot {
-        return ACHallPlot(data)
+    override fun createDisplay(data: ResultTable): SimpleACHallPlot {
+        return SimpleACHallPlot(data)
     }
 
 }
