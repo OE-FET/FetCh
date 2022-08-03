@@ -27,41 +27,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
     /**
      * Button for adding actions to the queue
      */
-    private val addButton = addToolbarMenuButton("Add...").apply {
-
-        updateTypes()
-
-        addItem("Action...") {
-
-            if (actions.showAsConfirmation()) {
-                askAction(actions.selected.getObject().create())
-            }
-
-        }
-
-        addItem("Measurement...") {
-
-            if (!measurements.isShowing) {
-
-                if (measurements.showAsConfirmation()) {
-                    askMeasurement(measurements.selected.getObject().createMeasurement())
-                }
-
-            } else {
-                measurements.show()
-            }
-
-        }
-
-        addItem("Sweep...") {
-
-            if (sweeps.showAsConfirmation()) {
-                askSweep(sweeps.selected.getObject().create())
-            }
-
-        }
-
-    }
+    private val addButton = addToolbarMenuButton("Add...")
 
     private val upButton = addToolbarButton("▲") {
 
@@ -111,6 +77,10 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         addItem("Collapse All") { setExpanded(false) }
     }
 
+    init {
+        updateTypes()
+    }
+
     var isDisabled: Boolean
 
         get() {
@@ -131,10 +101,65 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         measurements.clear()
         actions.clear()
         sweeps.clear()
+        addButton.removeAllItems()
 
-        for (type in Measurements.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) measurements.add(type, type.name, type.mClass.simpleName, type.image)
-        for (type in Actions.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) actions.add(type, type.name, type.mClass.simpleName, type.image)
-        for (type in Sweeps.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) sweeps.add(type, type.name, type.mClass.simpleName, type.image)
+        val type = Settings.actionDisplay.intValue("type").getOrDefault(0);
+
+        when (type) {
+
+            0 -> {
+
+                addButton.addSeparator("Measurements")
+                for (t in Measurements.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addButton.addItem(t.name) {
+                    askMeasurement(t.createMeasurement())
+                }
+
+                addButton.addSeparator("Actions")
+                for (t in Actions.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addButton.addItem(t.name) {
+                    askAction(t.create())
+                }
+
+                addButton.addSeparator("Sweeps")
+                for (t in Sweeps.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) addButton.addItem(t.name) {
+                    askSweep(t.create())
+                }
+
+
+            }
+
+            1 -> {
+
+                addButton.addItem("Measurement...") {
+
+                    if (measurements.showAsConfirmation()) {
+                        askMeasurement(measurements.selected.getObject().createMeasurement())
+                    }
+
+                }
+
+                addButton.addItem("Action...") {
+
+                    if (actions.showAsConfirmation()) {
+                        askAction(actions.selected.getObject().create())
+                    }
+
+                }
+
+                addButton.addItem("Sweep...") {
+
+                    if (sweeps.showAsConfirmation()) {
+                        askSweep(sweeps.selected.getObject().create())
+                    }
+
+                }
+
+                for (t in Measurements.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) measurements.add(t, t.name, t.mClass.simpleName, t.image)
+                for (t in Actions.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) actions.add(t, t.name, t.mClass.simpleName, t.image)
+                for (t in Sweeps.types.filter { !Settings.hidden.booleanValue(it.name).getOrDefault(false) }) sweeps.add(t, t.name, t.mClass.simpleName, t.image)
+
+            }
+
+        }
 
     }
 

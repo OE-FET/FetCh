@@ -282,7 +282,7 @@ object FileLoad : BorderDisplay("Results") {
         centreElement = Grid(progress)
 
         // Iterate over paths in alphabetical order
-        for (path in paths.sorted()) {
+        for (path in paths) {
 
             try {
 

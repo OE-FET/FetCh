@@ -9,8 +9,9 @@ import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.Sweeps
 
-object ShownActions : Grid("Actions", 3) {
+object ShownActions : Grid("Actions", 1) {
 
+    val config       = Fields("Configuration")
     val measurements = Fields("Hidden Measurements")
     val actions      = Fields("Hidden Actions")
     val sweeps       = Fields("Hidden Sweeps")
@@ -18,9 +19,21 @@ object ShownActions : Grid("Actions", 3) {
 
     init {
 
-        addAll(actions, measurements, sweeps)
+        val type = config.addChoice("Display Type", Settings.actionDisplay.intValue("type").getOrDefault(0), "Dropdown Menu", "List")
+
+        type.setOnChange {
+            Settings.actionDisplay.intValue("type").set(type.value)
+            Measure.queueList.updateTypes()
+            Measure.bigQueue.updateTypes()
+        }
+
+
+        val row  = Grid(3,actions, measurements, sweeps)
+
         setGrowth(true, false)
         setIcon(Icon.COGS)
+
+        addAll(config, row)
 
         for (type in Measurements.types) {
 
