@@ -11,10 +11,10 @@ class Wait : FetChAction("Wait", Icon.CLOCK.blackImage) {
 
     var task: RTask? = null
 
-    val hours   by userInput ("Time", "Hours", 0)
-    val minutes by userInput ("Time", "Minutes", 0)
-    val seconds by userInput ("Time", "Seconds", 0)
-    val millis  by userInput ("Time", "Milliseconds", 0)
+    val hours   by userInput("Time", "Hours", 0)
+    val minutes by userInput("Time", "Minutes", 0)
+    val seconds by userInput("Time", "Seconds", 0)
+    val millis  by userInput("Time", "Milliseconds", 0)
     val time get() = millis + (seconds * 1000) + (minutes * 60 * 1000) + (hours * 60 * 60 * 1000)
     val progress = Progress("")
 

@@ -21,12 +21,12 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
     // User input parameters
     private val avgCount   by userInput("Basic", "Averaging Count", 1)
-    private val avgDelay   by userInput("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
+    private val avgDelay   by userTimeInput("Basic", "Averaging Delay", 0)
     private val order      by userChoice("Basic", "Sweep Order", "Gate → Heater", "Heater → Gate")
     private val heaterV    by userInput("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
-    private val heaterHold by userInput("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
+    private val heaterHold by userTimeInput("Heater", "Hold Time", 60000)
     private val gates      by userInput("Gate", "Voltage [V]", Range.linear(0.0, 10.0, 11))
-    private val gateHold   by userInput("Gate", "Hold Time [s]", 1.0) map { (it * 1e3).toInt() }
+    private val gateHold   by userTimeInput("Gate", "Hold Time", 1000)
     private val gateOff    by userInput("Gate", "Auto Off", true)
 
     // Instruments

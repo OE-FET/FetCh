@@ -18,7 +18,7 @@ import org.oefet.fetch.results.TVHighThroughputResult
 class TVHighThroughput :
     FetChMeasurement("Thermal Voltage High Throughput", "TVThroughput", "Thermal Voltage High Throughput", Images.getImage("fire.png")) {
 
-    private val repTime by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
+    private val repTime by userTimeInput("Basic", "Repeat Time", 0)
     private val repeats by userInput("Basic", "Repeats", 50)
 
     private val pctMarginPeltiers by userInput(

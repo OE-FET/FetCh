@@ -17,8 +17,8 @@ class Stabilise : FetChAction("Current Stabilisation", Image(GUI::class.java.get
 
     private val setVoltage by userInput("Set Voltage [V]", 1.0)
     private val pctRange   by userInput("Stable to [%]", 1.0)
-    private val stabTime   by userInput("For at least [s]", 600.0) map { it.toMSec() }
-    private val logTime    by userInput("Logging Interval [s]", 1.0) map { it.toMSec() }
+    private val stabTime   by userTimeInput("For at least", 600000)
+    private val logTime    by userTimeInput("Logging Interval", 1000)
     private val autoOff    by userInput("Auto Off?", true)
 
     private val vSource    by optionalInstrument("Voltage Source", VSource::class)

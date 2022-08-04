@@ -15,7 +15,7 @@ class FieldChange : FetChAction("Change Field", Icon.MAGNET.blackImage) {
     var task: RTask? = null
 
     val field    by userInput("Field", "Set-Point [T]", 1.0)
-    val interval by userInput("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val interval by userTimeInput("Field", "Logging Interval", 500)
     val fControl by requiredInstrument("EM Controller", EMController::class)
 
     companion object {
@@ -47,7 +47,7 @@ class FieldChange : FetChAction("Change Field", Icon.MAGNET.blackImage) {
 
     override fun run(results: ResultTable) {
 
-        task = RTask(interval) { t -> results.addData(t.secFromStart, fControl.field) }
+        task = RTask(interval.toLong()) { t -> results.addData(t.secFromStart, fControl.field) }
         task?.start()
 
         fControl.field = field

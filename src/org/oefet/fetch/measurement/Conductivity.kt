@@ -15,7 +15,7 @@ import java.lang.Double.min
 class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity", Icon.ELECTRICITY.blackImage) {
 
     // User input parameters
-    private val delTime by userInput("Basic", "Delay Time [s]", 1.0) map { (it * 1e3).toInt() }
+    private val delTime by userTimeInput("Basic", "Delay Time [s]", 1000)
     private val type    by userChoice("Source-Drain", "Type", "Current Sweep", "Voltage Sweep")
     private val values  by userInput("Source-Drain", "Values [A or V]", Range.linear(-10e-6, +10e-6, 11))
     private val holdG   by userInput("Source-Gate", "Active", false)

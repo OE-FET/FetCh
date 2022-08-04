@@ -14,7 +14,7 @@ import kotlin.Double.Companion.NaN
 class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images.getImage("output.png")) {
 
     // Parameters
-    val delTime    by userInput("Basic", "Delay Time [s]", 0.5) map { it.toMSec() }
+    val delTime    by userTimeInput("Basic", "Delay Time", 500)
     val sdVoltages by userInput("Source-Drain", "Voltage [V]", Range.step(0, 60, 1).mirror())
     val sgVoltages by userInput("Source-Gate", "Voltage [V]", Range.step(0, 60, 10))
     val sdOff      by userInput("Auto-Off", "Source-Drain Channel", true)

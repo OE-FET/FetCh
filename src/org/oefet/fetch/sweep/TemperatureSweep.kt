@@ -23,7 +23,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
     val temperatures  by userInput("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
     val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val stabilityPct  by userInput("Temperature", "Stays within [%]", 1.0)
-    val stabilityTime by userInput("Temperature", "For at least [s]", 600.0) map { it.toMSec().toLong() }
+    val stabilityTime by userTimeInput("Temperature", "For at least", 600000)
     val tControl      by requiredInstrument("Temperature Controller", TC.Loop::class)
 
 
@@ -33,7 +33,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime, tControl))
+        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime.toLong(), tControl))
         list += actions
 
         return list

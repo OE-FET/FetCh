@@ -20,7 +20,7 @@ import java.util.*
 class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage) {
 
     val fields    by userInput("Field", "Set-Points [T]", Range.step(-1, +1, 0.5))
-    val interval  by userInput("Field", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val interval  by userTimeInput("Field", "Logging Interval", 500)
     val emControl by optionalInstrument("Electromagnet Controller", EMController::class)
 
     override fun getValues(): List<Double> {
@@ -31,7 +31,7 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage
 
         val list = LinkedList<Action<out Any>>()
 
-        list += MeasurementAction(SweepPoint(value, interval, emControl)).apply { setOnMeasurementStart { Measure.display(it) }  }
+        list += MeasurementAction(SweepPoint(value, interval.toLong(), emControl)).apply { setOnMeasurementStart { Measure.display(it) }  }
         list += actions
 
         return list

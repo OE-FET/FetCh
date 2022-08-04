@@ -53,7 +53,7 @@ object Dashboard : Grid("Dashboard", 3) {
             if (!Log.isRunning) {
 
                 val input    = Fields("Change Logging Interval")
-                val interval = input.addIntegerField("Interval [ms]", Log.interval)
+                val interval = input.addTimeField("Interval", Log.interval)
 
                 if (input.showAsConfirmation()) {
                     Log.interval = interval.value

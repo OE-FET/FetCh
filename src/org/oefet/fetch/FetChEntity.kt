@@ -170,6 +170,14 @@ abstract class FetChEntity : Measurement() {
         return userInput("Basic", name, defaultValue)
     }
 
+    fun userTimeInput(section: String, name: String, defaultValue: Int): PDelegate<Int> {
+        return userInput(TimeParameter(section, name, defaultValue))
+    }
+
+    fun userTimeInput(name: String, defaultValue: Int): PDelegate<Int> {
+        return userTimeInput("basic", name, defaultValue)
+    }
+
     fun <I> customInput(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit): PDelegate<I> {
         return userInput(CustomParameter(tag, element, getter, setter))
     }

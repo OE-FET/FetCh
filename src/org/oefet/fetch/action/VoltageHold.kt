@@ -15,8 +15,8 @@ class VoltageHold : FetChAction("Hold", Image(GUI::class.java.getResource("image
 
     var task: RTask? = null
 
-    val time      by userInput("Basic", "Hold Time [s]", 600.0) map { it.toMSec() }
-    val interval  by userInput("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val time      by userTimeInput("Basic", "Hold Time", 600000)
+    val interval  by userTimeInput("Basic", "Logging Interval", 500)
     val useSD     by userInput("Source-Drain", "Enabled", false)
     val sdVoltage by userInput("Source-Drain", "Voltage [V]", 50.0)
     val useSG     by userInput("Source-Gate", "Enabled", false)
@@ -43,7 +43,7 @@ class VoltageHold : FetChAction("Hold", Image(GUI::class.java.getResource("image
 
     override fun run(results: ResultTable) {
 
-        task = RTask(interval) { t ->
+        task = RTask(interval.toLong()) { t ->
 
             results.addData(
                 t.secFromStart,

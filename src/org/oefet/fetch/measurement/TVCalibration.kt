@@ -18,12 +18,12 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
     // Parameters
     private val avgCount by userInput("Basic", "Averaging Count",1)
-    private val avgDelay by userInput("Basic", "Averaging Delay [s]", 0.0) map { (it * 1e3).toInt() }
+    private val avgDelay by userTimeInput("Basic", "Averaging Delay", 0)
     private val probe    by userChoice("Basic", "Strip", "Left", "Right")
     private val heaterV  by userInput("Heater", "Heater Voltage [V]", Range.polynomial(0, 5, 6, 2))
-    private val holdHV   by userInput("Heater", "Hold Time [s]", 60.0) map { (it * 1e3).toInt() }
+    private val holdHV   by userTimeInput("Heater", "Hold Time", 60000)
     private val currents by userInput("Resistive Thermometer", "Current [A]", Range.linear(0.0, 100e-6, 11))
-    private val holdSI   by userInput("Resistive Thermometer", "Hold Time", 0.5) map { (it * 1e3).toInt() }
+    private val holdSI   by userTimeInput("Resistive Thermometer", "Hold Time", 500)
 
     // Instruments
     private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)

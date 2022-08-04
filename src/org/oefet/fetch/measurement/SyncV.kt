@@ -17,7 +17,7 @@ import org.oefet.fetch.results.FetChResult
 class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync", Images.getImage("output.png")) {
 
     // Parameters
-    val delTime  by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
+    val delTime  by userTimeInput("Basic", "Delay Time", 500)
     val voltages by userInput("Source-Drain", "Voltage [V]", Range.linear(0, 60))
     val symVSD   by userInput("Source-Drain", "Sweep Both Ways", true)
     val offset   by userInput("Source-Gate", "Offset [V]", 0.0)

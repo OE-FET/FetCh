@@ -22,13 +22,13 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
     // User input parameters
     private val intTime         by userInput("Basic", "Integration Time [s]", 100.0)
-    private val delTime         by userInput("Basic", "Delay Time [s]", 300.0) map { (it * 1e3).toInt() }
+    private val delTime         by userTimeInput("Basic", "Delay Time", 300000)
     private val repeats         by userInput("Basic", "Repeats", 300)
     private val paGain          by userInput("Basic", "Pre-Amp Gain", 1.0)
     private val exGain          by userInput("Basic", "Extra Gain", 10.0)
     private val rmsField        by userInput("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
     private val hallFrequencies by userInput("Magnets", "Frequencies [Hz]", Range.manual(1.2))
-    private val spin            by userInput("Magnets", "Spin-Up Time [s]", 600.0) map { (it * 1e3).toInt() }
+    private val spin            by userTimeInput("Magnets", "Spin-Up Time", 600000)
     private val doFaraday       by userInput("Faraday Sweep", "Do Faraday Sweep", true)
     private val faraFrequencies by userInput("Faraday Sweep", "Frequencies [Hz]", Range.manual(1.0, 1.2, 1.4))
     private val currents        by userInput("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))

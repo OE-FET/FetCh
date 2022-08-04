@@ -22,8 +22,8 @@ class StressSweep : FetChSweep<Int>("Stress", "S", Icon.CLOCK.blackImage) {
 
     var task: RTask? = null
 
-    val interval  by userInput("Basic", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val time      by userInput("Timing", "Stress Interval [s]", 600.0) map { it.toMSec() }
+    val interval  by userTimeInput("Basic", "Logging Interval", 500)
+    val time      by userTimeInput("Timing", "Stress Interval", 600000)
     val count     by userInput("Timing", "No. Stress Intervals", 10)
     val useSD     by userInput("Source-Drain", "Enabled", false)
     val sdVoltage by userInput("Source-Drain", "Voltage [V]", 50.0)
@@ -50,7 +50,7 @@ class StressSweep : FetChSweep<Int>("Stress", "S", Icon.CLOCK.blackImage) {
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(time, interval, useSD, sdVoltage, useSG, sgVoltage, gdSMU, sdSMU, sgSMU, offSD, offSG))
+        list += MeasurementAction(SweepPoint(time, interval.toLong(), useSD, sdVoltage, useSG, sgVoltage, gdSMU, sdSMU, sgSMU, offSD, offSG))
 
         if (useSD && offSD == AUTO_OFF_ALL) {
             list += SimpleAction("Turn Off SD Channel") {

@@ -9,8 +9,8 @@ import jisa.results.ResultTable
 class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Temp", Icon.THERMOMETER.blackImage) {
 
     private val pctMargin by userInput("Temperature Stabilization", "Percentage range for temperature to stay within",0.3, )
-    private val duration by userInput("Temperature Stabilization", "Duration of temperature stabilization [s]",60.0, ) map { (it * 1e3).toLong() }
-    private val maxTime by userInput("Temperature Stabilization", "Maximum Duration of temperature stabilization [s]",180.0 ) map { (it * 1e3).toLong() }
+    private val duration  by userTimeInput("Temperature Stabilization", "Duration of temperature stabilization", 60000)
+    private val maxTime   by userTimeInput("Temperature Stabilization", "Maximum Duration of temperature stabilization", 180000)
 
     private val repTime  by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
     private val repeats  by userInput("Basic", "Repeats", 50)
@@ -31,7 +31,7 @@ class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Tem
         )
     }
     override fun run(results: ResultTable) {
-        tMeter.waitForStableTemperatureMaxTime(pctMargin,duration,maxTime)
+        tMeter.waitForStableTemperatureMaxTime(pctMargin, duration.toLong(), maxTime.toLong())
 
         val tMeterValues = Repeat.prepare(repeats, repTime) { tMeter.temperature }
         Repeat.runTogether(tMeterValues)

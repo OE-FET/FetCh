@@ -39,8 +39,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
     }
 
     // Parameter inputs to ask the user for
-    private val delTime  by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1e3).toInt() }
-    private val repTime  by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
+    private val delTime  by userTimeInput("Basic", "Delay Time", 500)
+    private val repTime  by userTimeInput("Basic", "Repeat Time", 0)
     private val repeats  by userInput("Basic", "Repeats", 50)
     private val fields   by userInput("Magnet", "Field [T]", Range.linear(-1.0, +1.0, 11))
     private val currents by userInput("Source-Drain", "Current [A]", Range.linear(-50e-6, +50e-6, 11))

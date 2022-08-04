@@ -15,7 +15,7 @@ import org.oefet.fetch.results.TransferResult
 class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer", Images.getImage("transfer.png")) {
 
     // Parameters
-    val delTime    by userInput("Basic", "Delay Time [s]", 0.5) map { (it * 1000.0).toInt() }
+    val delTime    by userTimeInput("Basic", "Delay Time", 500)
     val sdVoltages by userInput("Source-Drain", "Voltage [V]", Range.manual(6, 60))
     val sgVoltages by userInput("Source-Gate", "Voltage [V]", Range.step(0, 60, 1).mirror())
     val sdOff      by userInput("Auto-Off", "Source-Drain Channel", true)
