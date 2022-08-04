@@ -12,9 +12,9 @@ import org.oefet.fetch.Sweeps
 object ShownActions : Grid("Actions", 1) {
 
     val config       = Fields("Configuration")
-    val measurements = Fields("Hidden Measurements")
-    val actions      = Fields("Hidden Actions")
-    val sweeps       = Fields("Hidden Sweeps")
+    val measurements = Fields("Enabled Measurements")
+    val actions      = Fields("Enabled Actions")
+    val sweeps       = Fields("Enabled Sweeps")
 
 
     init {
