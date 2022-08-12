@@ -19,7 +19,7 @@ object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
         addSeparator("Configure")
 
-        addAll(Connections, ShownActions)
+        addAll(Connections, Actions)
 
         isMaximised = true
         setExitOnClose(true)

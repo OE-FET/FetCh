@@ -8,14 +8,14 @@ import org.oefet.fetch.Actions
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
 import org.oefet.fetch.Sweeps
+import org.oefet.fetch.gui.elements.FetChQueue
 
-object ShownActions : Grid("Actions", 1) {
+object Actions : Grid("Actions", 1) {
 
     val config       = Fields("Configuration")
     val measurements = Fields("Enabled Measurements")
     val actions      = Fields("Enabled Actions")
     val sweeps       = Fields("Enabled Sweeps")
-
 
     init {
 
@@ -23,17 +23,14 @@ object ShownActions : Grid("Actions", 1) {
 
         type.setOnChange {
             Settings.actionDisplay.intValue("type").set(type.value)
-            Measure.queueList.updateTypes()
-            Measure.bigQueue.updateTypes()
+            FetChQueue.updateAll()
         }
 
 
-        val row  = Grid(3,actions, measurements, sweeps)
+        val enabledRow  = Grid(3, actions, measurements, sweeps)
 
         setGrowth(true, false)
         setIcon(Icon.COGS)
-
-        addAll(config, row)
 
         for (type in Measurements.types) {
 
@@ -41,8 +38,7 @@ object ShownActions : Grid("Actions", 1) {
 
             check.setOnChange {
                 Settings.hidden.booleanValue(check.text).set(!check.value)
-                Measure.queueList.updateTypes()
-                Measure.bigQueue.updateTypes()
+                FetChQueue.updateAll()
             }
 
         }
@@ -53,8 +49,7 @@ object ShownActions : Grid("Actions", 1) {
 
             check.setOnChange {
                 Settings.hidden.booleanValue(check.text).set(!check.value)
-                Measure.queueList.updateTypes()
-                Measure.bigQueue.updateTypes()
+                FetChQueue.updateAll()
             }
 
         }
@@ -65,8 +60,7 @@ object ShownActions : Grid("Actions", 1) {
 
             check.setOnChange {
                 Settings.hidden.booleanValue(check.text).set(!check.value)
-                Measure.queueList.updateTypes()
-                Measure.bigQueue.updateTypes()
+                FetChQueue.updateAll()
             }
 
         }

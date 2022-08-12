@@ -17,8 +17,23 @@ import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.measurement.FetChMeasurement
 import org.oefet.fetch.sweep.FetChSweep
+import java.util.*
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
+
+    companion object {
+
+        private val allQueues = LinkedList<FetChQueue>()
+
+        fun updateAll() {
+            allQueues.forEach(FetChQueue::updateTypes)
+        }
+
+    }
+
+    init {
+        allQueues += this
+    }
 
     private val measurements = ListDisplay<Measurements.Config>("Add Measurement").apply { minHeight = 500.0; minWidth = 500.0; }
     private val actions      = ListDisplay<Actions.Config>("Add Action").apply { minHeight = 500.0; minWidth = 500.0; }
@@ -79,6 +94,25 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
     init {
         updateTypes()
+    }
+
+    init {
+
+        if (queue.startActions != null) {
+
+            val start = FetChQueue("Start Actions", queue.startActions)
+            val stop  = FetChQueue("Stop Actions", queue.stopActions)
+            val grid  = Grid("Configure Start and Stop Actions", 2, start, stop)
+            grid.setWindowSize(1280.0, 500.0)
+
+            addToolbarSeparator()
+
+            addToolbarButton("Start & Stop Actions") {
+                grid.showAsAlert()
+            }
+
+        }
+
     }
 
     var isDisabled: Boolean
