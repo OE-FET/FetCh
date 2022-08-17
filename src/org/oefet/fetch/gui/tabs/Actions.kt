@@ -28,6 +28,7 @@ object Actions : Grid("Actions", 1) {
 
 
         val enabledRow  = Grid(3, actions, measurements, sweeps)
+        addAll(config, enabledRow)
 
         setGrowth(true, false)
         setIcon(Icon.COGS)
