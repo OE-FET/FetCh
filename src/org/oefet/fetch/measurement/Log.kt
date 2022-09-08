@@ -37,8 +37,8 @@ object Log {
                 is MCSMU        -> {
 
                     for (smu in inst.channels) {
-                        columns.add(DoubleColumn("$name ${smu.channelName} Voltage", "V"))
-                        columns.add(DoubleColumn("$name ${smu.channelName} Current", "A"))
+                        columns.add(DoubleColumn("$name ${smu.name} Voltage", "V"))
+                        columns.add(DoubleColumn("$name ${smu.name} Current", "A"))
                         logTasks.add { smu.getVoltage() }
                         logTasks.add { smu.getCurrent() }
                     }
@@ -87,7 +87,7 @@ object Log {
                 is MSTMeter     -> {
 
                     for (tMeter in inst.sensors) {
-                        columns.add(DoubleColumn("$name ${tMeter.sensorName} Temperature", "K"))
+                        columns.add(DoubleColumn("$name ${tMeter.name} Temperature", "K"))
                         logTasks.add { tMeter.temperature }
                     }
 
@@ -131,9 +131,9 @@ object Log {
 
                 is LevelMeter   -> {
 
-                    for (meter in inst.channels) {
+                    for (meter in inst.getSubInstruments(LevelMeter::class.java)) {
 
-                        columns.add(DoubleColumn("$name ${meter.getChannelName(0)} Level"))
+                        columns.add(DoubleColumn("$name ${meter.name} Level"))
                         logTasks.add { meter.level }
 
                     }
@@ -143,7 +143,7 @@ object Log {
                 is MSwitch      -> {
 
                     for (channel in inst.channels) {
-                        columns.add(DoubleColumn("$name ${channel.channelName} State"))
+                        columns.add(DoubleColumn("$name ${channel.name} State"))
                         logTasks.add { if (channel.isOn) 1.0 else 0.0 }
                     }
 

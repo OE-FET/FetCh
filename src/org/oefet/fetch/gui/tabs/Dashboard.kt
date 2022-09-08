@@ -37,7 +37,6 @@ object Dashboard : Grid("Dashboard", 3) {
             Log.stop()
         }
 
-
         addToolbarSeparator()
 
         addToolbarButton("Configure Visible Plots") {
