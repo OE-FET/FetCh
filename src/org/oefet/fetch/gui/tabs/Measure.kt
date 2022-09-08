@@ -223,9 +223,9 @@ object Measure : Grid("Measurement", 1) {
     private fun disable(flag: Boolean) {
 
         toolbarStart.isDisabled = flag
-        toolbarStop.isDisabled = !flag
-        queueList.isDisabled = flag
-        bigQueue.isDisabled = flag
+        toolbarStop.isDisabled  = !flag
+        queueList.isDisabled    = flag
+        bigQueue.isDisabled     = flag
 
         if (flag) {
 
