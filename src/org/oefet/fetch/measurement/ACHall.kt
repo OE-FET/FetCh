@@ -175,9 +175,9 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
                 Repeat.runTogether(xValues, yValues)
                 stageMeasure.reset()
 
-                val x = xValues.mean
-                val y = yValues.mean
-                val r = sqrt(x.pow(2) + y.pow(2))
+                val x  = xValues.mean
+                val y  = yValues.mean
+                val r  = sqrt(x.pow(2) + y.pow(2))
                 val eX = xValues.standardDeviation
                 val eY = yValues.standardDeviation
 
