@@ -92,9 +92,11 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
             val min = (1 - (stabilityPct / 100.0)) * temperature
             val max = (1 + (stabilityPct / 100.0)) * temperature
 
+            val input = loop.input
+
             task = RTask(interval) { _ ->
 
-                val t = loop.temperature
+                val t = input.value
 
                 results.addData(System.currentTimeMillis(), t)
 
