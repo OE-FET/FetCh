@@ -14,11 +14,13 @@ import org.oefet.fetch.measurement.Log
 
 object Dashboard : Grid("Dashboard", 3) {
 
-    private val plots  = ArrayList<Element>()
-    private val shown  = ArrayList<Boolean>()
-    private val logged = ArrayList<Boolean>()
+    private val plots   = ArrayList<Element>()
+    private val shown   = ArrayList<Boolean>()
+    private val logged  = ArrayList<Boolean>()
 
     init {
+
+        numColumns = Settings.dashboard.intValue("columns").getOrDefault(3)
 
         setIcon(Icon.DASHBOARD)
         setGrowth(true, false)
@@ -39,11 +41,11 @@ object Dashboard : Grid("Dashboard", 3) {
 
         addToolbarSeparator()
 
-        addToolbarButton("Configure Visible Plots") {
+        addToolbarButton("Visible") {
             editVisible()
         }
 
-        addToolbarButton("Configure Logged Values") {
+        addToolbarButton("Logged") {
             editLogged()
         }
 
@@ -58,6 +60,18 @@ object Dashboard : Grid("Dashboard", 3) {
                     Log.interval = interval.value
                 }
 
+            }
+
+        }
+
+        addToolbarButton("Columns") {
+
+            val input = Fields("Change Column Count")
+            val cols  = input.addIntegerField("Columns", numColumns)
+
+            if (input.showAsConfirmation()) {
+                numColumns = cols.value
+                Settings.dashboard.intValue("columns").set(cols.value)
             }
 
         }
