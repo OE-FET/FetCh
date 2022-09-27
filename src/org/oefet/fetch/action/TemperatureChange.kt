@@ -62,9 +62,11 @@ class TemperatureChange : FetChAction("Change Temperature", Icon.THERMOMETER.bla
 
     override fun run(results: ResultTable) {
 
+        val input = tControl.input
+
         task = RTask(interval.toLong()) { _ ->
 
-            val t = tControl.input.value
+            val t = input.value
 
             results.addData(System.currentTimeMillis(), t)
 
