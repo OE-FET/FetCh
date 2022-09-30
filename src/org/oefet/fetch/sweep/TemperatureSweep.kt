@@ -24,7 +24,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
     val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
     val stabilityPct  by userInput("Temperature", "Stays within [%]", 1.0)
     val stabilityTime by userTimeInput("Temperature", "For at least", 600000)
-    val tControl      by requiredInstrument("Temperature Controller", TC.Loop::class)
+    val loop          by requiredInstrument("Temperature Controller", TC.Loop::class)
 
 
     override fun getValues(): List<Double> = temperatures.array().toList()
@@ -33,7 +33,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime.toLong(), tControl))
+        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime.toLong()))
         list += actions
 
         return list
@@ -42,12 +42,11 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
 
     override fun formatValue(value: Double): String = "$value K"
 
-    class SweepPoint(
+    inner class SweepPoint(
         val temperature: Double,
         val interval: Long,
         val stabilityPct: Double,
-        val stabilityTime: Long,
-        val loop: TC.Loop?
+        val stabilityTime: Long
     ) : FetChAction("Change Temperature", Icon.THERMOMETER.blackImage) {
 
         private var task:   RTask?  = null

@@ -21,7 +21,7 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage
 
     val fields    by userInput("Field", "Set-Points [T]", Range.step(-1, +1, 0.5))
     val interval  by userTimeInput("Field", "Logging Interval", 500)
-    val emControl by optionalInstrument("Electromagnet Controller", EMController::class)
+    val fControl  by optionalInstrument("Electromagnet Controller", EMController::class)
 
     override fun getValues(): List<Double> {
         return fields.array().toList();
@@ -31,7 +31,7 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage
 
         val list = LinkedList<Action<out Any>>()
 
-        list += MeasurementAction(SweepPoint(value, interval.toLong(), emControl)).apply { setOnMeasurementStart { Measure.display(it) }  }
+        list += MeasurementAction(SweepPoint(value, interval.toLong())).apply { setOnMeasurementStart { Measure.display(it) }  }
         list += actions
 
         return list
@@ -40,7 +40,7 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage
 
     override fun formatValue(value: Double): String = "$value T"
 
-    class SweepPoint(val field: Double, val interval: Long, val fControl: EMController?) : FetChAction("Change Field", Icon.MAGNET.blackImage) {
+    inner class SweepPoint(val field: Double, val interval: Long) : FetChAction("Change Field", Icon.MAGNET.blackImage) {
 
         var task: RTask? = null
 
@@ -72,10 +72,10 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage
                 throw Exception("EM Controller is not configured.")
             }
 
-            task = RTask(interval) { t -> results.addData(t.secFromStart, fControl.field) }
+            task = RTask(interval) { t -> results.addData(t.secFromStart, fControl!!.field) }
             task?.start()
 
-            fControl.field = field
+            fControl!!.field = field
 
         }
 
