@@ -120,6 +120,9 @@ object Analysis : BorderDisplay("Analysis") {
 
             centreElement = window
 
+            // Need to do this to get the scene to update for some reason
+            GUI.runNow { centreElement.node.requestFocus() }
+
         } catch (e: Exception) {
             e.printStackTrace()
             GUI.errorAlert(e.message)

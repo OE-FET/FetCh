@@ -1,6 +1,5 @@
 package org.oefet.fetch.results
 
-import jisa.maths.functions.Function
 import jisa.maths.interpolation.Interpolation
 import jisa.results.ResultTable
 import org.oefet.fetch.EPSILON
@@ -8,10 +7,13 @@ import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.Transfer
 import org.oefet.fetch.quantities.*
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+/**
+ * Class for handling and processing transfer curve data, extracting linear and saturation mobilities as a function
+ * of gate voltage.
+ */
 class TransferResult(data: ResultTable) : FetChResult("Transfer Measurement", "Transfer", Images.getImage("transfer.png"), data) {
 
     val SET_SD_VOLTAGE = data.findColumn(Transfer.SET_SD_VOLTAGE)
@@ -42,87 +44,75 @@ class TransferResult(data: ResultTable) : FetChResult("Transfer Measurement", "T
 
     init {
 
+        // Calculate the capacitance (per unit area) to use for calculations
         val capacitance = permittivity * EPSILON / dielectric
 
         try {
 
-            var maxLinMobility = 0.0
-            var maxSatMobility = 0.0
+            // Split by drain voltage
+            for ((drain, drainTable) in data.split(SET_SD_VOLTAGE)) {
 
-            for ((drain, data) in data.split(SET_SD_VOLTAGE)) {
+                // Separate forwards and backwards sweeps
+                for ((index, subTable) in drainTable.directionalSplit(SET_SG_VOLTAGE).withIndex()) {
 
-                val fb = data.directionalSplit { it[SET_SG_VOLTAGE] }
+                    val vG        = subTable.toList(SET_SG_VOLTAGE)                  // Extract source-gate voltages as a list
+                    val iD        = subTable.toList(SD_CURRENT)                      // Extract drain currents as a list
+                    val isLinear  = abs(drain) < (vG.maxOfOrNull { abs(it) } ?: 0.0) // Assume linearity if |V_SD| < max(|V_SG|)
+                    val isForward = (index % 2) == 0                                 // Treat all even-indexed sweeps as forwards
+                    val params    = parameters + Drain(drain, 0.0)                   // Build parameters
 
-                val function: (Double) -> Double
-                val gradFwd:  Function?
-                val gradBwd:  Function?
+                    // Perform different calculation depending on whether we are in linear or saturation regime
+                    when {
 
-                val vGFwd  = fb[0].toMatrix(SET_SG_VOLTAGE)
-                val iDFwd  = fb[0].toMatrix(SD_CURRENT)
-                val vGBwd  = fb[1].toMatrix(SET_SG_VOLTAGE)
-                val iDBwd  = fb[1].toMatrix(SD_CURRENT)
-                val linear = abs(drain) < data.getMax { abs(it[SET_SG_VOLTAGE]) }
+                        isLinear -> { // Linear regime
 
-                if (linear) {
+                            val gradient = Interpolation.interpolateSmooth(vG, iD.map { abs(it) }).derivative()
+                            val mobility = vG.map { v -> 1e4 * abs((length / (capacitance * width)) * (gradient.value(v) / drain)) }
+                            val points   = vG.zip(mobility)
 
-                    gradFwd = if (fb[0].rowCount > 1) {
+                            // Add the calculated mobilities to the overall list of determined quantities
+                            quantities += when {
+                                isForward -> points.map { (g, m) -> FwdLinMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
+                                else      -> points.map { (g, m) -> BwdLinMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
+                            }
 
-                        Interpolation.interpolate1D(vGFwd, iDFwd.map { x -> abs(x) }).derivative()
+                        }
 
-                    } else null
+                        else     -> { // Saturation regime
 
-                    gradBwd = if (fb[1].rowCount > 1) {
+                            val gradient = Interpolation.interpolateSmooth(vG, iD.map{ sqrt(abs(it)) }).derivative()
+                            val mobility = vG.map { v -> 1e4 * 2.0 * gradient.value(v).pow(2) * length / (width * capacitance) }
+                            val points = vG.zip(mobility)
 
-                        Interpolation.interpolate1D(vGBwd, iDBwd.map { x -> abs(x) }).derivative()
+                            // Add the calculated mobilities to the overall list of determined quantities
+                            quantities += when {
+                                isForward -> points.map { (g, m) -> FwdSatMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
+                                else      -> points.map { (g, m) -> BwdSatMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
+                            }
 
-                    } else null
+                        }
 
-                    function = { 1e4 * abs((length / (capacitance * width)) * (it / drain)) }
-
-                } else {
-
-                    gradFwd = if (fb[0].rowCount > 1) {
-                        Interpolation.interpolate1D(vGFwd, iDFwd.map { x -> sqrt(abs(x)) }).derivative()
-                    } else null
-
-                    gradBwd = if (fb[1].rowCount > 1) {
-                        Interpolation.interpolate1D(vGBwd, iDBwd.map { x -> sqrt(abs(x)) }).derivative()
-                    } else null
-
-                    function = { 1e4 * 2.0 * it.pow(2) * length / (width * capacitance) }
-
-                }
-
-                for (gate in data.getUniqueValues(SET_SG_VOLTAGE).sorted()) {
-
-                    val params = ArrayList(parameters)
-                    params    += Gate(gate, 0.0)
-                    params    += Drain(drain, 0.0)
-
-                    if (gradFwd != null) quantities += if (linear) {
-                        maxLinMobility = max(maxLinMobility, function(gradFwd.value(gate)))
-                        FwdLinMobility(function(gradFwd.value(gate)), 0.0, params, possibleParameters)
-                    } else {
-                        maxSatMobility = max(maxSatMobility, function(gradFwd.value(gate)))
-                        FwdSatMobility(function(gradFwd.value(gate)), 0.0, params, possibleParameters)
-                    }
-
-                    if (gradBwd != null) quantities += if (linear) {
-                        maxLinMobility = max(maxLinMobility, function(gradBwd.value(gate)))
-                        BwdLinMobility(function(gradBwd.value(gate)), 0.0, params, possibleParameters)
-                    } else {
-                        maxSatMobility = max(maxSatMobility, function(gradBwd.value(gate)))
-                        BwdSatMobility(function(gradBwd.value(gate)), 0.0, params, possibleParameters)
                     }
 
                 }
 
             }
 
-            if (maxLinMobility > 0) addQuantity(MaxLinMobility(maxLinMobility, 0.0, parameters, possibleParameters))
-            if (maxSatMobility > 0) addQuantity(MaxSatMobility(maxSatMobility, 0.0, parameters, possibleParameters))
+            // Find the maximum values for linear and saturation mobilities
+            val maxLinMobility = quantities.filterIsInstance<LinMobility>().maxByOrNull { abs(it.value) }
+            val maxSatMobility = quantities.filterIsInstance<SatMobility>().maxByOrNull { abs(it.value) }
+
+            // If they were found, add them as quantities
+            if (maxLinMobility != null) {
+                quantities += MaxLinMobility(maxLinMobility.value, maxLinMobility.error, parameters, possibleParameters);
+            }
+
+            if (maxSatMobility != null) {
+                quantities += MaxSatMobility(maxSatMobility.value, maxSatMobility.error, parameters, possibleParameters);
+            }
 
         } catch (e: Exception) {
+            // If something goes wrong, make sure the exception is output to the standard error stream
             e.printStackTrace()
         }
 

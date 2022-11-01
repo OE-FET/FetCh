@@ -157,7 +157,8 @@ object FileLoad : BorderDisplay("Results") {
 
         }
 
-        val grid         = Grid(if (retain) "Retain by Filter" else "Remove by Filter", 3);
+        val grid = Grid(if (retain) "Retain by Filter" else "Remove by Filter", 3);
+
         grid.setWindowSize(1000.0, 700.0);
         grid.setGrowth(true, false)
 
@@ -248,6 +249,7 @@ object FileLoad : BorderDisplay("Results") {
         for (result in results) {
             list += result.calculateHybrids(list)
         }
+
         return list
 
     }
@@ -256,14 +258,8 @@ object FileLoad : BorderDisplay("Results") {
 
         val name = data.getAttribute("Name") ?: "Unknown"
 
-        // Determine which device number this result is for
-        val index = names.indexOf(name)
-
-        val n = if (index < 0) {
+        if (name !in names) {
             names += name
-            names.size
-        } else {
-            index + 1
         }
 
         // Load the result as a ResultFile object, specifying device number parameter to use

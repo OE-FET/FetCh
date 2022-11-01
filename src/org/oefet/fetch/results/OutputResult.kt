@@ -147,11 +147,11 @@ class OutputResult(data: ResultTable) : FetChResult("Output Measurement", "Outpu
             }
 
             for ((gate, max) in maxLinMobility) {
-                quantities += MaxLinMobility(max, 0.0, ArrayList(parameters).apply { add(Gate(gate, 0.0)) })
+                quantities += MaxLinMobility(max, 0.0, parameters + Gate(gate, 0.0))
             }
 
             for ((gate, max) in maxSatMobility) {
-                quantities += MaxSatMobility(max, 0.0, ArrayList(parameters).apply { add(Gate(gate, 0.0)) })
+                quantities += MaxSatMobility(max, 0.0, parameters + Gate(gate, 0.0))
             }
 
 
