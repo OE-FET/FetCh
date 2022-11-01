@@ -45,6 +45,32 @@ object Log {
 
                 }
 
+                is SPA          -> {
+
+                    for (smu in inst.smuChannels) {
+                        columns.add(DoubleColumn("$name ${smu.name} Voltage", "V"))
+                        columns.add(DoubleColumn("$name ${smu.name} Current", "A"))
+                        logTasks.add { smu.getVoltage() }
+                        logTasks.add { smu.getCurrent() }
+                    }
+
+                    for (vs in inst.vSourceChannels) {
+                        columns.add(DoubleColumn("$name ${vs.name} Voltage", "V"))
+                        logTasks.add { vs.getVoltage() }
+                    }
+
+                    for (vm in inst.vMeterChannels) {
+                        columns.add(DoubleColumn("$name ${vm.name} Voltage", "V"))
+                        logTasks.add { vm.getVoltage() }
+                    }
+
+                    for (sw in inst.switchChannels) {
+                        columns.add(DoubleColumn("$name ${sw.name} State"))
+                        logTasks.add { if (sw.isOn) 1.0 else 0.0 }
+                    }
+
+                }
+
                 is SMU          -> {
 
                     columns.add(DoubleColumn("$name Voltage", "V"))
