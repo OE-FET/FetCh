@@ -1,9 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.interfaces.*
 import jisa.maths.Range
 import jisa.results.Column
 import jisa.results.DoubleColumn
@@ -22,7 +20,7 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
     val sgOff      by userInput("Auto-Off", "Source-Gate Channel", true)
 
     // Instruments
-    val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    val gdSMU  by optionalInstrument("Ground Channel (SPA)", VSource::class)
     val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
     val sgSMU  by requiredInstrument("Source-Gate Channel", SMU::class)
     val fpp1   by optionalInstrument("Four-Point-Probe Channel 1", VMeter::class)
@@ -68,6 +66,8 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
     }
 
     override fun run(results: ResultTable) {
+
+        val gdSMU = gdSMU
 
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
@@ -115,7 +115,7 @@ class Transfer : FetChMeasurement("Transfer Measurement", "Transfer", "Transfer"
                     FPP_1          to (fpp1?.voltage ?: Double.NaN),
                     FPP_2          to (fpp2?.voltage ?: Double.NaN),
                     TEMPERATURE    to (tMeter?.temperature ?: Double.NaN),
-                    GROUND_CURRENT to (gdSMU?.current ?: Double.NaN)
+                    GROUND_CURRENT to (if (gdSMU is ISource) gdSMU.current else Double.NaN)
                 )
 
             }

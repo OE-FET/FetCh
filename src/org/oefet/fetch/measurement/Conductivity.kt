@@ -1,8 +1,6 @@
 package org.oefet.fetch.measurement
 
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.interfaces.*
 import jisa.enums.Icon
 import jisa.maths.Range
 import jisa.results.Column
@@ -22,7 +20,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
     private val gateV   by userInput("Source-Gate", "Voltage [V]", 50.0)
 
     // Instruments
-    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", VSource::class)
     private val sdSMU   by requiredInstrument("Source-Drain Channel", SMU::class)
     private val sgSMU   by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { holdG }
     private val fpp1    by optionalInstrument("Four-Point Probe Channel 1", VMeter::class)
@@ -75,6 +73,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         // Assert that source-drain must be connected
         val sdSMU = sdSMU
         val sgSMU = if (holdG) sgSMU else null
+        val gdSMU = gdSMU
 
         val intTime = when {
 
@@ -149,7 +148,7 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
                 FPP2_VOLTAGE   to fpp2Voltage,
                 FPP_VOLTAGE    to determineVoltage(sdVoltage, fpp1Voltage, fpp2Voltage),
                 TEMPERATURE    to (tMeter?.temperature ?: Double.NaN),
-                GROUND_CURRENT to (gdSMU?.current ?: Double.NaN)
+                GROUND_CURRENT to (if (gdSMU is ISource) gdSMU.current else Double.NaN)
             )
 
         }

@@ -36,7 +36,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     private val totGain get() = paGain * exGain
 
     // Instruments
-    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", VSource::class)
     private val sdSMU   by requiredInstrument("Source-Drain Channel", SMU::class)
     private val dcPower by requiredInstrument("Motor Power Supply", DCPower::class)
     private val lockIn  by requiredInstrument("Lock-In Amplifier", DPLockIn::class)

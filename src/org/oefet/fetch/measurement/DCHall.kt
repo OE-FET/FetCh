@@ -2,10 +2,7 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.control.Repeat
-import jisa.devices.interfaces.EMController
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.interfaces.*
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.gui.Colour
@@ -47,7 +44,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
     private val gates    by userInput("Source-Gate", "Voltage [V]", Range.manual(0.0))
 
     // Instrument configurations to ask user for
-    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", VSource::class)
     private val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
     private val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
     private val hvm1   by requiredInstrument("Hall Voltmeter 1", VMeter::class)

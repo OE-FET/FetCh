@@ -1,8 +1,6 @@
 package org.oefet.fetch.measurement
 
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.interfaces.*
 import jisa.maths.Range
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
@@ -21,7 +19,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
     val sgOff      by userInput("Auto-Off", "Source-Gate Channel", true)
 
     // Instruments
-    val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    val gdSMU  by optionalInstrument("Ground Channel (SPA)", VSource::class)
     val sdSMU  by requiredInstrument("Source-Drain Channel", SMU::class)
     val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { sgVoltages.size() > 1 }
     val fpp1   by optionalInstrument("Four-Point-Probe Channel 1", VMeter::class)
@@ -67,6 +65,8 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
     override fun getColumns(): Array<DoubleColumn> = COLUMN_ORDER
 
     override fun run(results: ResultTable) {
+
+        val gdSMU = gdSMU
 
         // Record the integration and delay times
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
@@ -117,7 +117,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
                     FPP_1          to (fpp1?.voltage ?: NaN),
                     FPP_2          to (fpp2?.voltage ?: NaN),
                     TEMPERATURE    to (tMeter?.temperature ?: NaN),
-                    GROUND_CURRENT to (gdSMU?.current ?: NaN)
+                    GROUND_CURRENT to (if (gdSMU is ISource) gdSMU.current else NaN)
                 )
 
                 // Check if we have been instructed to stop

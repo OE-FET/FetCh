@@ -2,10 +2,7 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.control.Repeat
-import jisa.devices.interfaces.IMeter
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.interfaces.*
 import jisa.enums.AMode
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
@@ -30,7 +27,7 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
     private val gateOff    by userInput("Gate", "Auto Off", true)
 
     // Instruments
-    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val gdSMU   by optionalInstrument("Ground Channel (SPA)", VSource::class)
     private val heater  by requiredInstrument("Heater Channel", SMU::class)
     private val sgSMU   by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { gates.any { it != 0.0 } }
     private val tvMeter by requiredInstrument("Thermal Voltage Channel", VMeter::class)
@@ -109,7 +106,6 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
         tvMeter.averageMode = AMode.NONE
         heater.averageMode  = AMode.NONE
         sgSMU?.averageMode  = AMode.NONE
-        gdSMU?.averageMode  = AMode.NONE
 
         tvMeter.turnOn()
         gdSMU?.turnOn()

@@ -1,9 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.control.Repeat
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.interfaces.*
 import jisa.enums.AMode
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
@@ -26,7 +24,7 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     private val holdSI   by userTimeInput("Resistive Thermometer", "Hold Time", 500)
 
     // Instruments
-    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", SMU::class)
+    private val gdSMU  by optionalInstrument("Ground Channel (SPA)", VSource::class)
     private val heater by requiredInstrument("Heater Channel", SMU::class)
     private val sdSMU  by requiredInstrument("Strip Source-Drain Channel", SMU::class)
     private val fpp1   by optionalInstrument("Four-Point Probe Channel 1", VMeter::class)
@@ -86,6 +84,8 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     }
 
     override fun run(results: ResultTable) {
+
+        val gdSMU = gdSMU
 
         // Add measurement information to results file header
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
@@ -156,7 +156,7 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
                 results.mapRow(
                     SET_HEATER_VOLTAGE  to heaterVoltage,
                     SET_STRIP_CURRENT   to stripCurrent,
-                    GROUND_CURRENT      to (gdSMU?.current ?: Double.NaN),
+                    GROUND_CURRENT      to (if (gdSMU is ISource) gdSMU.current else Double.NaN),
                     HEATER_VOLTAGE      to hVoltage,
                     HEATER_CURRENT      to hCurrent,
                     HEATER_POWER        to hPower,
