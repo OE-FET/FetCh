@@ -11,7 +11,7 @@ class VMeasure : FetChMeasurement("Voltage Measurement", "Voltage", "VMeasure", 
 
     // The user must specify a total time, number of intervals, and provide a voltmeter to use
     val totalTime    by userTimeInput("Timing", "Total Time", 10000)
-    val numIntervals by userInput("Timing", "No. Measurements", 10)
+    val numIntervals by userInput("Timing", "No. Measurements", 11)
     val vMeter       by requiredInstrument("Voltmeter", VMeter::class)
 
     companion object {
