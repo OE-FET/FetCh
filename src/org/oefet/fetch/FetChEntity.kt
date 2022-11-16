@@ -25,7 +25,15 @@ abstract class FetChEntity : Measurement() {
     abstract val image: Image
 
     open fun createDisplay(data: ResultTable): Element {
-        return FetChPlot(name).apply {  }
+
+        return FetChPlot(name).apply {
+
+            if (data.numericColumns.size >= 2) {
+                createSeries().watch(data, data.getNthNumericColumn(0), data.getNthNumericColumn(1))
+            }
+
+        }
+
     }
 
     fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {

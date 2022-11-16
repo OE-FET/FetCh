@@ -9,50 +9,60 @@ import org.oefet.fetch.gui.elements.FetChPlot
 
 class VMeasure : FetChMeasurement("Voltage Measurement", "Voltage", "VMeasure", Icon.VOLTMETER.blackImage) {
 
+    // The user must specify a total time, number of intervals, and provide a voltmeter to use
     val totalTime    by userTimeInput("Timing", "Total Time", 10000)
     val numIntervals by userInput("Timing", "No. Measurements", 10)
     val vMeter       by requiredInstrument("Voltmeter", VMeter::class)
 
-    companion object Columns {
+    companion object {
 
-        val TIME    = Column.forDecimal("Time", "s")
-        val VOLTAGE = Column.forDecimal("Voltage", "V")
+        val TIME    = Column.ofDecimals("Time", "s")
+        val VOLTAGE = Column.ofDecimals("Voltage", "V")
+
         val COLUMNS = arrayOf(TIME, VOLTAGE)
 
     }
 
     override fun createDisplay(data: ResultTable): FetChPlot {
 
-        val plot = FetChPlot("Voltage Measurement")
+        return FetChPlot("Voltage Measurement").apply {
 
-        plot.createSeries().watch(data, TIME, VOLTAGE)
+            createSeries().watch(data, TIME, VOLTAGE)
+            isLegendVisible = false
+            isMouseEnabled  = true
 
-        return plot
+        }
 
     }
 
     override fun run(results: ResultTable) {
 
+        // Make sure the voltmeter is on
         vMeter.turnOn()
 
-        val interval = totalTime / numIntervals
+        // Work out the sleep interval
+        val interval = totalTime / (numIntervals - 1)
 
-        for (time in Range.linear(0, totalTime, numIntervals)) {
+        // Loop over all measurement intervals
+        for (time in Range.step(0, totalTime, interval)) {
 
             results.mapRow(
-                TIME    to time / 1e3,
-                VOLTAGE to vMeter.voltage
+                TIME    to (time / 1e3),     // Record time in seconds
+                VOLTAGE to vMeter.voltage    // Measure and record voltage
             )
 
-            sleep(interval)
+            // Wait the interval time before doing the next iteration (unless this is the last iteration)
+            if (time < totalTime) {
+                sleep(interval)
+            }
 
         }
-
 
     }
 
     override fun onFinish() {
-        vMeter.turnOff()
+        // Turn off the voltmeter on finished/interrupt/error
+        runRegardless { vMeter.turnOff() }
     }
 
     override fun getColumns() = COLUMNS
