@@ -31,6 +31,7 @@ class TransferPlot(data: ResultTable) : FetChPlot("Transfer Curve", "SG Voltage 
         createSeries()
             .setMarkerVisible(false)
             .setLineDash(Series.Dash.DOTTED)
+            .setLineWidth(1.25)
             .watch(data, { it[SG_VOLTAGE] }, { abs(it[SG_CURRENT]) })
             .split(SET_SD_VOLTAGE, "G (SD: %sV)")
 

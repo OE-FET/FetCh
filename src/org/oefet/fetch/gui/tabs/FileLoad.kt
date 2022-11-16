@@ -79,63 +79,71 @@ object FileLoad : BorderDisplay("Results") {
 
     private fun updateDisplay() {
 
-        if (fileList.selected == null) {
+        try {
 
-            // If nothing is selected, then show an empty pane
-            centreElement = Grid()
+            if (fileList.selected == null) {
 
-        } else if (!cached.containsKey(fileList.selected.getObject())) {
+                // If nothing is selected, then show an empty pane
+                centreElement = Grid()
 
-            val selected = fileList.selected.getObject()
-            val params   = DataDisplay("Parameters")
+            } else if (!cached.containsKey(fileList.selected.getObject())) {
 
-            for (type in selected.quantities.map{ it::class }.distinct()) {
+                val selected = fileList.selected.getObject()
+                val params = DataDisplay("Parameters")
 
-                if (notDisplayed.contains(type)) continue
+                for (type in selected.quantities.map { it::class }.distinct()) {
 
-                val filtered = selected.quantities.filter { it::class == type }
-                val instance = filtered.first()
-                val unit     = instance.unit
-                val name     = instance.name
-                val values   = filtered.map { it.value as Double }.filter { it.isFinite() }
+                    if (notDisplayed.contains(type)) continue
 
-                if (values.isEmpty()) {
-                    continue
+                    val filtered = selected.quantities.filter { it::class == type }
+                    val instance = filtered.first()
+                    val unit = instance.unit
+                    val name = instance.name
+                    val values = filtered.map { it.value as Double }.filter { it.isFinite() }
+
+                    if (values.isEmpty()) {
+                        continue
+                    }
+
+                    val min = values.minOrNull()
+                    val max = values.maxOrNull()
+
+                    var value = if (min == max) "%.03g".format(min) else "%.03g to %.03g".format(min, max)
+
+                    value += if (filtered.filter { it is DoubleQuantity }.any { (it as DoubleQuantity).error > 0 }) {
+                        " ± %.03g %s".format(filtered.filter { it is DoubleQuantity }
+                            .map { (it as DoubleQuantity).error }.average(), unit)
+                    } else {
+                        " $unit"
+                    }
+
+                    params.addParameter(name, value)
+
                 }
 
-                val min = values.minOrNull()
-                val max = values.maxOrNull()
+                for (parameter in selected.parameters) {
 
-                var value = if (min == max) "%.03g".format(min) else "%.03g to %.03g".format(min, max)
+                    val value = parameter.value
 
-                value += if (filtered.filter{ it is DoubleQuantity }.any { (it as DoubleQuantity).error > 0 }) {
-                    " ± %.03g %s".format(filtered.filter{ it is DoubleQuantity }.map { (it as DoubleQuantity).error }.average(), unit)
-                } else {
-                    " $unit"
+                    if (value !is Double || value.isFinite()) {
+                        params.addParameter(parameter.name, "%s %s".format(value, parameter.unit))
+                    }
+
                 }
 
-                params.addParameter(name, value)
+                val row = Grid(2, params, selected?.getPlot() ?: Measurements.createElement(selected.data))
+                val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
 
+                centreElement = grid
+                cached[selected] = grid
+
+            } else {
+                centreElement = cached[fileList.selected.getObject()]
             }
 
-            for (parameter in selected.parameters) {
-
-                val value = parameter.value
-
-                if (value !is Double || value.isFinite()) {
-                    params.addParameter(parameter.name, "%s %s".format(value, parameter.unit))
-                }
-
-            }
-
-            val row  = Grid(2, params, selected?.getPlot() ?: Measurements.createElement(selected.data))
-            val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
-
-            centreElement    = grid
-            cached[selected] = grid
-
-        } else {
-            centreElement = cached[fileList.selected.getObject()]
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            throw e
         }
 
     }

@@ -31,6 +31,7 @@ class OutputPlot(data: ResultTable) : FetChPlot("Output Curve", "SD Voltage [V]"
         createSeries()
             .setMarkerVisible(false)
             .setLineDash(Series.Dash.DOTTED)
+            .setLineWidth(1.25)
             .watch(data, { it[SD_VOLTAGE] }, { abs(it[SG_CURRENT]) })
             .split(SET_SG_VOLTAGE, "G (SG: %sV)")
 

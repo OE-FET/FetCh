@@ -109,6 +109,10 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
                     plot.isLegendVisible = false;
                 }
 
+                if (table.getUniqueValues(xColumn).size >= 5 && table.getMax(error) == 0.0) {
+                    series.setLineVisible(true).setMarkerVisible(false)
+                }
+
                 plots += plot
 
             }
