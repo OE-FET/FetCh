@@ -19,8 +19,6 @@ class VMeasure : FetChMeasurement("Voltage Measurement", "Voltage", "VMeasure", 
         val TIME    = Column.ofDecimals("Time", "s")
         val VOLTAGE = Column.ofDecimals("Voltage", "V")
 
-        val COLUMNS = arrayOf(TIME, VOLTAGE)
-
     }
 
     override fun createDisplay(data: ResultTable): FetChPlot {
@@ -65,6 +63,6 @@ class VMeasure : FetChMeasurement("Voltage Measurement", "Voltage", "VMeasure", 
         runRegardless { vMeter.turnOff() }
     }
 
-    override fun getColumns() = COLUMNS
+    override fun getColumns(): Array<Column<*>> = arrayOf(TIME, VOLTAGE)
 
 }

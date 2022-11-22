@@ -4,6 +4,7 @@ import jisa.control.Repeat
 import jisa.devices.interfaces.TMeter
 import jisa.enums.Icon
 import jisa.results.Col
+import jisa.results.Column
 import jisa.results.ResultTable
 
 class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Temp", Icon.THERMOMETER.blackImage) {
@@ -22,13 +23,13 @@ class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Tem
         val TEMPERATURE_STD = Col("Temp. Std. Dev.", "K")
     }
 
-    override fun getColumns(): Array<Col> {
-
+    override fun getColumns(): Array<Column<*>> {
 
         return arrayOf(
             TEMPERATURE,
             TEMPERATURE_STD
         )
+
     }
     override fun run(results: ResultTable) {
         tMeter.waitForStableTemperatureMaxTime(pctMargin, duration.toLong(), maxTime.toLong())

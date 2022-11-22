@@ -8,9 +8,7 @@ import jisa.enums.Icon
 import jisa.enums.Input
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
-import jisa.results.BooleanColumn
 import jisa.results.Column
-import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.SimpleACHallPlot
 import org.oefet.fetch.results.ACHallResult
@@ -53,18 +51,18 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
     companion object {
 
-        val FARADAY      = BooleanColumn("Faraday Sweep")
-        val SD_VOLTAGE   = DoubleColumn("SD Voltage", "V")
-        val SD_CURRENT   = DoubleColumn("SD Current", "A")
-        val RMS_FIELD    = DoubleColumn("RMS Field Strength", "T")
-        val FREQUENCY    = DoubleColumn("Field Frequency", "Hz")
-        val X_VOLTAGE    = DoubleColumn("X Voltage", "V")
-        val X_ERROR      = DoubleColumn("X Error", "V")
-        val Y_VOLTAGE    = DoubleColumn("Y Voltage", "V")
-        val Y_ERROR      = DoubleColumn("Y Error", "V")
-        val HALL_VOLTAGE = DoubleColumn("Hall Voltage", "V")
-        val HALL_ERROR   = DoubleColumn("Hall Voltage Error", "V")
-        val TEMPERATURE  = DoubleColumn("Temperature", "K")
+        val FARADAY      = Column.ofBooleans("Faraday Sweep")
+        val SD_VOLTAGE   = Column.ofDecimals("SD Voltage", "V")
+        val SD_CURRENT   = Column.ofDecimals("SD Current", "A")
+        val RMS_FIELD    = Column.ofDecimals("RMS Field Strength", "T")
+        val FREQUENCY    = Column.ofDecimals("Field Frequency", "Hz")
+        val X_VOLTAGE    = Column.ofDecimals("X Voltage", "V")
+        val X_ERROR      = Column.ofDecimals("X Error", "V")
+        val Y_VOLTAGE    = Column.ofDecimals("Y Voltage", "V")
+        val Y_ERROR      = Column.ofDecimals("Y Error", "V")
+        val HALL_VOLTAGE = Column.ofDecimals("Hall Voltage", "V")
+        val HALL_ERROR   = Column.ofDecimals("Hall Voltage Error", "V")
+        val TEMPERATURE  = Column.ofDecimals("Temperature", "K")
 
     }
 
@@ -262,11 +260,13 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     }
 
     override fun getActions(): List<MeasurementSubAction> {
+
         return if (doFaraday) {
             listOf(stageSpinUp, stageAutoRange, stageStabilise, stageMeasure, stageFaraday)
         } else {
             listOf(stageSpinUp, stageAutoRange, stageStabilise, stageMeasure)
         }
+
     }
 
     override fun onFinish() {

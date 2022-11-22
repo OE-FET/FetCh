@@ -6,6 +6,7 @@ import jisa.enums.AMode
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
+import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVCPlot
@@ -192,8 +193,8 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
     }
 
-    override fun getColumns(): Array<DoubleColumn> {
-        return COLUMN_ORDER
+    override fun getColumns(): Array<Column<*>> {
+        return COLUMN_ORDER as Array<Column<*>>
     }
 
     /**

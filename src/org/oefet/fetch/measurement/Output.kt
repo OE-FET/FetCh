@@ -2,6 +2,7 @@ package org.oefet.fetch.measurement
 
 import jisa.devices.interfaces.*
 import jisa.maths.Range
+import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
@@ -39,7 +40,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
         val TEMPERATURE    = DoubleColumn("Temperature", "K")
         val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
 
-        val COLUMN_ORDER   = arrayOf(
+        val COLUMN_ORDER: Array<Column<*>> = arrayOf(
             SET_SD_VOLTAGE,
             SET_SG_VOLTAGE,
             SD_VOLTAGE,
@@ -62,7 +63,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
         return OutputResult(data)
     }
 
-    override fun getColumns(): Array<DoubleColumn> = COLUMN_ORDER
+    override fun getColumns(): Array<Column<*>> = COLUMN_ORDER
 
     override fun run(results: ResultTable) {
 
