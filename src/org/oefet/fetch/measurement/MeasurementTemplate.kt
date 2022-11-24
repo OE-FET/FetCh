@@ -2,7 +2,6 @@ package org.oefet.fetch.measurement
 
 import jisa.results.Column
 import jisa.results.ResultTable
-import jisa.devices.interfaces.*
 
 class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
 
@@ -50,17 +49,18 @@ class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
     override fun getColumns(): Array<Column<*>> = Companion.getColumns()
 
     /**
-     * This is the function that is called when the measurement is run, this is where you put the logic of your
-     * measurement routine.
+     * This is the function that is called when the measurement is run,
+     * this is where you put the main logic of your measurement routine.
      */
     override fun run(results: ResultTable) {
         TODO("Write your measurement code here")
     }
 
     /**
-     * This is the function that is called after the measurement has finished, regardless of whether that was because
-     * it completed successfully, was interrupted or encountered an error. This is where you should put any shutdown
-     * code you need (i.e. turning things off etc)
+     * This is the function that is called after the measurement has finished,
+     * regardless of whether that was because it completed successfully,
+     * was interrupted or encountered an error. This is where you should put
+     * any shutdown code you need (i.e. turning things off etc).
      */
     override fun onFinish() {
         TODO("Write your shutdown code here")
