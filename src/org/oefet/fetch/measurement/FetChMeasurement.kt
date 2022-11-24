@@ -54,3 +54,16 @@ abstract class FetChMeasurement(private val name: String, fileLabel: String, val
 
 }
 
+open class Columns {
+
+    protected fun decimalColumn(name: String, units: String = "") = Column.ofDecimals(name, units).also { COLUMNS += it }
+    protected fun integerColumn(name: String, units: String = "") = Column.ofIntegers(name, units).also { COLUMNS += it }
+    protected fun textColumn(name: String, units: String = "") = Column.ofText(name, units).also { COLUMNS += it }
+    protected fun booleanColumn(name: String, units: String = "") = Column.ofBooleans(name, units).also { COLUMNS += it }
+
+    private val COLUMNS = ArrayList<Column<*>>()
+
+    fun getColumns(): Array<Column<*>> = COLUMNS.toTypedArray()
+
+}
+

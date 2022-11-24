@@ -183,7 +183,7 @@ abstract class FetChEntity : Measurement() {
     }
 
     fun userTimeInput(name: String, defaultValue: Int): PDelegate<Int> {
-        return userTimeInput("basic", name, defaultValue)
+        return userTimeInput("Basic", name, defaultValue)
     }
 
     fun <I> customInput(tag: String, element: Element, getter: () -> I, setter: (I) -> Unit): PDelegate<I> {
