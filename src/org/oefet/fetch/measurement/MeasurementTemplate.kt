@@ -1,8 +1,6 @@
 package org.oefet.fetch.measurement
 
-import jisa.results.Column
-import jisa.results.ResultTable
-
+/*
 class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
 
     /*  Measurement parameters go here, for instance:
@@ -67,3 +65,4 @@ class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
     }
 
 }
+*/
