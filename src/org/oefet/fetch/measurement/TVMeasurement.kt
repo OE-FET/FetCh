@@ -7,8 +7,6 @@ import jisa.enums.AMode
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
-import jisa.results.Column
-import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.gui.images.Images
@@ -55,20 +53,20 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
     }
 
     // Constants for referring to result table columns
-    companion object {
+    companion object : Columns() {
 
-        val MEAS_NO               = DoubleColumn("Measurement No.")
-        val SET_GATE              = DoubleColumn("Gate Set", "V")
-        val SET_HEATER            = DoubleColumn("Heater Set", "V")
-        val TEMPERATURE           = DoubleColumn("Temperature", "K")
-        val GATE_VOLTAGE          = DoubleColumn("Gate Voltage", "V")
-        val GATE_CURRENT          = DoubleColumn("Gate Current", "A")
-        val HEATER_VOLTAGE        = DoubleColumn("Heater Voltage", "V")
-        val HEATER_CURRENT        = DoubleColumn("Heater Current", "A")
-        val HEATER_POWER          = DoubleColumn("Heater Power", "W") { it[HEATER_VOLTAGE] * it[HEATER_CURRENT] }
-        val THERMAL_VOLTAGE       = DoubleColumn("Thermal Voltage", "V")
-        val THERMAL_VOLTAGE_ERROR = DoubleColumn("Thermal Voltage Error", "V")
-        val THERMAL_CURRENT       = DoubleColumn("Thermal Current", "A")
+        val MEAS_NO               = decimalColumn("Measurement No.")
+        val SET_GATE              = decimalColumn("Gate Set", "V")
+        val SET_HEATER            = decimalColumn("Heater Set", "V")
+        val TEMPERATURE           = decimalColumn("Temperature", "K")
+        val GATE_VOLTAGE          = decimalColumn("Gate Voltage", "V")
+        val GATE_CURRENT          = decimalColumn("Gate Current", "A")
+        val HEATER_VOLTAGE        = decimalColumn("Heater Voltage", "V")
+        val HEATER_CURRENT        = decimalColumn("Heater Current", "A")
+        val HEATER_POWER          = decimalColumn("Heater Power", "W")
+        val THERMAL_VOLTAGE       = decimalColumn("Thermal Voltage", "V")
+        val THERMAL_VOLTAGE_ERROR = decimalColumn("Thermal Voltage Error", "V")
+        val THERMAL_CURRENT       = decimalColumn("Thermal Current", "A")
 
         const val ORDER_GATE_HEATER = 0
         const val ORDER_HEATER_GATE = 1
@@ -242,31 +240,8 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
 
     }
 
-    override fun getColumns(): Array<Column<*>> {
-
-        return arrayOf(
-            MEAS_NO,
-            SET_GATE,
-            SET_HEATER,
-            TEMPERATURE,
-            GATE_VOLTAGE,
-            GATE_CURRENT,
-            HEATER_VOLTAGE,
-            HEATER_CURRENT,
-            HEATER_POWER,
-            THERMAL_VOLTAGE,
-            THERMAL_VOLTAGE_ERROR,
-            THERMAL_CURRENT
-        )
-
-    }
-
     override fun onInterrupt() {
         Util.errLog.println("TV Measurement Interrupted")
-    }
-
-    override fun onError() {
-
     }
 
 }

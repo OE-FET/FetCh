@@ -2,7 +2,6 @@ package org.oefet.fetch.measurement
 
 import javafx.scene.image.Image
 import jisa.enums.Icon
-import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
 import org.oefet.fetch.results.FetChResult
@@ -13,7 +12,6 @@ abstract class FetChMeasurement(private val name: String, fileLabel: String, val
     constructor(name: String, tag: String)               : this(name, tag, tag, Icon.FLASK.blackImage)
     constructor(name: String)                            : this(name, name.replace(" ", ""))
     constructor(name: String, tag: String, image: Image) : this(name, tag, tag, image)
-
 
     private val labelProperty = StringParameter("Basic", "Name", null, fileLabel)
 
@@ -38,8 +36,6 @@ abstract class FetChMeasurement(private val name: String, fileLabel: String, val
         labelProperty.value = value
     }
 
-    abstract override fun getColumns(): Array<Column<*>>
-
     abstract override fun run(results: ResultTable)
 
     abstract override fun onFinish()
@@ -51,19 +47,6 @@ abstract class FetChMeasurement(private val name: String, fileLabel: String, val
     override fun onInterrupt() {
 
     }
-
-}
-
-open class Columns {
-
-    protected fun decimalColumn(name: String, units: String = "") = Column.ofDecimals(name, units).also { COLUMNS += it }
-    protected fun integerColumn(name: String, units: String = "") = Column.ofIntegers(name, units).also { COLUMNS += it }
-    protected fun textColumn(name: String, units: String = "")    = Column.ofText(name, units).also { COLUMNS += it }
-    protected fun booleanColumn(name: String, units: String = "") = Column.ofBooleans(name, units).also { COLUMNS += it }
-
-    private val COLUMNS = ArrayList<Column<*>>()
-
-    fun getColumns(): Array<Column<*>> = COLUMNS.toTypedArray()
 
 }
 

@@ -4,7 +4,6 @@ import jisa.Util
 import jisa.control.RTask
 import jisa.enums.Icon
 import jisa.gui.Progress
-import jisa.results.Column
 import jisa.results.ResultTable
 
 class Wait : FetChAction("Wait", Icon.CLOCK.blackImage) {
@@ -40,10 +39,6 @@ class Wait : FetChAction("Wait", Icon.CLOCK.blackImage) {
 
     override fun onFinish() {
         task?.stop()
-    }
-
-    override fun getColumns(): Array<Column<*>> {
-        return emptyArray()
     }
 
     override fun getLabel(): String {

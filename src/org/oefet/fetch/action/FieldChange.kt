@@ -5,8 +5,6 @@ import jisa.devices.interfaces.EMController
 import jisa.enums.Icon
 import jisa.gui.Colour
 import jisa.gui.Series
-import jisa.results.Column
-import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
@@ -18,9 +16,11 @@ class FieldChange : FetChAction("Change Field", Icon.MAGNET.blackImage) {
     val interval by userTimeInput("Field", "Logging Interval", 500)
     val fControl by requiredInstrument("EM Controller", EMController::class)
 
-    companion object {
-        val TIME  = DoubleColumn("Time","s")
-        val FIELD = DoubleColumn("Field", "T")
+    companion object : Columns() {
+
+        val TIME  = decimalColumn("Time","s")
+        val FIELD = decimalColumn("Field", "T")
+
     }
 
     override fun createDisplay(data: ResultTable): FetChPlot {
@@ -56,10 +56,6 @@ class FieldChange : FetChAction("Change Field", Icon.MAGNET.blackImage) {
 
     override fun onFinish() {
         task?.stop()
-    }
-
-    override fun getColumns(): Array<Column<*>> {
-        return arrayOf(TIME, FIELD)
     }
 
     override fun getLabel(): String {

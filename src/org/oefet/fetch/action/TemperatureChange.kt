@@ -7,9 +7,6 @@ import jisa.enums.Icon
 import jisa.gui.Colour
 import jisa.gui.Plot
 import jisa.gui.Series
-import jisa.results.Column
-import jisa.results.DoubleColumn
-import jisa.results.LongColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
@@ -25,27 +22,29 @@ class TemperatureChange : FetChAction("Change Temperature", Icon.THERMOMETER.bla
 
     private var series: Series? = null
 
-    companion object {
-        val TIME = LongColumn("Time", "UTC ms")
-        val TEMPERATURE = DoubleColumn("Temperature", "K")
+    companion object : Columns() {
+        val TIME        = longColumn("Time", "UTC ms")
+        val TEMPERATURE = decimalColumn("Temperature", "K")
     }
 
     override fun createDisplay(data: ResultTable): FetChPlot {
 
-        val plot = FetChPlot("Change Temperature to $temperature K", "Time", "Temperature [K]")
+        val plot  = FetChPlot("Change Temperature to $temperature K", "Time", "Temperature [K]")
+        val min   = (1 - (stabilityPct / 100.0)) * temperature
+        val max   = (1 + (stabilityPct / 100.0)) * temperature
 
         plot.isLegendVisible = false
-        plot.xAxisType = Plot.AxisType.TIME
+        plot.xAxisType       = Plot.AxisType.TIME
 
         plot.createSeries()
-            .watch(data, { it[TIME] / 1000.0 }, { (1 + (stabilityPct / 100.0)) * temperature })
+            .watch(data, { it[TIME] / 1000.0 }, { max })
             .setMarkerVisible(false)
             .setLineWidth(1.0)
             .setLineDash(Series.Dash.DASHED)
             .setColour(Colour.GREY)
 
         plot.createSeries()
-            .watch(data, { it[TIME] / 1000.0 }, { (1 - (stabilityPct / 100.0)) * temperature })
+            .watch(data, { it[TIME] / 1000.0 }, { min })
             .setMarkerVisible(false)
             .setLineWidth(1.0)
             .setLineDash(Series.Dash.DASHED)
@@ -63,6 +62,8 @@ class TemperatureChange : FetChAction("Change Temperature", Icon.THERMOMETER.bla
     override fun run(results: ResultTable) {
 
         val input = tControl.input
+        val min   = (1 - (stabilityPct / 100.0)) * temperature
+        val max   = (1 + (stabilityPct / 100.0)) * temperature
 
         task = RTask(interval.toLong()) { _ ->
 
@@ -70,12 +71,7 @@ class TemperatureChange : FetChAction("Change Temperature", Icon.THERMOMETER.bla
 
             results.addData(System.currentTimeMillis(), t)
 
-            if (Util.isBetween(
-                    t,
-                    (1 - (stabilityPct / 100.0)) * temperature,
-                    (1 + (stabilityPct / 100.0)) * temperature
-                )
-            ) {
+            if (Util.isBetween(t, min, max)) {
                 series?.colour = Colour.TEAL
             } else {
                 series?.colour = Colour.RED
@@ -94,10 +90,6 @@ class TemperatureChange : FetChAction("Change Temperature", Icon.THERMOMETER.bla
 
     override fun onFinish() {
         task?.stop()
-    }
-
-    override fun getColumns(): Array<Column<*>> {
-        return arrayOf(TIME, TEMPERATURE)
     }
 
     override fun getLabel(): String {

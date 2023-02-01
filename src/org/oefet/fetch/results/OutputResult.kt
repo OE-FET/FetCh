@@ -70,8 +70,8 @@ class OutputResult(data: ResultTable) : FetChResult("Output Measurement", "Outpu
 
                 if (data.rowCount < 2) continue
 
-                val vG      = data.toMatrix(SGV)
-                val iD      = data.toMatrix(SDI)
+                val vG      = data.toList(SGV)
+                val iD      = data.toList(SDI)
                 val linGrad = Interpolation.interpolate1D(vG, iD.map { x -> abs(x) }).derivative()
                 val satGrad = Interpolation.interpolate1D(vG, iD.map { x -> sqrt(abs(x)) }).derivative()
 
@@ -79,27 +79,16 @@ class OutputResult(data: ResultTable) : FetChResult("Output Measurement", "Outpu
 
                     val linMobility = 1e4 * abs((length / (capacitance * width)) * (linGrad.value(gate) / drain))
                     val satMobility = 1e4 * 2.0 * satGrad.value(gate).pow(2) * length / (width * capacitance)
-                    val params      = ArrayList(parameters)
-                    params         += Gate(gate, 0.0)
-                    params         += Drain(drain, 0.0)
+                    val params      = parameters + Gate(gate, 0.0) + Drain(drain, 0.0)
 
                     if (linMobility.isFinite()) {
-                        quantities += FwdLinMobility(
-                            linMobility,
-                            0.0,
-                            params,
-                            possibleParameters
-                        )
-                        maxLinMobility[gate] = max(maxLinMobility[gate] ?: 0.0, linMobility)
+                        quantities           += FwdLinMobility(linMobility, 0.0, params, possibleParameters)
+                        maxLinMobility[gate]  = max(maxLinMobility[gate] ?: 0.0, linMobility)
                     }
+
                     if (satMobility.isFinite()) {
-                        quantities += FwdSatMobility(
-                            satMobility,
-                            0.0,
-                            params,
-                            possibleParameters
-                        )
-                        maxSatMobility[gate] = max(maxSatMobility[gate] ?: 0.0, satMobility)
+                        quantities           += FwdSatMobility(satMobility, 0.0, params, possibleParameters)
+                        maxSatMobility[gate]  = max(maxSatMobility[gate] ?: 0.0, satMobility)
                     }
 
                 }

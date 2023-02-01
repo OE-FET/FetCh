@@ -2,8 +2,6 @@ package org.oefet.fetch.measurement
 
 import jisa.devices.interfaces.*
 import jisa.maths.Range
-import jisa.results.Column
-import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.gui.images.Images
@@ -27,31 +25,19 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
     val fpp2   by optionalInstrument("Four-Point-Probe Channel 2", VMeter::class)
     val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
-    companion object Columns {
+    // Data columns
+    companion object : Columns() {
 
-        val SET_SD_VOLTAGE = DoubleColumn("Set SD Voltage", "V")
-        val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
-        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
-        val SD_CURRENT     = DoubleColumn("SD Current", "A")
-        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
-        val SG_CURRENT     = DoubleColumn("SG Current", "A")
-        val FPP_1          = DoubleColumn("Four Point Probe 1", "V")
-        val FPP_2          = DoubleColumn("Four Point Probe 2", "V")
-        val TEMPERATURE    = DoubleColumn("Temperature", "K")
-        val GROUND_CURRENT = DoubleColumn("Ground Current", "A")
-
-        val COLUMN_ORDER: Array<Column<*>> = arrayOf(
-            SET_SD_VOLTAGE,
-            SET_SG_VOLTAGE,
-            SD_VOLTAGE,
-            SD_CURRENT,
-            SG_VOLTAGE,
-            SG_CURRENT,
-            FPP_1,
-            FPP_2,
-            TEMPERATURE,
-            GROUND_CURRENT
-        )
+        val SET_SD_VOLTAGE = decimalColumn("Set SD Voltage", "V")
+        val SET_SG_VOLTAGE = decimalColumn("Set SG Voltage", "V")
+        val SD_VOLTAGE     = decimalColumn("SD Voltage", "V")
+        val SD_CURRENT     = decimalColumn("SD Current", "A")
+        val SG_VOLTAGE     = decimalColumn("SG Voltage", "V")
+        val SG_CURRENT     = decimalColumn("SG Current", "A")
+        val FPP_1          = decimalColumn("Four Point Probe 1", "V")
+        val FPP_2          = decimalColumn("Four Point Probe 2", "V")
+        val TEMPERATURE    = decimalColumn("Temperature", "K")
+        val GROUND_CURRENT = decimalColumn("Ground Current", "A")
 
     }
 
@@ -62,8 +48,6 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
     override fun processResults(data: ResultTable): OutputResult {
         return OutputResult(data)
     }
-
-    override fun getColumns(): Array<Column<*>> = COLUMN_ORDER
 
     override fun run(results: ResultTable) {
 

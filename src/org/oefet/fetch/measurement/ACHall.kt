@@ -8,7 +8,6 @@ import jisa.enums.Icon
 import jisa.enums.Input
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
-import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.SimpleACHallPlot
 import org.oefet.fetch.results.ACHallResult
@@ -24,6 +23,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     private val repeats         by userInput("Basic", "Repeats", 300)
     private val paGain          by userInput("Basic", "Pre-Amp Gain", 1.0)
     private val exGain          by userInput("Basic", "Extra Gain", 10.0)
+    private val autoRange       by userInput("Basic", "Auto-Range Tolerance [%]", 66.0) map { it / 100.0 }
+    private val autoTime        by userInput("Basic", "Auto-Range Integration Time [s]", 100e-3)
     private val rmsField        by userInput("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
     private val hallFrequencies by userInput("Magnets", "Frequencies [Hz]", Range.manual(1.2))
     private val spin            by userTimeInput("Magnets", "Spin-Up Time", 600000)
@@ -49,39 +50,20 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
     private lateinit var fControl: FControl
 
-    companion object {
+    companion object : Columns() {
 
-        val FARADAY      = Column.ofBooleans("Faraday Sweep")
-        val SD_VOLTAGE   = Column.ofDecimals("SD Voltage", "V")
-        val SD_CURRENT   = Column.ofDecimals("SD Current", "A")
-        val RMS_FIELD    = Column.ofDecimals("RMS Field Strength", "T")
-        val FREQUENCY    = Column.ofDecimals("Field Frequency", "Hz")
-        val X_VOLTAGE    = Column.ofDecimals("X Voltage", "V")
-        val X_ERROR      = Column.ofDecimals("X Error", "V")
-        val Y_VOLTAGE    = Column.ofDecimals("Y Voltage", "V")
-        val Y_ERROR      = Column.ofDecimals("Y Error", "V")
-        val HALL_VOLTAGE = Column.ofDecimals("Hall Voltage", "V")
-        val HALL_ERROR   = Column.ofDecimals("Hall Voltage Error", "V")
-        val TEMPERATURE  = Column.ofDecimals("Temperature", "K")
-
-    }
-
-    override fun getColumns(): Array<Column<*>> {
-
-        return arrayOf(
-            FARADAY,
-            SD_VOLTAGE,
-            SD_CURRENT,
-            RMS_FIELD,
-            FREQUENCY,
-            X_VOLTAGE,
-            X_ERROR,
-            Y_VOLTAGE,
-            Y_ERROR,
-            HALL_VOLTAGE,
-            HALL_ERROR,
-            TEMPERATURE
-        )
+        val FARADAY      = booleanColumn("Faraday Sweep")
+        val SD_VOLTAGE   = decimalColumn("SD Voltage", "V")
+        val SD_CURRENT   = decimalColumn("SD Current", "A")
+        val RMS_FIELD    = decimalColumn("RMS Field Strength", "T")
+        val FREQUENCY    = decimalColumn("Field Frequency", "Hz")
+        val X_VOLTAGE    = decimalColumn("X Voltage", "V")
+        val X_ERROR      = decimalColumn("X Error", "V")
+        val Y_VOLTAGE    = decimalColumn("Y Voltage", "V")
+        val Y_ERROR      = decimalColumn("Y Error", "V")
+        val HALL_VOLTAGE = decimalColumn("Hall Voltage", "V")
+        val HALL_ERROR   = decimalColumn("Hall Voltage Error", "V")
+        val TEMPERATURE  = decimalColumn("Temperature", "K")
 
     }
 
@@ -133,7 +115,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
         // Auto range and offset lock-in amplifier
         stageAutoRange.start()
-        lockIn.autoRange(0.66)
+        lockIn.autoRange(autoRange, autoTime)
         stageAutoRange.complete()
 
         stageSpinUp.complete()

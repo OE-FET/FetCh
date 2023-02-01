@@ -8,8 +8,6 @@ import jisa.experiment.queue.MeasurementSubAction
 import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
-import jisa.results.Column
-import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.DCHallPlot
 import org.oefet.fetch.gui.images.Images
@@ -60,24 +58,24 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
     /**
      * Constants to refer to columns in this measurement's result table
      */
-    companion object {
+    companion object : Columns() {
 
-        val SET_SD_CURRENT = DoubleColumn("Set SD Current", "A")
-        val SET_SG_VOLTAGE = DoubleColumn("Set SG Voltage", "V")
-        val SD_VOLTAGE     = DoubleColumn("SD Voltage", "V")
-        val SD_CURRENT     = DoubleColumn("SD Current", "A")
-        val SG_VOLTAGE     = DoubleColumn("SG Voltage", "V")
-        val SG_CURRENT     = DoubleColumn("SG Current", "A")
-        val FIELD          = DoubleColumn("Field Strength", "T")
-        val HALL_1         = DoubleColumn("Hall Voltage 1", "V")
-        val HALL_1_ERROR   = DoubleColumn("Hall Voltage 1 Error", "V")
-        val HALL_2         = DoubleColumn("Hall Voltage 2", "V")
-        val HALL_2_ERROR   = DoubleColumn("Hall Voltage 2 Error", "V")
-        val HALL_3         = DoubleColumn("Hall Voltage 3", "V")
-        val HALL_3_ERROR   = DoubleColumn("Hall Voltage 3 Error", "V")
-        val HALL_4         = DoubleColumn("Hall Voltage 4", "V")
-        val HALL_4_ERROR   = DoubleColumn("Hall Voltage 4 Error", "V")
-        val TEMPERATURE    = DoubleColumn("Temperature", "K")
+        val SET_SD_CURRENT = decimalColumn("Set SD Current", "A")
+        val SET_SG_VOLTAGE = decimalColumn("Set SG Voltage", "V")
+        val SD_VOLTAGE     = decimalColumn("SD Voltage", "V")
+        val SD_CURRENT     = decimalColumn("SD Current", "A")
+        val SG_VOLTAGE     = decimalColumn("SG Voltage", "V")
+        val SG_CURRENT     = decimalColumn("SG Current", "A")
+        val FIELD          = decimalColumn("Field Strength", "T")
+        val HALL_1         = decimalColumn("Hall Voltage 1", "V")
+        val HALL_1_ERROR   = decimalColumn("Hall Voltage 1 Error", "V")
+        val HALL_2         = decimalColumn("Hall Voltage 2", "V")
+        val HALL_2_ERROR   = decimalColumn("Hall Voltage 2 Error", "V")
+        val HALL_3         = decimalColumn("Hall Voltage 3", "V")
+        val HALL_3_ERROR   = decimalColumn("Hall Voltage 3 Error", "V")
+        val HALL_4         = decimalColumn("Hall Voltage 4", "V")
+        val HALL_4_ERROR   = decimalColumn("Hall Voltage 4 Error", "V")
+        val TEMPERATURE    = decimalColumn("Temperature", "K")
 
     }
 
@@ -93,33 +91,6 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
      */
     override fun processResults(data: ResultTable): DCHallResult {
         return DCHallResult(data)
-    }
-
-    /**
-     * Defines the structure of the result table for this measurement - i.e. it returns the columns that the results
-     * table should have.
-     */
-    override fun getColumns(): Array<Column<*>> {
-
-        return arrayOf(
-            SET_SD_CURRENT,
-            SET_SG_VOLTAGE,
-            SD_VOLTAGE,
-            SD_CURRENT,
-            SG_VOLTAGE,
-            SG_CURRENT,
-            FIELD,
-            HALL_1,
-            HALL_1_ERROR,
-            HALL_2,
-            HALL_2_ERROR,
-            HALL_3,
-            HALL_3_ERROR,
-            HALL_4,
-            HALL_4_ERROR,
-            TEMPERATURE
-        )
-
     }
 
     /**

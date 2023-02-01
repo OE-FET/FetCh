@@ -6,8 +6,6 @@ import jisa.enums.AMode
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
-import jisa.results.Column
-import jisa.results.DoubleColumn
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.gui.images.Images
@@ -36,30 +34,18 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     private val actionSweep  = MeasurementSubAction("Sweep Current")
 
     /** Result Table Columns */
-    companion object Columns {
+    companion object : Columns() {
 
-        val SET_HEATER_VOLTAGE  = DoubleColumn("Set Heater Voltage", "V")
-        val SET_STRIP_CURRENT   = DoubleColumn("Set Strip Current", "A")
-        val GROUND_CURRENT      = DoubleColumn("Ground Current", "A")
-        val HEATER_VOLTAGE      = DoubleColumn("Heater Voltage", "V")
-        val HEATER_CURRENT      = DoubleColumn("Heater Current", "A")
-        val HEATER_POWER        = DoubleColumn("Heater Power", "W")
-        val STRIP_VOLTAGE       = DoubleColumn("Strip Voltage", "V")
-        val STRIP_VOLTAGE_ERROR = DoubleColumn("Strip Voltage Error", "V")
-        val STRIP_CURRENT       = DoubleColumn("Strip Current", "A")
-        val TEMPERATURE         = DoubleColumn("Temperature", "K")
-        val COLUMN_ORDER        = arrayOf(
-            SET_HEATER_VOLTAGE,
-            SET_STRIP_CURRENT,
-            GROUND_CURRENT,
-            HEATER_VOLTAGE,
-            HEATER_CURRENT,
-            HEATER_POWER,
-            STRIP_VOLTAGE,
-            STRIP_VOLTAGE_ERROR,
-            STRIP_CURRENT,
-            TEMPERATURE
-        )
+        val SET_HEATER_VOLTAGE  = decimalColumn("Set Heater Voltage", "V")
+        val SET_STRIP_CURRENT   = decimalColumn("Set Strip Current", "A")
+        val GROUND_CURRENT      = decimalColumn("Ground Current", "A")
+        val HEATER_VOLTAGE      = decimalColumn("Heater Voltage", "V")
+        val HEATER_CURRENT      = decimalColumn("Heater Current", "A")
+        val HEATER_POWER        = decimalColumn("Heater Power", "W")
+        val STRIP_VOLTAGE       = decimalColumn("Strip Voltage", "V")
+        val STRIP_VOLTAGE_ERROR = decimalColumn("Strip Voltage Error", "V")
+        val STRIP_CURRENT       = decimalColumn("Strip Current", "A")
+        val TEMPERATURE         = decimalColumn("Temperature", "K")
 
     }
 
@@ -191,24 +177,6 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         // Reset all sub-actions
         actions.forEach { it.reset() }
 
-    }
-
-    override fun getColumns(): Array<Column<*>> {
-        return COLUMN_ORDER as Array<Column<*>>
-    }
-
-    /**
-     * Gets run if the measurement is interrupted
-     */
-    override fun onInterrupt() {
-        // Nothing special to do here
-    }
-
-    /**
-     * Gets run if the measurement encounters an error
-     */
-    override fun onError() {
-        // Nothing special to do here
     }
 
 }

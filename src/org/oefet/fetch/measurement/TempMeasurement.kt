@@ -3,48 +3,46 @@ package org.oefet.fetch.measurement
 import jisa.control.Repeat
 import jisa.devices.interfaces.TMeter
 import jisa.enums.Icon
-import jisa.results.Col
-import jisa.results.Column
 import jisa.results.ResultTable
 
-class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", "Temp", Icon.THERMOMETER.blackImage) {
+/**
+ * Measurement class for performing temperature measurements after a stabilisation period.
+ */
+class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", Icon.THERMOMETER.blackImage) {
 
-    private val pctMargin by userInput("Temperature Stabilization", "Percentage range for temperature to stay within",0.3, )
-    private val duration  by userTimeInput("Temperature Stabilization", "Duration of temperature stabilization", 60000)
-    private val maxTime   by userTimeInput("Temperature Stabilization", "Maximum Duration of temperature stabilization", 180000)
+    // Parameters
+    private val pctMargin by userInput("Temperature Stabilisation", "Stays within [%]", 0.3)
+    private val duration  by userTimeInput("Temperature Stabilisation", "For at least", 60000)
+    private val maxTime   by userTimeInput("Temperature Stabilisation", "Timeout", 180000)
+    private val repTime   by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
+    private val repeats   by userInput("Basic", "No. Repeats", 50)
 
-    private val repTime  by userInput("Basic", "Repeat Time [s]", 0.0) map { (it * 1e3).toInt() }
-    private val repeats  by userInput("Basic", "Repeats", 50)
-
+    // Instruments
     private val tMeter by requiredInstrument("Thermometer", TMeter::class)
 
-    companion object{
-        val TEMPERATURE = Col("Temperature", "K")
-        val TEMPERATURE_STD = Col("Temp. Std. Dev.", "K")
+    // Columns
+    companion object : Columns() {
+        val TEMPERATURE     = decimalColumn("Temperature", "K")
+        val TEMPERATURE_STD = decimalColumn("Temperature Error", "K")
     }
 
-    override fun getColumns(): Array<Column<*>> {
-
-        return arrayOf(
-            TEMPERATURE,
-            TEMPERATURE_STD
-        )
-
-    }
     override fun run(results: ResultTable) {
+
+        // Wait for temperature to stabilise
         tMeter.waitForStableTemperatureMaxTime(pctMargin, duration.toLong(), maxTime.toLong())
 
-        val tMeterValues = Repeat.prepare(repeats, repTime) { tMeter.temperature }
-        Repeat.runTogether(tMeterValues)
+        // Run repeat temperature measurements
+        val tMeterValues = Repeat.run(repeats, repTime) { tMeter.temperature }
 
-        results.addData(
-            tMeterValues.mean,
-            tMeterValues.standardDeviation
+        // Record results
+        results.mapRow(
+            TEMPERATURE     to tMeterValues.mean,
+            TEMPERATURE_STD to tMeterValues.standardDeviation
         )
 
     }
 
-    override fun onFinish() {
-    }
+    override fun onFinish() { /* Nothing to do */ }
+
 }
 

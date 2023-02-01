@@ -16,6 +16,7 @@ import org.oefet.fetch.gui.elements.FetChPlot
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.companionObjectInstance
 
 abstract class FetChEntity : Measurement() {
 
@@ -109,7 +110,7 @@ abstract class FetChEntity : Measurement() {
 
     fun <I : Instrument> optionalInstrument(name: String, type: KClass<I>): ODelegate<I?> {
 
-        val config = addInstrument(name, type.java)
+        val config = addInstrument("$name (Optional)", type.java)
         val del = ODelegate<I?>(config)
 
         setters += { del.setNow(errors) }
@@ -120,7 +121,7 @@ abstract class FetChEntity : Measurement() {
 
     fun <I : Instrument> requiredInstrument(name: String, type: KClass<I>): RDelegate<I> {
 
-        val config = addInstrument(name, type.java)
+        val config = addInstrument("$name (Required)", type.java)
         val del = RDelegate<I>(config)
 
         setters += { del.setNow(errors) }
@@ -341,6 +342,32 @@ abstract class FetChEntity : Measurement() {
 
     fun Int.toSeconds(): Double {
         return this.toDouble() / 1e3
+    }
+
+    override fun getColumns(): Array<Column<*>> {
+
+        val companion = this::class.companionObjectInstance
+
+        if (companion is Columns) {
+            return companion.getColumns()
+        } else {
+            return emptyArray()
+        }
+
+    }
+
+    open class Columns {
+
+        protected fun decimalColumn(name: String, units: String? = null) = Column.ofDecimals(name, units).also { COLUMNS += it }
+        protected fun integerColumn(name: String, units: String? = null) = Column.ofIntegers(name, units).also { COLUMNS += it }
+        protected fun longColumn(name: String, units: String? = null)    = Column.ofLongs(name, units).also { COLUMNS += it }
+        protected fun textColumn(name: String, units: String? = null)    = Column.ofText(name, units).also { COLUMNS += it }
+        protected fun booleanColumn(name: String, units: String? = null) = Column.ofBooleans(name, units).also { COLUMNS += it }
+
+        private val COLUMNS = ArrayList<Column<*>>()
+
+        fun getColumns(): Array<Column<*>> = COLUMNS.toTypedArray()
+
     }
 
 

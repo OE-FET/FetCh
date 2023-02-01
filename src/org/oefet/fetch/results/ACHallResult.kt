@@ -4,7 +4,7 @@ import jisa.enums.Icon
 import jisa.maths.Range
 import jisa.maths.fits.Fitting
 import jisa.maths.matrices.RealMatrix
-import jisa.results.DoubleColumn
+import jisa.results.Column
 import jisa.results.ResultList
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.ACHallPlot
@@ -17,6 +17,7 @@ import kotlin.math.*
 
 class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC Hall", Icon.CIRCLES.blackImage, data) {
 
+    // Find data columns in provided results table
     val FARADAY      = data.findColumn(ACHall.FARADAY)
     val FREQUENCY    = data.findColumn(ACHall.FREQUENCY)
     val HALL_VOLTAGE = data.findColumn(ACHall.HALL_VOLTAGE)
@@ -29,15 +30,17 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
     val Y_ERROR      = data.findColumn(ACHall.Y_ERROR)
     val Y_VOLTAGE    = data.findColumn(ACHall.Y_VOLTAGE)
 
+    // Define columns for rotated data
     companion object {
-        val ROT_FREQUENCY = DoubleColumn("Frequency", "Hz")
-        val ROT_CURRENT   = DoubleColumn("SD Current", "A")
-        val ROT_HALL      = DoubleColumn("Hall Voltage", "V")
-        val ROT_ERROR     = DoubleColumn("Hall Error", "V")
-        val ROT_FARADAY   = DoubleColumn("Faraday Voltage", "V")
 
-        val FAR_FREQUENCY = DoubleColumn("Frequency", "Hz")
-        val FAR_VOLTAGE   = DoubleColumn("Faraday Voltage", "V")
+        val ROT_FREQUENCY = Column.ofDecimals("Frequency", "Hz")
+        val ROT_CURRENT   = Column.ofDecimals("SD Current", "A")
+        val ROT_HALL      = Column.ofDecimals("Hall Voltage", "V")
+        val ROT_ERROR     = Column.ofDecimals("Hall Error", "V")
+        val ROT_FARADAY   = Column.ofDecimals("Faraday Voltage", "V")
+        val FAR_FREQUENCY = Column.ofDecimals("Frequency", "Hz")
+        val FAR_VOLTAGE   = Column.ofDecimals("Faraday Voltage", "V")
+
     }
 
     val rotated = ResultList(ROT_FREQUENCY, ROT_CURRENT, ROT_HALL, ROT_ERROR, ROT_FARADAY)
@@ -169,8 +172,8 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
 
 
             // Calculate parameters from fitting
-            val hallValue       = sign * abs(hallFit.gradient) * thickness / rmsField
-            val hallError       = hallFit.gradientError * thickness / rmsField
+            val hallValue       = sign * abs(hallFit?.gradient ?: 0.0) * thickness / rmsField
+            val hallError       = (hallFit?.gradientError ?: 0.0) * thickness / rmsField
             val hallQuantity    = HallCoefficient(hallValue, hallError, parameters, possibleParameters)
             val density         = hallQuantity.pow(-1) * (100.0).pow(-3) / 1.6e-19
             val densityQuantity = CarrierDensity(abs(density.value), density.error, parameters, possibleParameters)

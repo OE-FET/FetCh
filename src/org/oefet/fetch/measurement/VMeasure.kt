@@ -3,7 +3,6 @@ package org.oefet.fetch.measurement
 import jisa.devices.interfaces.VMeter
 import jisa.enums.Icon
 import jisa.maths.Range
-import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 
@@ -14,10 +13,10 @@ class VMeasure : FetChMeasurement("Voltage Measurement", "Voltage", "VMeasure", 
     val numIntervals by userInput("Timing", "No. Measurements", 11)
     val vMeter       by requiredInstrument("Voltmeter", VMeter::class)
 
-    companion object {
+    companion object : Columns() {
 
-        val TIME    = Column.ofDecimals("Time", "s")
-        val VOLTAGE = Column.ofDecimals("Voltage", "V")
+        val TIME    = decimalColumn("Time", "s")
+        val VOLTAGE = decimalColumn("Voltage", "V")
 
     }
 
@@ -62,7 +61,5 @@ class VMeasure : FetChMeasurement("Voltage Measurement", "Voltage", "VMeasure", 
         // Turn off the voltmeter on finished/interrupt/error
         runRegardless { vMeter.turnOff() }
     }
-
-    override fun getColumns(): Array<Column<*>> = arrayOf(TIME, VOLTAGE)
 
 }

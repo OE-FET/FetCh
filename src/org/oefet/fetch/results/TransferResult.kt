@@ -55,41 +55,48 @@ class TransferResult(data: ResultTable) : FetChResult("Transfer Measurement", "T
                 // Separate forwards and backwards sweeps
                 for ((index, subTable) in drainTable.directionalSplit(SET_SG_VOLTAGE).withIndex()) {
 
-                    val vG        = subTable.toList(SET_SG_VOLTAGE)                  // Extract source-gate voltages as a list
-                    val iD        = subTable.toList(SD_CURRENT)                      // Extract drain currents as a list
-                    val isLinear  = abs(drain) < (vG.maxOfOrNull { abs(it) } ?: 0.0) // Assume linearity if |V_SD| < max(|V_SG|)
-                    val isForward = (index % 2) == 0                                 // Treat all even-indexed sweeps as forwards
-                    val params    = parameters + Drain(drain, 0.0)                   // Build parameters
+                    val vG        = subTable.toList(SET_SG_VOLTAGE)                               // Extract source-gate voltages as a list
+                    val iD        = subTable.toList(SD_CURRENT)                                   // Extract drain currents as a list
+                    val isForward = (index % 2) == 0                                              // Treat all even-indexed sweeps as forwards
+                    val params    = (parameters + Drain(drain, 0.0)).toMutableList()              // Build parameters
+                    val fpp1      = subTable.all { it[FPP_1].isFinite() && it[FPP_2].isNaN() }
+                    val fpp2      = subTable.all { it[FPP_2].isFinite() && it[FPP_1].isNaN() }
+                    val fppD      = subTable.all { it[FPP_1].isFinite() && it[FPP_2].isFinite() }
+
+                    // If we have an FPP measurement, then we need to extrapolate what the true SD-Voltage value is
+                    val vF = when {
+
+                        fpp1 -> subTable.toList { (length / separation) * it[FPP_1] }
+                        fpp2 -> subTable.toList { (length / separation) * it[FPP_2] }
+                        fppD -> subTable.toList { (length / separation) * (it[FPP_2] - it[FPP_1]) }
+                        else -> subTable.toList(SD_VOLTAGE)
+
+                    }
 
                     // Perform different calculation depending on whether we are in linear or saturation regime
-                    when {
+                    quantities += if ((vF.maxOfOrNull { abs(it) } ?: 0.0) < (vG.maxOfOrNull { abs(it) } ?: 0.0)) { // Linear regime
 
-                        isLinear -> { // Linear regime
+                        val gradient = Interpolation.interpolateSmooth(vG, iD.map { abs(it) }).derivative()
+                        val dvF      = Interpolation.interpolateSmooth(vG, vF).derivative()
+                        val mobility = vG.zip(vF).map { (g, d) -> 1e4 * abs((length / (capacitance * width)) * (gradient.value(g) / (dvF.value(g) * (g - 2.0 * d) + d))) }
+                        val points   = vG.zip(mobility)
 
-                            val gradient = Interpolation.interpolateSmooth(vG, iD.map { abs(it) }).derivative()
-                            val mobility = vG.map { v -> 1e4 * abs((length / (capacitance * width)) * (gradient.value(v) / drain)) }
-                            val points   = vG.zip(mobility)
-
-                            // Add the calculated mobilities to the overall list of determined quantities
-                            quantities += when {
-                                isForward -> points.map { (g, m) -> FwdLinMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
-                                else      -> points.map { (g, m) -> BwdLinMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
-                            }
-
+                        // Add the calculated mobilities to the overall list of determined quantities
+                        when {
+                            isForward -> points.map { (g, m) -> FwdLinMobility(m, 0.0, params + Gate(g, 0.0), possibleParameters) }
+                            else      -> points.map { (g, m) -> BwdLinMobility(m, 0.0, params + Gate(g, 0.0), possibleParameters) }
                         }
 
-                        else     -> { // Saturation regime
+                    } else { // Saturation regime
 
-                            val gradient = Interpolation.interpolateSmooth(vG, iD.map{ sqrt(abs(it)) }).derivative()
-                            val mobility = vG.map { v -> 1e4 * 2.0 * gradient.value(v).pow(2) * length / (width * capacitance) }
-                            val points = vG.zip(mobility)
+                        val gradient = Interpolation.interpolateSmooth(vG, iD.map { sqrt(abs(it)) }).derivative()
+                        val mobility = vG.map { v -> 1e4 * 2.0 * gradient.value(v).pow(2) * length / (width * capacitance) }
+                        val points   = vG.zip(mobility)
 
-                            // Add the calculated mobilities to the overall list of determined quantities
-                            quantities += when {
-                                isForward -> points.map { (g, m) -> FwdSatMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
-                                else      -> points.map { (g, m) -> BwdSatMobility(m, 0.0 , params + Gate(g, 0.0), possibleParameters) }
-                            }
-
+                        // Add the calculated mobilities to the overall list of determined quantities
+                        when {
+                            isForward -> points.map { (g, m) -> FwdSatMobility(m, 0.0, params + Gate(g, 0.0), possibleParameters) }
+                            else      -> points.map { (g, m) -> BwdSatMobility(m, 0.0, params + Gate(g, 0.0), possibleParameters) }
                         }
 
                     }
@@ -104,11 +111,11 @@ class TransferResult(data: ResultTable) : FetChResult("Transfer Measurement", "T
 
             // If they were found, add them as quantities
             if (maxLinMobility != null) {
-                quantities += MaxLinMobility(maxLinMobility.value, maxLinMobility.error, parameters, possibleParameters);
+                quantities += MaxLinMobility(maxLinMobility.value, maxLinMobility.error, parameters, possibleParameters)
             }
 
             if (maxSatMobility != null) {
-                quantities += MaxSatMobility(maxSatMobility.value, maxSatMobility.error, parameters, possibleParameters);
+                quantities += MaxSatMobility(maxSatMobility.value, maxSatMobility.error, parameters, possibleParameters)
             }
 
         } catch (e: Exception) {
