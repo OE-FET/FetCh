@@ -25,6 +25,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     private val exGain          by userInput("Basic", "Extra Gain", 10.0)
     private val autoRange       by userInput("Basic", "Auto-Range Tolerance [%]", 66.0) map { it / 100.0 }
     private val autoTime        by userInput("Basic", "Auto-Range Integration Time [s]", 100e-3)
+    private val autoDelay       by userTimeInput("Basic", "Auto-Range Delay Time", 10000) map { it.toLong() }
     private val rmsField        by userInput("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
     private val hallFrequencies by userInput("Magnets", "Frequencies [Hz]", Range.manual(1.2))
     private val spin            by userTimeInput("Magnets", "Spin-Up Time", 600000)
@@ -115,7 +116,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
         // Auto range and offset lock-in amplifier
         stageAutoRange.start()
-        lockIn.autoRange(autoRange, autoTime)
+        lockIn.autoRange(autoRange, autoTime, autoDelay)
         stageAutoRange.complete()
 
         stageSpinUp.complete()
