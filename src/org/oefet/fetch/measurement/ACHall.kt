@@ -23,6 +23,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     private val repeats         by userInput("Basic", "Repeats", 300)
     private val paGain          by userInput("Basic", "Pre-Amp Gain", 1.0)
     private val exGain          by userInput("Basic", "Extra Gain", 10.0)
+    private val autoUse         by userInput("Basic", "Use Auto Ranging", false)
     private val autoRange       by userInput("Basic", "Auto-Range Tolerance [%]", 66.0) map { it / 100.0 }
     private val autoTime        by userInput("Basic", "Auto-Range Integration Time [s]", 100e-3)
     private val autoDelay       by userTimeInput("Basic", "Auto-Range Delay Time", 10000) map { it.toLong() }
@@ -114,10 +115,12 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
         message("Auto ranging lock-in amplifier.")
 
-        // Auto range and offset lock-in amplifier
-        stageAutoRange.start()
-        lockIn.autoRange(autoRange, autoTime, autoDelay)
-        stageAutoRange.complete()
+        if (autoUse) {
+            // Auto range and offset lock-in amplifier
+            stageAutoRange.start()
+            lockIn.autoRange(autoRange, autoTime, autoDelay)
+            stageAutoRange.complete()
+        }
 
         stageSpinUp.complete()
 
@@ -136,6 +139,10 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
             // Wait for lock-in to stabilise fully
             stageStabilise.start()
             sleep(spin)
+
+            if (hallFrequencies.indexOf(frequency) == 0) {
+                lockIn.autoOffset()
+            }
 
             var startX: Double? = null
             var startY: Double? = null

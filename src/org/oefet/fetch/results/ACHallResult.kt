@@ -128,7 +128,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
                     FAR_VOLTAGE   to fVolt
                 )
 
-                fit?.gradient?.sign ?: +1.0
+                fit?.gradient?.sign?.times(-1) ?: +1.0
 
             } else {
                 Fitting.linearFit(currents, vectorHall)?.gradient?.sign ?: +1.0
