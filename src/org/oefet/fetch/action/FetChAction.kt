@@ -12,10 +12,6 @@ abstract class FetChAction(private val name: String, override val image: Image) 
         return this.name
     }
 
-    override fun getColumns(): Array<Column<*>> {
-        return emptyArray()
-    }
-
     override fun setLabel(value: String) {
     }
 
