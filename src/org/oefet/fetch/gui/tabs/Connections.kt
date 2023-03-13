@@ -22,7 +22,7 @@ object Connections : ConnectorGrid("Connections", 3) {
 
             SerialPortList.getPortNames().map(::SerialPort).forEach {
 
-                Logger.addMessage("Clearing Serial Port \"$it.portName\"...")
+                Logger.addMessage("Clearing Serial Port \"${it.portName}\"...")
 
                 try {
                     it.purgePort(SerialPort.PURGE_RXABORT or SerialPort.PURGE_TXABORT or SerialPort.PURGE_RXCLEAR or SerialPort.PURGE_TXCLEAR)
