@@ -26,6 +26,14 @@ object Connections : ConnectorGrid("Connections", 3) {
 
                 try {
                     it.purgePort(SerialPort.PURGE_RXABORT or SerialPort.PURGE_TXABORT or SerialPort.PURGE_RXCLEAR or SerialPort.PURGE_TXCLEAR)
+                } catch (e: Throwable) {
+                    Logger.addError(e.message)
+                    e.printStackTrace()
+                }
+
+                Logger.addMessage("Closing Serial Port \"${it.portName}\"...")
+
+                try {
                     it.closePort()
                 } catch (e: Throwable) {
                     Logger.addError(e.message)
