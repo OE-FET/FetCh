@@ -10,7 +10,7 @@ import org.oefet.fetch.Settings
 import org.oefet.fetch.Sweeps
 import org.oefet.fetch.gui.elements.FetChQueue
 
-object Actions : Grid("Actions", 1) {
+object Actions : Grid("Settings", 1) {
 
     val config       = Fields("Configuration")
     val measurements = Fields("Enabled Measurements")
@@ -20,9 +20,15 @@ object Actions : Grid("Actions", 1) {
     init {
 
         val type = config.addChoice("Display Type", Settings.actionDisplay.intValue("type").getOrDefault(0), "Dropdown Menu", "List")
+        val size = config.addChoice("Display Size", Settings.actionDisplay.intValue("size").getOrDefault(0), "Wide", "Narrow")
 
         type.setOnChange {
             Settings.actionDisplay.intValue("type").set(type.value)
+            FetChQueue.updateAll()
+        }
+
+        type.setOnChange {
+            Settings.actionDisplay.intValue("size").set(size.value)
             FetChQueue.updateAll()
         }
 

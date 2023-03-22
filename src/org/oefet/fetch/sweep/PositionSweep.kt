@@ -12,7 +12,7 @@ import org.oefet.fetch.gui.images.Images
 
 class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P", Images.getImage("calibration.png")) {
 
-    val fineLift by userInput("Sample Setup", "Fine Lift [m]", 0.02)
+    val fineLift       by userInput("Sample Setup", "Fine Lift [m]", 0.02)
     val useCalibration by userInput("Sample Setup", "Use values from 3-point calibration", true)
     //val returnToStart    by input("Sample Setup", "Return to start at end?", true)
 
@@ -56,30 +56,29 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P", 
         val position3Y: Double
 
         if (useCalibration) {
-            position1X = PositionCalibration.position1X
-            position1Y = PositionCalibration.position1Y
+            position1X     = PositionCalibration.position1X
+            position1Y     = PositionCalibration.position1Y
             measureHeightZ = PositionCalibration.measureHeightZ
-            position2X = PositionCalibration.position2X
-            position2Y = PositionCalibration.position2Y
-            position3X = PositionCalibration.position3X
-            position3Y = PositionCalibration.position3Y
-        }
-        else{
-            position1X = position1XInput
-            position1Y = position1YInput
+            position2X     = PositionCalibration.position2X
+            position2Y     = PositionCalibration.position2Y
+            position3X     = PositionCalibration.position3X
+            position3Y     = PositionCalibration.position3Y
+        } else {
+            position1X     = position1XInput
+            position1Y     = position1YInput
             measureHeightZ = measureHeightZInput
-            position2X = position2XInput
-            position2Y = position2YInput
-            position3X = position3XInput
-            position3Y = position3YInput
+            position2X     = position2XInput
+            position2Y     = position2YInput
+            position3X     = position3XInput
+            position3Y     = position3YInput
         }
 
 
-        val list = ArrayList<Position>()
+        val list                 = ArrayList<Position>()
         val directionHorizontalX = position2X - position1X
         val directionHorizontalY = position2Y - position1Y
-        val directionVerticalX = position3X - position2X
-        val directionVerticalY = position3Y - position2Y
+        val directionVerticalX   = position3X - position2X
+        val directionVerticalY   = position3Y - position2Y
 
 
         for (j in 0 until countY) {
