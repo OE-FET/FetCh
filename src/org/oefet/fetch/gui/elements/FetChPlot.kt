@@ -45,7 +45,7 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
 //            addItem("Markers and Lines") { series.forEach { it.setLineVisible(true).isMarkerVisible = true } }
 //        }
 
-        addToolbarButton("⚙") {
+        addToolbarButton("Styling") {
             editProperties()
         }
 
