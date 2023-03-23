@@ -6,6 +6,8 @@ import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.CheckGrid
 import jisa.gui.Fields
+import jisa.results.Column
+import jisa.results.ResultTable
 import org.oefet.fetch.action.PositionCalibration
 import org.oefet.fetch.gui.images.Images
 
@@ -134,4 +136,8 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P", 
 
     class Position(val x: Double, val y: Double, val z: Double, val nx: Int, val ny: Int)
 
+}
+
+private fun ResultTable.findDecimalColumn(s: String): Column<Double>? {
+    return findColumn(s, Double::class.java)
 }
