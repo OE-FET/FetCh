@@ -3,6 +3,7 @@ package org.oefet.fetch.gui.tabs
 import jisa.enums.Icon
 import jisa.gui.Field
 import jisa.gui.Fields
+import jisa.gui.GUI
 import jisa.gui.Grid
 import org.oefet.fetch.Actions
 import org.oefet.fetch.Measurements
@@ -20,20 +21,20 @@ object Actions : Grid("Settings", 1) {
     init {
 
         val type = config.addChoice("Display Type", Settings.actionDisplay.intValue("type").getOrDefault(0), "Dropdown Menu", "List")
-        val size = config.addChoice("Display Size", Settings.actionDisplay.intValue("size").getOrDefault(0), "Wide", "Narrow")
+        val size = config.addChoice("Display Size", if (Settings.wide) 0 else 1, "Wide", "Narrow")
 
         type.setOnChange {
             Settings.actionDisplay.intValue("type").set(type.value)
             FetChQueue.updateAll()
         }
 
-        type.setOnChange {
+        size.setOnChange {
             Settings.actionDisplay.intValue("size").set(size.value)
-            FetChQueue.updateAll()
+            GUI.warningAlert("You will need to restart FetCh to apply this setting.")
         }
 
 
-        val enabledRow  = Grid(3, actions, measurements, sweeps)
+        val enabledRow  = Grid(if (Settings.wide) 3 else 1, actions, measurements, sweeps)
         addAll(config, enabledRow)
 
         setGrowth(true, false)

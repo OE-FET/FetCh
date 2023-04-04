@@ -7,6 +7,7 @@ import jisa.gui.*
 import jisa.results.ResultList
 import jisa.results.ResultTable
 import org.oefet.fetch.Measurements
+import org.oefet.fetch.Settings
 import org.oefet.fetch.analysis.UnknownResultException
 import org.oefet.fetch.quantities.DoubleQuantity
 import org.oefet.fetch.quantities.MaxLinMobility
@@ -41,7 +42,12 @@ object FileLoad : BorderDisplay("Results") {
 
         // Set icon and put the list of loaded files on the left
         setIcon(Icon.DATA)
-        leftElement = fileList
+
+        if (Settings.wide) {
+            leftElement = fileList
+        } else {
+            topElement  = fileList
+        }
 
         // Run updateDisplay() every time the selected file is changed in the file list
         fileList.setOnChange(::updateDisplay)
@@ -131,7 +137,7 @@ object FileLoad : BorderDisplay("Results") {
 
                 }
 
-                val row = Grid(2, params, selected?.getPlot() ?: Measurements.createElement(selected.data))
+                val row = Grid(if (Settings.wide) 2 else 1, params, selected?.getPlot() ?: Measurements.createElement(selected.data))
                 val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
 
                 centreElement = grid

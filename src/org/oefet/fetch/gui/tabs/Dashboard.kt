@@ -20,7 +20,7 @@ object Dashboard : Grid("Dashboard", 3) {
 
     init {
 
-        numColumns = Settings.dashboard.intValue("columns").getOrDefault(3)
+        numColumns = Settings.dashboard.intValue("columns").getOrDefault(if (Settings.wide) 3 else 1)
 
         setIcon(Icon.DASHBOARD)
         setGrowth(true, false)

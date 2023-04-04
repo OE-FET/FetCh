@@ -12,4 +12,6 @@ object Settings : ConfigFile("FetCh") {
     val actionDisplay = subBlock("actionDisplay")
     val logged        = subBlock("logged")
 
+    val wide = actionDisplay.intValue("size").getOrDefault(0) == 0;
+
 }

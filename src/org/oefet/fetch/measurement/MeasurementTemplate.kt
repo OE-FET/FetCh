@@ -1,6 +1,7 @@
 package org.oefet.fetch.measurement
 
-/*
+import jisa.results.ResultTable
+
 class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
 
     /*  Measurement parameters go here, for instance:
@@ -8,10 +9,10 @@ class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
      *  Simple quantity (automatically determines type of input to use based on type of defaultValue):
      *      val param by userInput("Section Name", "Param Name [units]", defaultValue)
      *
-     * Time input:
+     *  Time input:
      *      val param by userTimeInput("Section Name", "Param Name", defaultMilliseconds)
      *
-     * Dropdown/select/choice box:
+     *  Dropdown/select/choice box:
      *      val param by userChoice("Section Name", "Choice Name", "Option 1", "Option 2", "Option 3", ...)
      */
 
@@ -43,9 +44,6 @@ class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
 
     }
 
-    /** Leave this here, but otherwise you can ignore it */
-    override fun getColumns(): Array<Column<*>> = Companion.getColumns()
-
     /**
      * This is the function that is called when the measurement is run,
      * this is where you put the main logic of your measurement routine.
@@ -65,4 +63,3 @@ class MeasurementTemplate : FetChMeasurement("Measurement Name", "FileName") {
     }
 
 }
-*/

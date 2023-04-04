@@ -26,6 +26,8 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTabl
 
     init {
 
+        minHeight = 600.0
+
         val plot1 = FetChPlot("AC Hall", "Drain Current [A]", "Hall Voltage [V]")
 
         val filter = if (FARADAY != null) {

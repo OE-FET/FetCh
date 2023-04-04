@@ -7,6 +7,7 @@ import jisa.results.ResultTable
 import org.oefet.fetch.measurement.ACHall
 import org.oefet.fetch.measurement.Conductivity
 import org.oefet.fetch.measurement.FetChMeasurement
+import org.oefet.fetch.measurement.MeasurementTemplate
 import org.oefet.fetch.quantities.Quantity
 import org.oefet.fetch.results.ACHallResult
 import org.oefet.fetch.results.CondResult
@@ -23,6 +24,7 @@ object Measurements {
 
     val types = Reflections("org.oefet.fetch.measurement")
         .getSubTypesOf(FetChMeasurement::class.java)
+        .filter { it != MeasurementTemplate::class.java }
         .map { Config(it.getConstructor().newInstance()) }
         .sortedBy { it.name }
 

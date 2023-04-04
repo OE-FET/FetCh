@@ -4,6 +4,7 @@ import jisa.Util
 import jisa.enums.Icon
 import jisa.gui.*
 import jisa.results.ResultTable
+import org.oefet.fetch.Settings
 import org.oefet.fetch.analysis.Analysis
 import org.oefet.fetch.analysis.SpecificAnalysis
 import org.oefet.fetch.quantities.*
@@ -68,7 +69,11 @@ object Analysis : BorderDisplay("Analysis") {
 
         sidebar.select(0)
 
-        leftElement = sidebar
+        if (Settings.wide) {
+            leftElement = sidebar
+        } else {
+            topElement  = sidebar
+        }
 
     }
 
@@ -79,7 +84,7 @@ object Analysis : BorderDisplay("Analysis") {
             val quantities = FileLoad.getQuantities()
             val names      = FileLoad.getNames()
             val analysis   = sidebar.selected.getObject()
-            val plots      = Grid("Plots", 2)
+            val plots      = Grid("Plots", if (Settings.wide) 2 else 1)
             val tables     = Grid("Tables", 1)
 
             plots.setGrowth(true, false)

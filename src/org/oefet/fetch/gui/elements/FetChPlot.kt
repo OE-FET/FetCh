@@ -61,57 +61,55 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
 
         try {
 
-            val tabs = Grid("Edit Series Styles", 2).apply {
-                setGrowth(true, false)
-            }
+            val tabs = Tabs("Edit Series Styles")
 
             for (s in series) {
 
                 val params = Fields(s.name)
 
-                val colour = params.addChoice("Colour", colours.values.indexOf(colours.values.find { it.toString() == s.colour.toString() }).takeIf { it != -1 } ?: 0, *colours.keys.toTypedArray()).apply {
+                params.addChoice("Colour", colours.values.indexOf(colours.values.find { it.toString() == s.colour.toString() }).takeIf { it != -1 } ?: 0, *colours.keys.toTypedArray()).apply {
                     setOnChange {
                         s.colour = colours.values.toList()[value]
                     }
                 }
 
-                val mVis   = params.addCheckBox("Marker Visible", s.isMarkerVisible).apply {
+                params.addCheckBox("Marker Visible", s.isMarkerVisible).apply {
                     setOnChange {
                         s.isMarkerVisible = value
                     }
                 }
 
-                val marker = params.addChoice("Marker Shape", s.markerShape.ordinal, *Series.Shape.values().map { it.name }.toTypedArray()).apply {
+                params.addChoice("Marker Shape", s.markerShape.ordinal, *Series.Shape.values().map { it.name }.toTypedArray()).apply {
                     setOnChange {
                         s.markerShape = Series.Shape.values()[value]
                     }
                 }
 
-                val mSize  = params.addDecimalField("Marker Size", s.markerSize).apply {
+                params.addDoubleField("Marker Size", s.markerSize).apply {
                     setOnChange {
                         s.markerSize = value
                     }
                 }
 
-                val lVis   = params.addCheckBox("Line Visible", s.isLineVisible).apply {
+                params.addCheckBox("Line Visible", s.isLineVisible).apply {
                     setOnChange {
                         s.isLineVisible = value
                     }
                 }
 
-                val lThick = params.addDecimalField("Line Width", s.lineWidth).apply {
+                params.addDoubleField("Line Width", s.lineWidth).apply {
                     setOnChange {
                         s.lineWidth = value
                     }
                 }
 
-                val lDash  = params.addChoice("Line Dash", s.lineDash.ordinal , *Series.Dash.values().map { it.name }.toTypedArray()).apply {
+                params.addChoice("Line Dash", s.lineDash.ordinal , *Series.Dash.values().map { it.name }.toTypedArray()).apply {
                     setOnChange {
                         s.lineDash = Series.Dash.values()[value]
                     }
                 }
 
-                tabs.add(params)
+                tabs.add(Grid(s.name, params))
 
             }
 
