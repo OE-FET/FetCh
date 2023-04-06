@@ -103,9 +103,9 @@ object FileLoad : BorderDisplay("Results") {
 
                     val filtered = selected.quantities.filter { it::class == type }
                     val instance = filtered.first()
-                    val unit = instance.unit
-                    val name = instance.name
-                    val values = filtered.map { it.value as Double }.filter { it.isFinite() }
+                    val unit     = instance.unit
+                    val name     = instance.name
+                    val values   = filtered.map { it.value as Double }.filter { it.isFinite() }
 
                     if (values.isEmpty()) {
                         continue
