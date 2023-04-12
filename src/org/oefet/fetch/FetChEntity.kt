@@ -37,14 +37,6 @@ abstract class FetChEntity : Measurement() {
 
     }
 
-    fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
-        mapRow(mapOf(*data))
-    }
-
-    fun ResultTable.mapRows(vararg data: Pair<Column<*>, Iterable<Any>>) {
-        mapRows(mapOf(*data))
-    }
-
     operator fun <T> Column<T>.rangeTo(value: T): Pair<Column<T>, T> = this to value
 
     /**

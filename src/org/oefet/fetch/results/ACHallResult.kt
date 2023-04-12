@@ -8,8 +8,6 @@ import jisa.results.Column
 import jisa.results.ResultList
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.ACHallPlot
-import org.oefet.fetch.mapRow
-import org.oefet.fetch.mapRows
 import org.oefet.fetch.measurement.ACHall
 import org.oefet.fetch.quantities.*
 import java.util.*

@@ -4,8 +4,6 @@ import jisa.Util
 import jisa.control.Connection
 import jisa.gui.GUI
 import jisa.logging.Logger
-import jisa.results.Column
-import jisa.results.ResultTable
 import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.Splash
 import org.oefet.fetch.gui.tabs.Connections
@@ -15,14 +13,6 @@ import java.io.PrintStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-
-fun ResultTable.mapRow(vararg data: Pair<Column<*>, Any>) {
-    mapRow(mapOf(*data))
-}
-
-fun ResultTable.mapRows(vararg data: Pair<Column<*>, Iterable<Any>>) {
-    mapRows(mapOf(*data))
-}
 
 fun main() {
 
