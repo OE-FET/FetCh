@@ -39,7 +39,7 @@ class TVCResult(data: ResultTable) :
 
         for ((heaterVoltage, data) in data.split(SET_HEATER_VOLTAGE)) {
 
-            val power              = data.getMean(HEATER_POWER)
+            val power              = data.mean(HEATER_POWER)
             val fit                = Fitting.linearFit(data, STRIP_CURRENT, STRIP_VOLTAGE)
             val parameters         = parameters.toMutableList()
             val possibleParameters = possibleParameters.toMutableList()

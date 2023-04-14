@@ -38,8 +38,8 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTabl
 
         plot1.isMouseEnabled = true
 
-        val vsZero by lazy { data.filter(filter).getMin { it[HALL_VOLTAGE] } ?: 0.0 }
-        val vsMax  by lazy { (data.filter(filter).getMax { it[HALL_VOLTAGE] } ?: 0.0) - vsZero }
+        val vsZero by lazy { data.filter(filter).min { it[HALL_VOLTAGE] } ?: 0.0 }
+        val vsMax  by lazy { (data.filter(filter).max { it[HALL_VOLTAGE] } ?: 0.0) - vsZero }
 
         plot1.createSeries()
             .setName("Vector Subtracted")
@@ -54,9 +54,9 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTabl
 
             if (optimised != null) {
 
-                val poZero = optimised.getMin { it[ACHallResult.ROT_HALL] }
-                val vfZero = optimised.getMin { it[ACHallResult.ROT_FARADAY] }
-                val vfMax  = optimised.getMax { it[ACHallResult.ROT_FARADAY] }
+                val poZero = optimised.min { it[ACHallResult.ROT_HALL] }
+                val vfZero = optimised.min { it[ACHallResult.ROT_FARADAY] }
+                val vfMax  = optimised.max { it[ACHallResult.ROT_FARADAY] }
 
                 plot1.createSeries()
                     .setName("Phase Optimised")

@@ -115,7 +115,7 @@ class TVCResultPlot(data: ResultTable) : FetChPlot("Thermal Voltage Calibration"
         for ((_, splitData) in data.split(SET_HEATER_VOLTAGE)) {
 
             val fit = Fitting.linearFit(splitData, STRIP_CURRENT, STRIP_VOLTAGE)
-            fitted.addData(splitData.getMean(HEATER_POWER), fit.gradient, fit.gradientError)
+            fitted.addData(splitData.mean(HEATER_POWER), fit.gradient, fit.gradientError)
 
         }
 

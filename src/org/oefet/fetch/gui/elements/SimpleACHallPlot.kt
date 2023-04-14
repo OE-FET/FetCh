@@ -27,8 +27,8 @@ class SimpleACHallPlot(data: ResultTable) : FetChPlot("AC Hall", "Drain Current 
 
         isMouseEnabled = true
 
-        val vsZero by lazy { data.filter(filter).getMin { it[HALL_VOLTAGE] } ?: 0.0 }
-        val vsMax  by lazy { (data.filter(filter).getMax { it[HALL_VOLTAGE] } ?: 0.0) - vsZero }
+        val vsZero by lazy { data.filter(filter).min { it[HALL_VOLTAGE] } ?: 0.0 }
+        val vsMax  by lazy { (data.filter(filter).max { it[HALL_VOLTAGE] } ?: 0.0) - vsZero }
 
         createSeries()
             .setName("VS")

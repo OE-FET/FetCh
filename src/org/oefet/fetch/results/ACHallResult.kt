@@ -76,7 +76,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
         for ((frequency, data) in data.split(FREQUENCY)) {
 
             val parameters = parameters + Frequency(frequency, 0.0)
-            val rmsField   = data.getMean(RMS_FIELD)
+            val rmsField   = data.mean(RMS_FIELD)
             val zero       = data.minByOrNull { it[SD_CURRENT].absoluteValue } ?: data[0]
             val voltages   = data.toMatrix(X_VOLTAGE, Y_VOLTAGE).transpose()
             val currents   = data.toList(SD_CURRENT)

@@ -85,7 +85,7 @@ object Measurements {
                 newData.setAttribute("Dielectric Thickness", "4.0E-7 m")
                 newData.setAttribute("Dielectric Permittivity", "2.05")
                 newData.setAttribute("Name", "Old Data")
-                newData.setAttribute("T", "${data.getMax(data.getColumn(1) as Column<Double>).roundToInt()} K")
+                newData.setAttribute("T", "${data.max(data.getColumn(1) as Column<Double>).roundToInt()} K")
 
                 for (row in data) {
 
@@ -107,11 +107,11 @@ object Measurements {
                         0.47093,
                         row[2],
                         row[8] - startX,
-                        (data.getMax {it[8] - startX}) * 0.2,
+                        (data.max {it[8] - startX}) * 0.2,
                         row[9] - startY,
-                        (data.getMax {it[9] - startY}) * 0.2,
+                        (data.max {it[9] - startY}) * 0.2,
                         h,
-                        data.getMax{sqrt((it[8] - startX).pow(2) + (it[9] - startY).pow(2))} * 0.115,
+                        data.max{sqrt((it[8] - startX).pow(2) + (it[9] - startY).pow(2))} * 0.115,
                         row[1]
                     )
 
@@ -134,7 +134,7 @@ object Measurements {
                 newData.setAttribute("Dielectric Thickness", "4.0E-7 m")
                 newData.setAttribute("Dielectric Permittivity", "2.05")
                 newData.setAttribute("Name", "Old Data")
-                newData.setAttribute("T", "${data.getMax(data.getColumn(0) as Column<Double>)} K")
+                newData.setAttribute("T", "${data.max(data.getColumn(0) as Column<Double>)} K")
 
                 for (row in data) {
 

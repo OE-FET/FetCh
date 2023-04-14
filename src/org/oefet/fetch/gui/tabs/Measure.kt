@@ -18,8 +18,8 @@ object Measure : Grid("Measurement", 1) {
 
     val materials = mapOf(
         "CYTOP" to 2.05,
-        "PMMA" to 2.22,
-        "SiO2" to 3.9,
+        "PMMA"  to 2.22,
+        "SiO2"  to 3.9,
         "Other" to Double.NaN
     )
 

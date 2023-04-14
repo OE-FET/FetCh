@@ -81,7 +81,7 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
 
             attributes.containsKey("T")           -> data.getAttribute("T").removeSuffix("K").toDouble()
             attributes.containsKey("Temperature") -> data.getAttribute("Temperature").removeSuffix("K").toDouble()
-            column != null                        -> data.getMean(column)
+            column != null                        -> data.mean(column)
             else                                  -> Double.NaN
 
         }
