@@ -30,6 +30,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     private val rmsField        by userInput("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
     private val hallFrequencies by userInput("Magnets", "Frequencies [Hz]", Range.manual(1.2))
     private val spin            by userTimeInput("Magnets", "Spin-Up Time", 600000)
+    private val maxCurrent      by userInput("Magnets", "Max Motor Current [A]", 8.0)
     private val doFaraday       by userInput("Faraday Sweep", "Do Faraday Sweep", true)
     private val faraFrequencies by userInput("Faraday Sweep", "Frequencies [Hz]", Range.manual(1.0, 1.2, 1.4))
     private val currents        by userInput("Source-Drain", "Current [A]", Range.step(-10e-6, +10e-6, 5e-6))
@@ -74,6 +75,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
         message("Setting up measurement.")
 
         fControl = FControl(lockIn, dcPower)
+
+        fControl.outputMax = maxCurrent
 
         results.setAttribute("Integration Time", "$intTime s")
         results.setAttribute("Delay Time", "$delTime ms")
