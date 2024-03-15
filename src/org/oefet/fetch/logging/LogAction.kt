@@ -1,7 +1,14 @@
 package org.oefet.fetch.logging
 
-interface LogAction<T: Number> {
+import jisa.results.Column
 
-    fun getValue(): T
+interface LogAction {
+
+    val title:  String
+    val yLabel: String
+    val yUnits: String
+    val column: Column<Double>
+    var isEnabled: Boolean
+    val value: Double
 
 }

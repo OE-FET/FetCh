@@ -34,9 +34,9 @@ object Log {
             when (inst) {
 
 
-                is MCSMU        -> {
+                is MCSMU<*>        -> {
 
-                    for (smu in inst.channels) {
+                    for (smu in inst[SMU::class]) {
                         columns.add(DoubleColumn("$name ${smu.name} Voltage", "V"))
                         columns.add(DoubleColumn("$name ${smu.name} Current", "A"))
                         logTasks.add { smu.getVoltage() }
@@ -45,7 +45,7 @@ object Log {
 
                 }
 
-                is SPA          -> {
+                is SPA<*, *, *, *> -> {
 
                     for (smu in inst.smuChannels) {
                         columns.add(DoubleColumn("$name ${smu.name} Voltage", "V"))
@@ -71,7 +71,7 @@ object Log {
 
                 }
 
-                is SMU          -> {
+                is SMU             -> {
 
                     columns.add(DoubleColumn("$name Voltage", "V"))
                     columns.add(DoubleColumn("$name Current", "A"))
@@ -80,7 +80,7 @@ object Log {
 
                 }
 
-                is DCPower      -> {
+                is DCPower         -> {
 
                     columns.add(DoubleColumn("$name Voltage", "V"))
                     columns.add(DoubleColumn("$name Current", "A"))
@@ -89,14 +89,14 @@ object Log {
 
                 }
 
-                is VMeter       -> {
+                is VMeter          -> {
 
                     columns.add(DoubleColumn("$name Voltage", "V"))
                     logTasks.add { inst.getVoltage() }
 
                 }
 
-                is PID           -> {
+                is PID             -> {
 
                     for (input in inst.inputs) {
                         columns.add(DoubleColumn("$name ${input.name} ${input.valueName}", input.units))
@@ -110,23 +110,23 @@ object Log {
 
                 }
 
-                is MSTMeter     -> {
+                is MSTMeter<*>        -> {
 
-                    for (tMeter in inst.sensors) {
+                    for (tMeter in inst[TMeter::class]) {
                         columns.add(DoubleColumn("$name ${tMeter.name} Temperature", "K"))
                         logTasks.add { tMeter.temperature }
                     }
 
                 }
 
-                is TMeter       -> {
+                is TMeter          -> {
 
                     columns.add(DoubleColumn("$name Temperature", "K"))
                     logTasks.add { inst.temperature }
 
                 }
 
-                is DPLockIn     -> {
+                is DPLockIn        -> {
 
                     columns.add(DoubleColumn("$name X Voltage", "V"))
                     columns.add(DoubleColumn("$name Y Voltage", "V"))
@@ -137,7 +137,7 @@ object Log {
 
                 }
 
-                is LockIn       -> {
+                is LockIn          -> {
 
                     columns.add(DoubleColumn("$name Voltage", "V"))
                     columns.add(DoubleColumn("$name Frequency", "Hz"))
@@ -146,7 +146,7 @@ object Log {
 
                 }
 
-                is EMController -> {
+                is EMController    -> {
 
                     columns.add(DoubleColumn("$name Current"))
                     columns.add(DoubleColumn("$name Field"))
@@ -155,7 +155,7 @@ object Log {
 
                 }
 
-                is LevelMeter   -> {
+                is LevelMeter      -> {
 
                     for (meter in inst.getSubInstruments(LevelMeter::class.java)) {
 
@@ -166,7 +166,7 @@ object Log {
 
                 }
 
-                is MSwitch      -> {
+                is MSwitch         -> {
 
                     for (channel in inst.channels) {
                         columns.add(DoubleColumn("$name ${channel.name} State"))
@@ -175,7 +175,7 @@ object Log {
 
                 }
 
-                is Switch       -> {
+                is Switch          -> {
 
                     columns.add(DoubleColumn("$name State"))
                     logTasks.add { if (inst.isOn) 1.0 else 0.0 }

@@ -152,7 +152,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
                     sleep(delTime)
 
                     // Run all four repeat measurements side-by-side
-                    Repeat.runTogether(hvm1Values, hvm2Values, hvm3Values, hvm4Values)
+                    Repeat.runInParallel(hvm1Values, hvm2Values, hvm3Values, hvm4Values)
 
                     results.mapRow(
                         SET_SD_CURRENT to current,                             // Source-Drain Current (Set Value)

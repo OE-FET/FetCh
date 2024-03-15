@@ -51,8 +51,6 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
 
     override fun run(results: ResultTable) {
 
-        val gdSMU = gdSMU
-
         // Record the integration and delay times
         results.setAttribute("Integration Time", "${sdSMU.integrationTime} s")
         results.setAttribute("Delay Time", "$delTime ms")
@@ -80,6 +78,9 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
         fpp1?.turnOn()
         fpp2?.turnOn()
 
+        // The ground channel might have ammeter capabilities, store reference to it as IMeter if so
+        val gdCurrent = gdSMU.takeIf(IMeter::class)
+
         for (vSG in sgVoltages) {
 
             // Set source-gate voltage
@@ -102,7 +103,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
                     FPP_1          to (fpp1?.voltage ?: NaN),
                     FPP_2          to (fpp2?.voltage ?: NaN),
                     TEMPERATURE    to (tMeter?.temperature ?: NaN),
-                    GROUND_CURRENT to (if (gdSMU is ISource) gdSMU.current else NaN)
+                    GROUND_CURRENT to (gdCurrent?.current ?: NaN)
                 )
 
                 // Check if we have been instructed to stop
