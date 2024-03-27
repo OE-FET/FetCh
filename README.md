@@ -6,6 +6,8 @@
   </a>
 </p>
 
+Measurement suite for common FET and other electrical measurements, based on the [JISA](https://github.com/OE-FET/JISA) library.
+
 ## *Fetching* and Running FetCh
 
 1. Make sure you have Java 11 or newer ([download](https://adoptium.net/en-GB/temurin/releases/?version=11))
