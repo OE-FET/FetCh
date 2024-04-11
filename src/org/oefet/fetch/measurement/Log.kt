@@ -4,7 +4,9 @@ import jisa.Util
 import jisa.control.Connection
 import jisa.control.RTask
 import jisa.devices.interfaces.*
-import jisa.results.*
+import jisa.results.Column
+import jisa.results.ResultStream
+import jisa.results.ResultTable
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.tabs.Dashboard
 import java.util.*
@@ -12,9 +14,15 @@ import java.util.*
 object Log {
 
     private val logTasks: MutableList<() -> Double> = ArrayList()
+
     private val logger: RTask = RTask(
-        if (Settings.hasValue("loggerInterval")) Settings.intValue("loggerInterval").get().toLong() else 2500
+        if (Settings.hasValue("loggerInterval")) {
+            Settings.intValue("loggerInterval").get().toLong()
+        } else {
+            2500
+        }
     ) { it -> log(log!!, it) }
+
     private var log: ResultTable? = null
     private val map: Map<String, Boolean> = HashMap()
 
@@ -23,7 +31,7 @@ object Log {
         logTasks.clear()
 
         val columns = LinkedList<Column<*>>()
-        columns.add(LongColumn("Time", "UTC ms"))
+        columns.add(Column.ofLongs("Time", "UTC ms"))
 
         for (connection in Connection.getAllConnections()) {
 
@@ -34,11 +42,11 @@ object Log {
             when (inst) {
 
 
-                is MCSMU<*>        -> {
+                is MCSMU<*> -> {
 
                     for (smu in inst[SMU::class]) {
-                        columns.add(DoubleColumn("$name ${smu.name} Voltage", "V"))
-                        columns.add(DoubleColumn("$name ${smu.name} Current", "A"))
+                        columns.add(Column.ofDoubles("$name ${smu.name} Voltage", "V"))
+                        columns.add(Column.ofDoubles("$name ${smu.name} Current", "A"))
                         logTasks.add { smu.getVoltage() }
                         logTasks.add { smu.getCurrent() }
                     }
@@ -48,136 +56,136 @@ object Log {
                 is SPA<*, *, *, *> -> {
 
                     for (smu in inst.smuChannels) {
-                        columns.add(DoubleColumn("$name ${smu.name} Voltage", "V"))
-                        columns.add(DoubleColumn("$name ${smu.name} Current", "A"))
+                        columns.add(Column.ofDoubles("$name ${smu.name} Voltage", "V"))
+                        columns.add(Column.ofDoubles("$name ${smu.name} Current", "A"))
                         logTasks.add { smu.getVoltage() }
                         logTasks.add { smu.getCurrent() }
                     }
 
                     for (vs in inst.vSourceChannels) {
-                        columns.add(DoubleColumn("$name ${vs.name} Voltage", "V"))
+                        columns.add(Column.ofDoubles("$name ${vs.name} Voltage", "V"))
                         logTasks.add { vs.getVoltage() }
                     }
 
                     for (vm in inst.vMeterChannels) {
-                        columns.add(DoubleColumn("$name ${vm.name} Voltage", "V"))
+                        columns.add(Column.ofDoubles("$name ${vm.name} Voltage", "V"))
                         logTasks.add { vm.getVoltage() }
                     }
 
                     for (sw in inst.switchChannels) {
-                        columns.add(DoubleColumn("$name ${sw.name} State"))
+                        columns.add(Column.ofDoubles("$name ${sw.name} State"))
                         logTasks.add { if (sw.isOn) 1.0 else 0.0 }
                     }
 
                 }
 
-                is SMU             -> {
+                is SMU -> {
 
-                    columns.add(DoubleColumn("$name Voltage", "V"))
-                    columns.add(DoubleColumn("$name Current", "A"))
+                    columns.add(Column.ofDoubles("$name Voltage", "V"))
+                    columns.add(Column.ofDoubles("$name Current", "A"))
                     logTasks.add { inst.getVoltage() }
                     logTasks.add { inst.getCurrent() }
 
                 }
 
-                is DCPower         -> {
+                is DCPower -> {
 
-                    columns.add(DoubleColumn("$name Voltage", "V"))
-                    columns.add(DoubleColumn("$name Current", "A"))
+                    columns.add(Column.ofDoubles("$name Voltage", "V"))
+                    columns.add(Column.ofDoubles("$name Current", "A"))
                     logTasks.add { inst.voltage }
                     logTasks.add { inst.current }
 
                 }
 
-                is VMeter          -> {
+                is VMeter -> {
 
-                    columns.add(DoubleColumn("$name Voltage", "V"))
+                    columns.add(Column.ofDoubles("$name Voltage", "V"))
                     logTasks.add { inst.getVoltage() }
 
                 }
 
-                is PID             -> {
+                is PID -> {
 
                     for (input in inst.inputs) {
-                        columns.add(DoubleColumn("$name ${input.name} ${input.valueName}", input.units))
+                        columns.add(Column.ofDoubles("$name ${input.name} ${input.valueName}", input.units))
                         logTasks.add { input.value }
                     }
 
                     for (output in inst.outputs) {
-                        columns.add(DoubleColumn("$name ${output.name} ${output.valueName}", output.units))
+                        columns.add(Column.ofDoubles("$name ${output.name} ${output.valueName}", output.units))
                         logTasks.add { output.value }
                     }
 
                 }
 
-                is MSTMeter<*>        -> {
+                is MSTMeter<*> -> {
 
                     for (tMeter in inst[TMeter::class]) {
-                        columns.add(DoubleColumn("$name ${tMeter.name} Temperature", "K"))
+                        columns.add(Column.ofDoubles("$name ${tMeter.name} Temperature", "K"))
                         logTasks.add { tMeter.temperature }
                     }
 
                 }
 
-                is TMeter          -> {
+                is TMeter -> {
 
-                    columns.add(DoubleColumn("$name Temperature", "K"))
+                    columns.add(Column.ofDoubles("$name Temperature", "K"))
                     logTasks.add { inst.temperature }
 
                 }
 
-                is DPLockIn        -> {
+                is DPLockIn -> {
 
-                    columns.add(DoubleColumn("$name X Voltage", "V"))
-                    columns.add(DoubleColumn("$name Y Voltage", "V"))
-                    columns.add(DoubleColumn("$name Frequency", "Hz"))
+                    columns.add(Column.ofDoubles("$name X Voltage", "V"))
+                    columns.add(Column.ofDoubles("$name Y Voltage", "V"))
+                    columns.add(Column.ofDoubles("$name Frequency", "Hz"))
                     logTasks.add { inst.lockedX }
                     logTasks.add { inst.lockedY }
                     logTasks.add { inst.frequency }
 
                 }
 
-                is LockIn          -> {
+                is LockIn -> {
 
-                    columns.add(DoubleColumn("$name Voltage", "V"))
-                    columns.add(DoubleColumn("$name Frequency", "Hz"))
+                    columns.add(Column.ofDoubles("$name Voltage", "V"))
+                    columns.add(Column.ofDoubles("$name Frequency", "Hz"))
                     logTasks.add { inst.lockedAmplitude }
                     logTasks.add { inst.frequency }
 
                 }
 
-                is EMController    -> {
+                is EMController -> {
 
-                    columns.add(DoubleColumn("$name Current"))
-                    columns.add(DoubleColumn("$name Field"))
+                    columns.add(Column.ofDoubles("$name Current"))
+                    columns.add(Column.ofDoubles("$name Field"))
                     logTasks.add { inst.current }
                     logTasks.add { inst.field }
 
                 }
 
-                is LevelMeter      -> {
+                is LevelMeter -> {
 
-                    for (meter in inst.getSubInstruments(LevelMeter::class.java)) {
+                    for (meter in inst[LevelMeter::class]) {
 
-                        columns.add(DoubleColumn("$name ${meter.name} Level"))
+                        columns.add(Column.ofDoubles("$name ${meter.name} Level"))
                         logTasks.add { meter.level }
 
                     }
 
                 }
 
-                is MSwitch         -> {
+                is MSwitch -> {
 
                     for (channel in inst.channels) {
-                        columns.add(DoubleColumn("$name ${channel.name} State"))
+                        columns.add(Column.ofDoubles("$name ${channel.name} State"))
                         logTasks.add { if (channel.isOn) 1.0 else 0.0 }
                     }
 
                 }
 
-                is Switch          -> {
+                is Switch -> {
 
-                    columns.add(DoubleColumn("$name State"))
+                    columns.add(Column.ofDoubles("$name State"))
                     logTasks.add { if (inst.isOn) 1.0 else 0.0 }
 
                 }
