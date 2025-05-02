@@ -3,7 +3,19 @@ package org.oefet.fetch.measurement
 import jisa.Util
 import jisa.control.Connection
 import jisa.control.RTask
-import jisa.devices.interfaces.*
+import jisa.devices.camera.Camera
+import jisa.devices.electromagnet.EMController
+import jisa.devices.lockin.DPLockIn
+import jisa.devices.lockin.LockIn
+import jisa.devices.meter.MSTMeter
+import jisa.devices.meter.TMeter
+import jisa.devices.meter.VMeter
+import jisa.devices.pid.PID
+import jisa.devices.power.DCPower
+import jisa.devices.relay.MSwitch
+import jisa.devices.smu.MCSMU
+import jisa.devices.smu.SMU
+import jisa.devices.smu.SPA
 import jisa.results.Column
 import jisa.results.ResultStream
 import jisa.results.ResultTable
@@ -163,31 +175,27 @@ object Log {
 
                 }
 
-                is LevelMeter -> {
+                is MSwitch<*> -> {
 
-                    for (meter in inst[LevelMeter::class]) {
-
-                        columns.add(Column.ofDoubles("$name ${meter.name} Level"))
-                        logTasks.add { meter.level }
-
-                    }
-
-                }
-
-                is MSwitch -> {
-
-                    for (channel in inst.channels) {
+                    for (channel in inst.switches) {
                         columns.add(Column.ofDoubles("$name ${channel.name} State"))
                         logTasks.add { if (channel.isOn) 1.0 else 0.0 }
                     }
 
                 }
 
-                is Switch -> {
+                is jisa.devices.relay.Switch -> {
 
                     columns.add(Column.ofDoubles("$name State"))
                     logTasks.add { if (inst.isOn) 1.0 else 0.0 }
 
+                }
+
+                is Camera<*> -> {
+                    columns.add(Column.ofDoubles("$name Acquisition Framerate", "Hz"))
+                    columns.add(Column.ofDoubles("$name Processing Framerate", "Hz"))
+                    logTasks.add { inst.acquisitionFPS }
+                    logTasks.add { inst.processingFPS }
                 }
 
             }

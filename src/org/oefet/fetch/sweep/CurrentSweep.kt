@@ -1,7 +1,7 @@
 package org.oefet.fetch.sweep
 
 import javafx.scene.image.Image
-import jisa.devices.interfaces.ISource
+import jisa.devices.source.ISource
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.GUI
@@ -47,7 +47,7 @@ class CurrentSweep : FetChSweep<Double>("Current Sweep", "I", Image(GUI::class.j
             generated += changeI
             generated += actions
 
-            return generated;
+            return generated
 
         }
 

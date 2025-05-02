@@ -1,6 +1,6 @@
 package org.oefet.fetch.action
 
-import jisa.devices.interfaces.Switch
+import jisa.devices.relay.Switch
 import jisa.enums.Icon
 import jisa.gui.Doc
 import jisa.gui.Element

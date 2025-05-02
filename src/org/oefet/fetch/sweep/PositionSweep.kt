@@ -1,11 +1,11 @@
 package org.oefet.fetch.sweep
 
-import jisa.devices.interfaces.Camera
-import jisa.devices.interfaces.ProbeStation
+import jisa.devices.camera.Camera
+import jisa.devices.translator.ProbeStation
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.CheckGrid
-import jisa.gui.Fields
+import jisa.gui.Form
 import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.action.PositionCalibration
@@ -33,14 +33,14 @@ class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P", 
     val camera   by optionalInstrument("Camera", Camera::class)
 
     // Custom input fields
-    val counts      = Fields("Counts")
+    val counts      = Form("Counts")
     val countXParam = counts.addIntegerField("No. X", 8)
     val countYParam = counts.addIntegerField("No. Y", 6)
     val checkGrid   = CheckGrid("Active Devices", countXParam.value, countYParam.value)
 
     init {
-        countXParam.setOnChange { checkGrid.setSize(countXParam.value, countYParam.value) }
-        countYParam.setOnChange { checkGrid.setSize(countXParam.value, countYParam.value) }
+        countXParam.addChangeListener { _ -> checkGrid.setSize(countXParam.value, countYParam.value) }
+        countYParam.addChangeListener { _ -> checkGrid.setSize(countXParam.value, countYParam.value) }
     }
 
     val countX  by customInput(counts, countXParam)

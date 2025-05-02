@@ -9,9 +9,10 @@ import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
 
-abstract class FetChSweep<T>(private val name: String, private val tag: String, override val image: Image) : FetChEntity() {
+abstract class FetChSweep<T>(private val name: String, tagDefault: String, override val image: Image) : FetChEntity() {
 
     val queue = ActionQueue()
+    val tag   = tagDefault
 
     /**
      * Returns the list of all values this sweep is to sweep over.

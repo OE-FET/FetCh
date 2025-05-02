@@ -1,6 +1,6 @@
 package org.oefet.fetch.action
 
-import jisa.devices.interfaces.ProbeStation
+import jisa.devices.translator.ProbeStation
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.images.Images
 

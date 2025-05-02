@@ -2,7 +2,7 @@ package org.oefet.fetch.sweep
 
 import jisa.Util
 import jisa.control.RTask
-import jisa.devices.interfaces.SMU
+import jisa.devices.smu.SMU
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
@@ -37,9 +37,9 @@ class StressSweep : FetChSweep<Int>("Stress", "S", Icon.CLOCK.blackImage) {
     val sgSMU by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { useSG }
 
     companion object {
-        const val AUTO_OFF_ALL  = 0;
-        const val AUTO_OFF_END  = 1;
-        const val AUTO_OFF_NONE = 2;
+        const val AUTO_OFF_ALL  = 0
+        const val AUTO_OFF_END  = 1
+        const val AUTO_OFF_NONE = 2
     }
 
     override fun getValues(): List<Int> {

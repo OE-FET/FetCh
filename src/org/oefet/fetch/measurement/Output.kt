@@ -1,6 +1,11 @@
 package org.oefet.fetch.measurement
 
-import jisa.devices.interfaces.*
+
+import jisa.devices.meter.IMeter
+import jisa.devices.meter.VMeter
+import jisa.devices.pid.LS336
+import jisa.devices.smu.SMU
+import jisa.devices.source.VSource
 import jisa.maths.Range
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.OutputPlot
@@ -23,7 +28,7 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
     val sgSMU  by optionalInstrument("Source-Gate Channel", SMU::class) requiredIf { sgVoltages.size() > 1 }
     val fpp1   by optionalInstrument("Four-Point-Probe Channel 1", VMeter::class)
     val fpp2   by optionalInstrument("Four-Point-Probe Channel 2", VMeter::class)
-    val tMeter by optionalInstrument("Thermometer", TMeter::class)
+    val tMeter by optionalInstrument("Thermometer", LS336.TMeter::class)
 
     // Data columns
     companion object : Columns() {

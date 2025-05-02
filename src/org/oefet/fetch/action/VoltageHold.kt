@@ -3,7 +3,7 @@ package org.oefet.fetch.action
 import javafx.scene.image.Image
 import jisa.Util
 import jisa.control.RTask
-import jisa.devices.interfaces.SMU
+import jisa.devices.smu.SMU
 import jisa.gui.Colour
 import jisa.gui.GUI
 import jisa.results.ResultTable

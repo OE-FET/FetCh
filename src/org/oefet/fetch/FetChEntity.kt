@@ -2,12 +2,12 @@ package org.oefet.fetch
 
 import javafx.scene.image.Image
 import jisa.devices.Configuration
-import jisa.devices.interfaces.Instrument
-import jisa.experiment.Measurement
+import jisa.devices.Instrument
+import jisa.experiment.MeasurementOld
 import jisa.gui.CheckGrid
 import jisa.gui.Element
-import jisa.gui.Field
-import jisa.gui.Fields
+import jisa.gui.Form
+import jisa.gui.form.Field
 import jisa.logging.Logger
 import jisa.maths.Range
 import jisa.results.Column
@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.companionObjectInstance
 
-abstract class FetChEntity : Measurement() {
+abstract class FetChEntity : MeasurementOld() {
 
     private val errors  = LinkedList<String>()
     private val setters = LinkedList<() -> Unit>()
@@ -216,7 +216,7 @@ abstract class FetChEntity : Measurement() {
 
     }
 
-    fun <I> customInput(fields: Fields, field: Field<I>): PDelegate<I> {
+    fun <I> customInput(fields: Form, field: Field<I>): PDelegate<I> {
         return customInput(field.text, fields, field::get, field::set)
     }
 
@@ -292,7 +292,7 @@ abstract class FetChEntity : Measurement() {
                 errors.add("${conf.name} is not configured")
             }
 
-            set = true;
+            set = true
 
         }
 
@@ -321,7 +321,7 @@ abstract class FetChEntity : Measurement() {
                 errors.add("${conf.name} is not configured")
             } else {
                 this.instrument = instrument
-                set = true;
+                set = true
             }
 
         }

@@ -3,8 +3,8 @@ package org.oefet.fetch.gui.elements
 package org.oefet.fetch.gui.elements
 
 import javafx.scene.control.Label
-import jisa.devices.interfaces.ProbeStation
-import jisa.gui.Field
+import jisa.devices.translator.ProbeStation
+import jisa.gui.form.Field
 import jisa.gui.JFXElement
 import java.io.IOException
 
@@ -65,7 +65,7 @@ class ArrowPositionControl : JFXElement("Window Title", "path/to/fxml/file.fxml"
     }
 
     protected fun continControl(box: Field<Boolean>, axis: String, direction : Int, speed : Double){
-        box.setOnChange {
+        box.addChangeListener { _ ->
             if (box.get()) {
                 pControl.continMovement(axis, speed * direction)
             }

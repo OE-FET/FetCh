@@ -2,10 +2,10 @@ package org.oefet.fetch.measurement
 
 import jisa.Util.runInParallel
 import jisa.control.Repeat
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TC
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.meter.TMeter
+import jisa.devices.meter.VMeter
+import jisa.devices.pid.TC
+import jisa.devices.smu.SMU
 import jisa.enums.AMode
 import jisa.maths.Range
 import jisa.results.ResultTable
@@ -101,8 +101,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
             runInParallel(
                 { coldPeltier.waitForStableTemperature(tCold, pctStabPelt, durStabPelt) },
                 { hotPeltier.waitForStableTemperature(tHot, pctStabPelt, durStabPelt) },
-                { tMeter1.waitForStableTemperatureMaxTime(pctStabChip, durStabChip, tmoStabChip) },
-                { tMeter2.waitForStableTemperatureMaxTime(pctStabChip, durStabChip, tmoStabChip) }
+                { tMeter1.waitForStableTemperature(pctStabChip, durStabChip, tmoStabChip) },
+                { tMeter2.waitForStableTemperature(pctStabChip, durStabChip, tmoStabChip) }
             )
 
             val v1 = Repeat.prepare(repeats, repTime) { vMeter1.voltage }

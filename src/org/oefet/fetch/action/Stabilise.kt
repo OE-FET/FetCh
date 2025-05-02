@@ -3,8 +3,8 @@ package org.oefet.fetch.action
 import javafx.scene.image.Image
 import jisa.Util
 import jisa.control.RTask
-import jisa.devices.interfaces.IMeter
-import jisa.devices.interfaces.VSource
+import jisa.devices.meter.IMeter
+import jisa.devices.source.VSource
 import jisa.gui.Colour
 import jisa.gui.Element
 import jisa.gui.GUI

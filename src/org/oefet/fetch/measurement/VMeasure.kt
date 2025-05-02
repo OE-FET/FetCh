@@ -1,6 +1,6 @@
 package org.oefet.fetch.measurement
 
-import jisa.devices.interfaces.VMeter
+import jisa.devices.meter.VMeter
 import jisa.enums.Icon
 import jisa.maths.Range
 import jisa.results.ResultTable

@@ -1,8 +1,8 @@
 package org.oefet.fetch.action
 
-import jisa.devices.interfaces.ProbeStation
-import jisa.gui.Field
-import jisa.gui.Fields
+import jisa.devices.translator.ProbeStation
+import jisa.gui.Form
+import jisa.gui.form.Field
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.images.Images
 
@@ -35,7 +35,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration", Images.g
         pControl.setGrossUpDistance(grossLift)
 
 
-        val calibration = Fields("Calibration")
+        val calibration = Form("Calibration")
 
         val leftContinFast  = calibration.addCheckBox("Left (fast)")
         val leftContinMiddle  = calibration.addCheckBox("Left (medium)")
@@ -121,7 +121,7 @@ class PositionCalibration : FetChAction("3-point Position Calibration", Images.g
     }
 
     protected fun continControl(box: Field<Boolean>, axis: String, direction : Int, speed : Double){
-        box.setOnChange {
+        box.addChangeListener { _ ->
             if (box.get()) {
                 pControl.continMovement(axis, speed * direction)
             }

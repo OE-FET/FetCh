@@ -2,10 +2,13 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.control.Repeat
-import jisa.devices.interfaces.*
-import jisa.enums.Coupling
+import jisa.devices.lockin.DPLockIn
+import jisa.devices.meter.TMeter
+import jisa.devices.power.DCPower
+import jisa.devices.preamp.VPreAmp
+import jisa.devices.smu.SMU
+import jisa.devices.source.VSource
 import jisa.enums.Icon
-import jisa.enums.Input
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import jisa.results.ResultTable
@@ -90,8 +93,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
         gdSMU?.turnOff()
 
         // Configure the pre-amp
-        preAmp?.coupling = Coupling.AC
-        preAmp?.input    = Input.DIFF
+        preAmp?.coupling = VPreAmp.Coupling.AC
+        preAmp?.input    = preAmp?.findInput(true)
         preAmp?.gain     = paGain
 
         // Initialise the SMUs
@@ -99,8 +102,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
         gdSMU?.voltage = 0.0
 
         // Configure the lock-in amplifier
-        lockIn.refMode = LockIn.RefMode.EXTERNAL
-        lockIn.timeConstant = intTime
+        lockIn.integrationTime = intTime
 
         // Set everything going
         sdSMU.turnOn()
@@ -113,7 +115,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
         message("Spinning up magnets to max frequency.")
 
-        stageSpinUp.start();
+        stageSpinUp.start()
 
         fControl.target = hallFrequencies.maxOrNull() ?: 1.0
         fControl.waitForStableFrequency(25.0, 60000)
@@ -123,7 +125,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
         if (autoUse) {
             // Auto range and offset lock-in amplifier
             stageAutoRange.start()
-            lockIn.autoRange(autoRange, autoTime, autoDelay)
+            lockIn.autoRange()
             stageAutoRange.complete()
         }
 
@@ -134,7 +136,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
             message("Adjusting magnet frequency to $frequency Hz.")
 
             // Adjust magnet frequency and wait enough time to stabilise
-            stageSpinUp.start();
+            stageSpinUp.start()
 
             fControl.target = frequency
             fControl.waitForStableFrequency(25.0, 60000)
@@ -146,7 +148,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
             sleep(spin)
 
             if (hallFrequencies.indexOf(frequency) == 0) {
-                lockIn.autoOffset()
+                lockIn.autoOffsetAmplitude()
             }
 
             var startX: Double? = null
@@ -211,10 +213,10 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
             stageFaraday.start()
 
-            lockIn.timeConstant = 10.0 / (faraFrequencies.minOrNull() ?: 1.0)
+            lockIn.integrationTime = 10.0 / (faraFrequencies.minOrNull() ?: 1.0)
 
-            val xValues = Repeat.prepare((lockIn.timeConstant * 10).toInt(), 1000) { lockIn.lockedX / totGain }
-            val yValues = Repeat.prepare((lockIn.timeConstant * 10).toInt(), 1000) { lockIn.lockedY / totGain }
+            val xValues = Repeat.prepare((lockIn.integrationTime * 10).toInt(), 1000) { lockIn.lockedX / totGain }
+            val yValues = Repeat.prepare((lockIn.integrationTime * 10).toInt(), 1000) { lockIn.lockedY / totGain }
 
             for (frequency in faraFrequencies) {
 
@@ -222,9 +224,9 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
                 fControl.target = frequency
 
-                sleep(((lockIn.timeConstant * 10) * 1000).toInt())
+                sleep(((lockIn.integrationTime * 10) * 1000).toInt())
 
-                message("Sampling locked voltages over ${Util.msToString((lockIn.timeConstant * 10).toLong() * 1000L)}")
+                message("Sampling locked voltages over ${Util.msToString((lockIn.integrationTime * 10).toLong() * 1000L)}")
 
                 Repeat.runTogether(xValues, yValues)
 

@@ -85,7 +85,7 @@ class DCHallResult(data: ResultTable) :
                 }
 
                 // Fit the gradients of the V_H vs B fits to their corresponding value of I
-                val currFit = Fitting.linearFit(gradients, CURRENT, GRADIENT);
+                val currFit = Fitting.linearFit(gradients, CURRENT, GRADIENT)
 
                 if (currFit != null) {
 

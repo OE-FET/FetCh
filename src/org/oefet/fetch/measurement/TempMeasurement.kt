@@ -1,7 +1,7 @@
 package org.oefet.fetch.measurement
 
 import jisa.control.Repeat
-import jisa.devices.interfaces.TMeter
+import jisa.devices.meter.TMeter
 import jisa.enums.Icon
 import jisa.results.ResultTable
 
@@ -29,7 +29,7 @@ class TempMeasurement : FetChMeasurement("Temperature Measurement", "Temp", Icon
     override fun run(results: ResultTable) {
 
         // Wait for temperature to stabilise
-        tMeter.waitForStableTemperatureMaxTime(pctMargin, duration.toLong(), maxTime.toLong())
+        tMeter.waitForStableTemperature(pctMargin, duration.toLong(), maxTime.toLong())
 
         // Run repeat temperature measurements
         val tMeterValues = Repeat.run(repeats, repTime) { tMeter.temperature }

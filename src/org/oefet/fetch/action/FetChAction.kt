@@ -2,7 +2,6 @@ package org.oefet.fetch.action
 
 
 import javafx.scene.image.Image
-import jisa.results.Column
 import org.oefet.fetch.FetChEntity
 
 abstract class FetChAction(private val name: String, override val image: Image) : FetChEntity() {

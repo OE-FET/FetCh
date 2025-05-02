@@ -1,7 +1,7 @@
 package org.oefet.fetch.sweep
 
 import jisa.control.RTask
-import jisa.devices.interfaces.EMController
+import jisa.devices.electromagnet.EMController
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction
@@ -24,7 +24,7 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage
     val fControl  by optionalInstrument("Electromagnet Controller", EMController::class)
 
     override fun getValues(): List<Double> {
-        return fields.array().toList();
+        return fields.array().toList()
     }
 
     override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {

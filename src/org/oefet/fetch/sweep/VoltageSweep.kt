@@ -1,7 +1,7 @@
 package org.oefet.fetch.sweep
 
 import javafx.scene.image.Image
-import jisa.devices.interfaces.VSource
+import jisa.devices.source.VSource
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.GUI
@@ -47,7 +47,7 @@ class VoltageSweep : FetChSweep<Double>("Voltage Sweep", "V", Image(GUI::class.j
             generated += changeV
             generated += actions
 
-            return generated;
+            return generated
 
         }
 

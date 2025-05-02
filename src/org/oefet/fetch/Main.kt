@@ -16,7 +16,7 @@ import java.time.temporal.ChronoUnit
 
 fun main() {
 
-    GUI.touch();
+    GUI.touch()
 
     Logger.start(
         Util.joinPath(

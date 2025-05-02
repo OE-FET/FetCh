@@ -6,7 +6,6 @@ import jisa.experiment.queue.SweepAction
 import jisa.gui.GUI
 import jisa.gui.Grid
 import jisa.gui.ListDisplay
-import jisa.gui.MeasurementConfigurator
 import jisa.gui.queue.ActionQueueDisplay
 import org.oefet.fetch.Actions
 import org.oefet.fetch.Measurements
@@ -18,6 +17,7 @@ import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.measurement.FetChMeasurement
 import org.oefet.fetch.sweep.FetChSweep
 import java.util.*
+import jisa.gui.MeasurementConfiguratorOld as MeasurementConfigurator
 
 class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisplay(name, queue) {
 
@@ -137,7 +137,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
         sweeps.clear()
         addButton.removeAllItems()
 
-        val type = Settings.actionDisplay.intValue("type").getOrDefault(0);
+        val type = Settings.actionDisplay.intValue("type").getOrDefault(0)
 
         when (type) {
 
@@ -243,7 +243,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
             // Generate measurement parameter input GUI and make it remember values from last time
             val input = MeasurementConfigurator(measurement.name, measurement).apply {
                 maxWindowHeight = 700.0
-                linkToConfig(Settings.inputs)
+                try { linkToConfig(Settings.inputs) } catch (ignored: Throwable) {}
             }
 
             input.addAll(measurement.getExtraTabs())

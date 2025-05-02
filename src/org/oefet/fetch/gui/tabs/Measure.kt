@@ -26,7 +26,7 @@ object Measure : Grid("Measurement", 1) {
     val queue     = ActionQueue()
     val queueList = FetChQueue("Measurements", queue).apply { maxHeight = 700.0 }
     val bigQueue  = FetChQueue("Measurements", queue)
-    val basic     = Fields("Measurement Parameters")
+    val basic     = Form("Measurement Parameters")
     val name      = basic.addTextField("Name")
     val dir       = basic.addDirectorySelect("Output Directory")
     val topRow    = SwapGrid("Top Row", if (Settings.wide) 2 else 1)
@@ -69,7 +69,7 @@ object Measure : Grid("Measurement", 1) {
 
         basic.linkToConfig(Settings.measureBasic)
 
-        dielectric.setOnChange(::setDielectric)
+        dielectric.addChangeListener(::setDielectric)
         setDielectric()
 
         queueList.addToolbarSeparator()
@@ -121,7 +121,7 @@ object Measure : Grid("Measurement", 1) {
 
     private fun runMeasurement() {
 
-        Logger.addMessage("Starting measurement sequence");
+        Logger.addMessage("Starting measurement sequence")
 
         try {
 

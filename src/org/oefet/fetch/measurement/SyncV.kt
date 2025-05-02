@@ -1,9 +1,9 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.devices.interfaces.SMU
-import jisa.devices.interfaces.TMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.meter.TMeter
+import jisa.devices.meter.VMeter
+import jisa.devices.smu.SMU
 import jisa.enums.Icon
 import jisa.maths.Range
 import jisa.results.ResultTable

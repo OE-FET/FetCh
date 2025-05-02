@@ -65,46 +65,46 @@ open class FetChPlot(title: String, xLabel: String = "", yLabel: String = "") : 
 
             for (s in series) {
 
-                val params = Fields(s.name)
+                val params = Form(s.name)
 
                 params.addChoice("Colour", colours.values.indexOf(colours.values.find { it.toString() == s.colour.toString() }).takeIf { it != -1 } ?: 0, *colours.keys.toTypedArray()).apply {
-                    setOnChange {
+                    addChangeListener { _ ->
                         s.colour = colours.values.toList()[value]
                     }
                 }
 
                 params.addCheckBox("Marker Visible", s.isMarkerVisible).apply {
-                    setOnChange {
+                    addChangeListener { _ ->
                         s.isMarkerVisible = value
                     }
                 }
 
                 params.addChoice("Marker Shape", s.markerShape.ordinal, *Series.Shape.values().map { it.name }.toTypedArray()).apply {
-                    setOnChange {
+                    addChangeListener { _ ->
                         s.markerShape = Series.Shape.values()[value]
                     }
                 }
 
                 params.addDoubleField("Marker Size", s.markerSize).apply {
-                    setOnChange {
+                    addChangeListener { _ ->
                         s.markerSize = value
                     }
                 }
 
                 params.addCheckBox("Line Visible", s.isLineVisible).apply {
-                    setOnChange {
+                    addChangeListener { _ ->
                         s.isLineVisible = value
                     }
                 }
 
                 params.addDoubleField("Line Width", s.lineWidth).apply {
-                    setOnChange {
+                    addChangeListener { _ ->
                         s.lineWidth = value
                     }
                 }
 
                 params.addChoice("Line Dash", s.lineDash.ordinal , *Series.Dash.values().map { it.name }.toTypedArray()).apply {
-                    setOnChange {
+                    addChangeListener { _ ->
                         s.lineDash = Series.Dash.values()[value]
                     }
                 }

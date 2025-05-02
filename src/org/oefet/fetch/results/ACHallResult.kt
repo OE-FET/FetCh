@@ -107,7 +107,7 @@ class ACHallResult(data: ResultTable) : FetChResult("AC Hall Measurement", "AC H
             }
 
             if (minVolts != null) {
-                minVolts -= minVolts.getColMatrix(0);
+                minVolts -= minVolts.getColMatrix(0)
             }
 
             addQuantity(HallPhase(minTheta, 0.0, parameters, possibleParameters))

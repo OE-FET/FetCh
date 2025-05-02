@@ -1,9 +1,10 @@
 package org.oefet.fetch.measurement
 
 import jisa.control.PIDController
-import jisa.control.Synch
-import jisa.devices.interfaces.DCPower
-import jisa.devices.interfaces.LockIn
+import jisa.devices.features.InternalFrequencyReference
+import jisa.devices.lockin.LockIn
+import jisa.devices.power.DCPower
+import jisa.control.Sync as Synch
 
 class FControl(private val lockIn: LockIn, private val dcPower: DCPower) : PIDController(100,  lockIn::getFrequency, dcPower::setCurrent) {
 
@@ -13,9 +14,11 @@ class FControl(private val lockIn: LockIn, private val dcPower: DCPower) : PIDCo
 
     override fun start() {
 
-        lockIn.refMode = LockIn.RefMode.INTERNAL
-        lockIn.setOscFrequency(0.01)
-        lockIn.refMode = LockIn.RefMode.EXTERNAL
+        if (lockIn is InternalFrequencyReference<*>) {
+            lockIn.isInternalReferenceEnabled = true
+            lockIn.internalReferenceOscillator.frequency = 0.01
+            lockIn.isInternalReferenceEnabled = false
+        }
 
         dcPower.turnOff()
         dcPower.voltage = 10.0

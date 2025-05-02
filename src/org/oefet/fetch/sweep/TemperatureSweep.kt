@@ -2,7 +2,7 @@ package org.oefet.fetch.sweep
 
 import jisa.Util
 import jisa.control.RTask
-import jisa.devices.interfaces.TC
+import jisa.devices.pid.TC
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementAction

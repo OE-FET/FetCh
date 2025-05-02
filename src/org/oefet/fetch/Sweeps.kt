@@ -8,7 +8,7 @@ object Sweeps {
 
     val types = Reflections("org.oefet.fetch.sweep")
                     .getSubTypesOf(FetChSweep::class.java)
-                    .map { Config(it.getConstructor().newInstance()) }
+                    .map { Config<Any>(it.getConstructor().newInstance() as FetChSweep<Any>) }
                     .sortedBy { it.name }
 
     class Config<T>(private val example: FetChSweep<T>) {

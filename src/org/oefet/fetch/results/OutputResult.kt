@@ -56,10 +56,16 @@ class OutputResult(data: ResultTable) : FetChResult("Output Measurement", "Outpu
 
             for ((gate, data) in data.split(SET_SG_VOLTAGE)) {
 
-                val fb = data.directionalSplit { it[SET_SD_VOLTAGE] }
 
-                for (row in fb[0]) fwd.addData(row[SET_SD_VOLTAGE], gate, row[SD_CURRENT])
-                for (row in fb[1]) bwd.addData(row[SET_SD_VOLTAGE], gate, row[SD_CURRENT])
+                for ((i, run) in data.directionalSplit(SET_SD_VOLTAGE).withIndex()) {
+
+                    if ((i % 2) == 0) {
+                        for (row in run) fwd.addData(row[SET_SD_VOLTAGE], gate, row[SD_CURRENT])
+                    } else {
+                        for (row in run) bwd.addData(row[SET_SD_VOLTAGE], gate, row[SD_CURRENT])
+                    }
+
+                }
 
             }
 

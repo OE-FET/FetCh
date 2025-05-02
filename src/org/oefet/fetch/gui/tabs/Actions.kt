@@ -1,10 +1,10 @@
 package org.oefet.fetch.gui.tabs
 
 import jisa.enums.Icon
-import jisa.gui.Field
-import jisa.gui.Fields
+import jisa.gui.Form
 import jisa.gui.GUI
 import jisa.gui.Grid
+import jisa.gui.form.Field
 import org.oefet.fetch.Actions
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.Settings
@@ -13,22 +13,22 @@ import org.oefet.fetch.gui.elements.FetChQueue
 
 object Actions : Grid("Settings", 1) {
 
-    val config       = Fields("Configuration")
-    val measurements = Fields("Enabled Measurements")
-    val actions      = Fields("Enabled Actions")
-    val sweeps       = Fields("Enabled Sweeps")
+    val config       = Form("Configuration")
+    val measurements = Form("Enabled Measurements")
+    val actions      = Form("Enabled Actions")
+    val sweeps       = Form("Enabled Sweeps")
 
     init {
 
         val type = config.addChoice("Display Type", Settings.actionDisplay.intValue("type").getOrDefault(0), "Dropdown Menu", "List")
         val size = config.addChoice("Display Size", if (Settings.wide) 0 else 1, "Wide", "Narrow")
 
-        type.setOnChange {
+        type.addChangeListener { _ ->
             Settings.actionDisplay.intValue("type").set(type.value)
             FetChQueue.updateAll()
         }
 
-        size.setOnChange {
+        size.addChangeListener { _ ->
             Settings.actionDisplay.intValue("size").set(size.value)
             GUI.warningAlert("You will need to restart FetCh to apply this setting.")
         }
@@ -44,7 +44,7 @@ object Actions : Grid("Settings", 1) {
 
             val check = measurements.addCheckBox(type.name, !Settings.hidden.booleanValue(type.name).getOrDefault(false))
 
-            check.setOnChange {
+            check.addChangeListener { _ ->
                 Settings.hidden.booleanValue(check.text).set(!check.value)
                 FetChQueue.updateAll()
             }
@@ -55,7 +55,7 @@ object Actions : Grid("Settings", 1) {
 
             val check = actions.addCheckBox(type.name, !Settings.hidden.booleanValue(type.name).getOrDefault(false))
 
-            check.setOnChange {
+            check.addChangeListener { _ ->
                 Settings.hidden.booleanValue(check.text).set(!check.value)
                 FetChQueue.updateAll()
             }
@@ -66,7 +66,7 @@ object Actions : Grid("Settings", 1) {
 
             val check = sweeps.addCheckBox(type.name, !Settings.hidden.booleanValue(type.name).getOrDefault(false))
 
-            check.setOnChange {
+            check.addChangeListener { _ ->
                 Settings.hidden.booleanValue(check.text).set(!check.value)
                 FetChQueue.updateAll()
             }

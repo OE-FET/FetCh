@@ -1,7 +1,7 @@
 package org.oefet.fetch.action
 
 import javafx.scene.image.Image
-import jisa.devices.interfaces.ISource
+import jisa.devices.source.ISource
 import jisa.gui.GUI
 import jisa.results.ResultTable
 

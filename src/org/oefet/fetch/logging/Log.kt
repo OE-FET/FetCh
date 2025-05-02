@@ -38,7 +38,17 @@ object Log {
         val time = System.currentTimeMillis()
 
         data?.mapRow(
-            actions.associate { it.column to it.value } + (COL_TIME to time)
+
+            actions.associate {
+
+                try {
+                    it.column to it.value
+                } catch (_: Throwable) {
+                    it.column to Double.NaN
+                }
+
+            } + (COL_TIME to time)
+
         )
 
     }

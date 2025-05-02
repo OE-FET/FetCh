@@ -4,6 +4,7 @@ import jisa.Util
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.gui.*
+import jisa.gui.form.Field
 import jisa.results.ResultList
 import jisa.results.ResultTable
 import org.oefet.fetch.Measurements
@@ -171,9 +172,9 @@ object FileLoad : BorderDisplay("Results") {
 
         }
 
-        val grid = Grid(if (retain) "Retain by Filter" else "Remove by Filter", 3);
+        val grid = Grid(if (retain) "Retain by Filter" else "Remove by Filter", 3)
 
-        grid.setWindowSize(1000.0, 700.0);
+        grid.setWindowSize(1000.0, 700.0)
         grid.setGrowth(true, false)
 
         val responses = LinkedHashMap<Quantity<*>, MutableList<Field<Boolean>>>()
@@ -182,7 +183,7 @@ object FileLoad : BorderDisplay("Results") {
 
             responses[type] = ArrayList<Field<Boolean>>()
 
-            val fields = Fields(type.name)
+            val fields = Form(type.name)
 
             for (option in options) {
                 responses[type]!!.add(fields.addCheckBox(if (option == null) "None" else "$option ${type.unit}", retain))
@@ -277,7 +278,7 @@ object FileLoad : BorderDisplay("Results") {
         }
 
         // Load the result as a ResultFile object, specifying device number parameter to use
-        val result = Measurements.loadResultFile(data) ?: throw UnknownResultException("Unknown result file.")
+        val result = Measurements.loadResultFile(data) ?: throw UnknownResultException("Unknown result file")
 
         // Add the loaded ResultFile to the list display and overall list of loaded results
         fileList.add(result, result.name, result.getParameterString(), result.image)
@@ -291,8 +292,10 @@ object FileLoad : BorderDisplay("Results") {
         progress.setProgress(0, paths.size)
         centreElement = Grid(progress)
 
+        fileList.setOnChange {  }
+
         // Iterate over paths in alphabetical order
-        for (path in paths) {
+        paths.parallelStream().forEach { path ->
 
             try {
 
@@ -321,11 +324,14 @@ object FileLoad : BorderDisplay("Results") {
 
         centreElement = Grid()
 
+        fileList.setOnChange(::updateDisplay)
+
         if (fileList.isEmpty) {
             updateDisplay()
         } else {
             fileList.select(0)
         }
+
 
     }
 

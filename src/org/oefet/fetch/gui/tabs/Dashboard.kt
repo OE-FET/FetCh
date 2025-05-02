@@ -1,9 +1,10 @@
 package org.oefet.fetch.gui.tabs
 
 import jisa.control.Connection
-import jisa.devices.level.ILM200
+import jisa.devices.meter.ILM200
 import jisa.enums.Icon
 import jisa.gui.*
+import jisa.gui.form.Field
 import jisa.results.Column
 import jisa.results.ResultList
 import jisa.results.ResultTable
@@ -53,7 +54,7 @@ object Dashboard : Grid("Dashboard", 3) {
 
             if (!Log.isRunning) {
 
-                val input    = Fields("Change Logging Interval")
+                val input    = Form("Change Logging Interval")
                 val interval = input.addTimeField("Interval", Log.interval)
 
                 if (input.showAsConfirmation()) {
@@ -66,7 +67,7 @@ object Dashboard : Grid("Dashboard", 3) {
 
         addToolbarButton("Columns") {
 
-            val input = Fields("Change Column Count")
+            val input = Form("Change Column Count")
             val cols  = input.addIntegerField("Columns", numColumns)
 
             if (input.showAsConfirmation()) {
@@ -155,7 +156,7 @@ object Dashboard : Grid("Dashboard", 3) {
 
     fun editVisible() {
 
-        val input = Fields("Visible Plots")
+        val input = Form("Visible Plots")
         val grid  = Grid("Visible Plots", input)
         val ticks = ArrayList<Field<Boolean>>()
 
@@ -203,7 +204,7 @@ object Dashboard : Grid("Dashboard", 3) {
 
     fun editLogged() {
 
-        val input = Fields("Logged Values")
+        val input = Form("Logged Values")
         val grid  = Grid("Logged Values", input)
         val ticks = ArrayList<Field<Boolean>>()
 

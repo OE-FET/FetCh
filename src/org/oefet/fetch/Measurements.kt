@@ -1,6 +1,6 @@
 package org.oefet.fetch
 
-import jisa.experiment.Measurement
+import jisa.experiment.MeasurementOld
 import jisa.gui.Element
 import jisa.results.Column
 import jisa.results.ResultTable
@@ -59,7 +59,7 @@ object Measurements {
         return types.find { it.rClass == result::class }?.createPlot(result.data)
     }
 
-    fun createElement(measurement: Measurement): Element? {
+    fun createElement(measurement: MeasurementOld): Element? {
         return types.find { it.mClass == measurement::class }?.createPlot(measurement.results)
     }
 

@@ -7,7 +7,6 @@ import jisa.results.*
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.DoubleQuantity
 import org.oefet.fetch.quantities.Quantity
-import java.util.*
 import kotlin.reflect.KClass
 
 class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
@@ -15,9 +14,10 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
     override fun analyse(quantities: List<Quantity<*>>): Analysis.Output {
 
         val distinctTypes = quantities.filter { it is DoubleQuantity }.map { it::class }.distinct()
-        val tabulated     = LinkedList<Analysis.Tabulated>()
+        val tabulated     = ArrayList<Analysis.Tabulated>(distinctTypes.size)
+        val plots         = ArrayList<Plot>(distinctTypes.size)
 
-        for (type in distinctTypes) {
+        distinctTypes.parallelStream().forEach { type ->
 
             val typeQuantities = quantities.filter { it::class == type }.map { it as DoubleQuantity }
             val example        = typeQuantities.first()
@@ -75,15 +75,11 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
 
             }
 
-            tabulated += Analysis.Tabulated(varied, example, table)
+            val processed = Analysis.Tabulated(varied, example, table)
+            val n         = tabulated.size
 
-        }
+            tabulated += processed
 
-        val plots = LinkedList<Plot>()
-
-        for ((n, processed) in tabulated.withIndex()) {
-
-            val table   = processed.table
             val params  = table.columns.subList(0, processed.parameters.size)
             val value   = table.columns[processed.parameters.size] as DoubleColumn
             val error   = table.columns.last() as DoubleColumn
@@ -103,10 +99,10 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
                         { r -> splitBy.mapIndexed { i, it -> "${symbols[i]} = ${r[it]} ${it.units}" }.joinToString("\n") + "\n" }
                     )
 
-                    plot.isLegendVisible = true;
+                    plot.isLegendVisible = true
 
                 } else {
-                    plot.isLegendVisible = false;
+                    plot.isLegendVisible = false
                 }
 
                 if (table.getUniqueValues(xColumn).size >= 5 && table.max(error) == 0.0) {

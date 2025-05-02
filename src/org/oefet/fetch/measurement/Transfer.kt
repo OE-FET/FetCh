@@ -1,7 +1,12 @@
 package org.oefet.fetch.measurement
 
 import jisa.Util
-import jisa.devices.interfaces.*
+import jisa.devices.meter.TMeter
+import jisa.devices.meter.VMeter
+import jisa.devices.smu.SMU
+import jisa.devices.source.ISource
+import jisa.devices.source.VSource
+
 import jisa.maths.Range
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.TransferPlot

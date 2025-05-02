@@ -1,7 +1,7 @@
 package org.oefet.fetch.action
 
 import jisa.control.RTask
-import jisa.devices.interfaces.EMController
+import jisa.devices.electromagnet.EMController
 import jisa.devices.power.IPS120
 import jisa.enums.Icon
 import jisa.gui.Colour

@@ -123,7 +123,9 @@ object Analysis : BorderDisplay("Analysis") {
 
             })
 
+            isVisible = false
             centreElement = window
+            isVisible = true
 
             // Need to do this to get the scene to update for some reason
             GUI.runNow { centreElement.node.requestFocus() }
@@ -148,7 +150,7 @@ object Analysis : BorderDisplay("Analysis") {
 
         if (output == null) return
 
-        val saveInput  = Fields("Save Parameters")
+        val saveInput  = Form("Save Parameters")
         val plotFormat = saveInput.addChoice("Format", "svg", "png", "tex")
         val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
         val plotHeight = saveInput.addIntegerField("Plot Height", 500)
@@ -176,7 +178,7 @@ object Analysis : BorderDisplay("Analysis") {
 
         if (path == null) {
 
-            val saveInput  = Fields("Save Parameters")
+            val saveInput  = Form("Save Parameters")
             val plotFormat = saveInput.addChoice("Format", "svg", "png", "tex")
             val plotWidth  = saveInput.addIntegerField("Plot Width", 600)
             val plotHeight = saveInput.addIntegerField("Plot Height", 500)
@@ -198,10 +200,14 @@ object Analysis : BorderDisplay("Analysis") {
 
         for (plot in output.plots) {
 
-            when (f) {
-                0 -> plot.saveSVG(Util.joinPath(dir, "${plot.title.toLowerCase().replace(" ", "-")}.svg"), w, h)
-                1 -> plot.savePNG(Util.joinPath(dir, "${plot.title.toLowerCase().replace(" ", "-")}.png"), w, h)
-                2 -> plot.saveTex(Util.joinPath(dir, "${plot.title.toLowerCase().replace(" ", "-")}.tex"))
+            if (plot is Plot) {
+
+                when (f) {
+                    0 -> plot.saveSVG(Util.joinPath(dir, "${plot.title.lowercase().replace(" ", "-")}.svg"), w, h)
+                    1 -> plot.savePNG(Util.joinPath(dir, "${plot.title.lowercase().replace(" ", "-")}.png"), w, h)
+                    2 -> plot.saveTex(Util.joinPath(dir, "${plot.title.lowercase().replace(" ", "-")}.tex"))
+                }
+
             }
 
         }
@@ -214,7 +220,7 @@ object Analysis : BorderDisplay("Analysis") {
         val dir = path ?: GUI.directorySelect() ?: return
 
         for (table in output.tables) {
-            table.table.output(Util.joinPath(dir, "${table.quantity.name.toLowerCase().replace(" ", "-")}.csv"))
+            table.table.output(Util.joinPath(dir, "${table.quantity.name.lowercase().replace(" ", "-")}.csv"))
         }
 
     }

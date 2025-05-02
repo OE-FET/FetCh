@@ -6,12 +6,8 @@ class LogPlot {
 
     private var title  = ""
     private var yLabel = ""
-    private val series = LinkedList<Series>()
+    private val plottedValues = LinkedList<PlottedValue>()
 
-    class Series {
-
-
-
-    }
+    class PlottedValue
 
 }

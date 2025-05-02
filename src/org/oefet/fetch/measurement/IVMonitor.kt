@@ -1,8 +1,8 @@
 package org.oefet.fetch.measurement
 
 import javafx.scene.paint.Color
-import jisa.devices.interfaces.IMeter
-import jisa.devices.interfaces.VMeter
+import jisa.devices.meter.IMeter
+import jisa.devices.meter.VMeter
 import jisa.enums.Icon
 import jisa.gui.Plot
 import jisa.maths.Range

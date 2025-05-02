@@ -2,7 +2,12 @@ package org.oefet.fetch.measurement
 
 import jisa.Util
 import jisa.control.Repeat
-import jisa.devices.interfaces.*
+import jisa.devices.meter.IMeter
+import jisa.devices.meter.TMeter
+import jisa.devices.meter.VMeter
+import jisa.devices.smu.SMU
+import jisa.devices.source.VSource
+
 import jisa.enums.AMode
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
