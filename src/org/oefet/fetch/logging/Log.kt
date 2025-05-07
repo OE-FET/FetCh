@@ -1,61 +1,125 @@
 package org.oefet.fetch.logging
 
+import jisa.control.Connection
 import jisa.control.RTask
-import jisa.results.Column
-import jisa.results.ResultStream
+import jisa.devices.MultiInstrument
+import jisa.devices.camera.Camera
+import jisa.devices.lockin.DPLockIn
+import jisa.devices.lockin.LockIn
+import jisa.devices.meter.FMeter
+import jisa.devices.meter.IMeter
+import jisa.devices.meter.TMeter
+import jisa.devices.meter.VMeter
+import jisa.devices.pid.PID
+import jisa.devices.source.FSource
+import jisa.devices.source.ISource
+import jisa.devices.source.VSource
 import java.util.*
 
 object Log {
 
-    private var data     : ResultStream?          = null
-    private val actions  : MutableList<LogAction> = LinkedList<LogAction>()
-    private val COL_TIME : Column<Long>           = Column.ofLongs("Time", "UTC ms")
-    private var interval : Long                   = 1000
-    private val task     : RTask                  = RTask(interval, this::logStep)
+    val sources  = LinkedList<Source>()
+    var interval = 1000L
+    var task     = RTask(interval, this::tick)
+    val loggers  = LinkedList<Dash>()
 
-    fun newFile(file: String) {
-
-        data?.close()
-        data = ResultStream(file, *(listOf(COL_TIME) + actions.map { it.column }).toTypedArray())
-
+    fun start() {
+        sources.forEach { it.checkUse() }
+        task = RTask(interval, this::tick)
+        task.start()
     }
 
-    fun addAction(title: String, yLabel: String, yUnit: String, action: () -> Double) {
-
-        actions += object : LogAction {
-            override val title       = title
-            override val yLabel      = yLabel
-            override val yUnits      = yUnit
-            override val column      = Column.ofDoubles(title, yUnit)
-            override var isEnabled   = true
-            override val value get() = action()
-        }
-
+    fun stop() {
+        task.stop()
     }
 
-    fun logStep() {
+    fun populateSources() {
 
-        val time = System.currentTimeMillis()
+        sources.clear()
 
-        data?.mapRow(
+        for (connection in Connection.getAllConnections().filter { it.isConnected }) {
 
-            actions.associate {
+            val instrument = connection.instrument
 
-                try {
-                    it.column to it.value
-                } catch (_: Throwable) {
-                    it.column to Double.NaN
+            val all = if (instrument is MultiInstrument) {
+                listOf(instrument) + instrument.subInstruments
+            } else {
+                listOf(instrument)
+            }
+
+            for (inst in all) {
+
+                val name = if (inst == instrument) {
+                    "${connection.name} (${instrument.name})"
+                } else {
+                    "${connection.name} (${instrument.name}) ${inst.name}"
                 }
 
-            } + (COL_TIME to time)
+                if (inst is VMeter) {
+                    sources += Source("$name Voltage", "V") { inst.voltage }
+                } else if (inst is VSource) {
+                    sources += Source("$name Voltage", "V") { inst.voltage }
+                }
 
-        )
+                if (inst is IMeter) {
+                    sources += Source("$name Current", "A") { inst.current }
+                } else if (inst is ISource) {
+                    sources += Source("$name Current", "A") { inst.current }
+                }
+
+                if (inst is TMeter) {
+                    sources += Source("$name Temperature", "K") { inst.temperature }
+                } else if (inst is PID.Input) {
+                    sources += Source("$name Input ${inst.valueName}", inst.units) { inst.value }
+                }
+
+                if (inst is PID.Output) {
+                    sources += Source("$name Output ${inst.valueName}", inst.units) { inst.value }
+                }
+
+                if (inst is FMeter) {
+                    sources += Source("$name Frequency", "Hz") { inst.frequency }
+                } else if (inst is FSource) {
+                    sources += Source("$name Frequency", "Hz") { inst.frequency }
+                }
+
+                if (inst is LockIn) {
+
+                    if (inst is DPLockIn) {
+                        sources += Source("$name X Voltage", "V") { inst.lockedX }
+                        sources += Source("$name Y Voltage", "V") { inst.lockedY }
+                    }
+
+                    sources += Source("$name Amplitude Voltage", "V") { inst.lockedAmplitude }
+
+                }
+
+                if (inst is Camera<*>) {
+                    sources += Source("$name Acquisition Framerate", "Hz") { inst.acquisitionFPS }
+                    sources += Source("$name Processing Framerate", "Hz") { inst.processingFPS }
+                }
+
+            }
+
+        }
+
+        sources.sortBy { it.name }
+        loggers.flatMap { it.values }.forEach { it.refreshSources() }
 
     }
 
-    fun close() {
-        data?.close()
-        data = null
+    fun tick() {
+
+        val time = System.currentTimeMillis()
+        updateSources()
+        loggers.parallelStream().filter{ it.isEnabled }.forEach { it.logStep(time) }
+
     }
+
+    fun updateSources() {
+        sources.parallelStream().filter { it.isUsed }.forEach { it.update() }
+    }
+
+    fun getSources(): List<Source> = sources.toList()
 
 }

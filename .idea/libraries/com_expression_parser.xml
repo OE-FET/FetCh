@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="com.expression.parser">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/com.expression.parser.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -7,6 +7,7 @@ import jisa.logging.Logger
 import org.oefet.fetch.gui.MainWindow
 import org.oefet.fetch.gui.Splash
 import org.oefet.fetch.gui.tabs.Connections
+import org.oefet.fetch.logging.Log
 import java.io.FileOutputStream
 import java.io.OutputStream
 import java.io.PrintStream
@@ -17,6 +18,8 @@ import java.time.temporal.ChronoUnit
 fun main() {
 
     GUI.touch()
+
+    Connection.addListener { Log.populateSources() }
 
     Logger.start(
         Util.joinPath(
@@ -76,6 +79,7 @@ fun main() {
     }
 
     display.close()
+
     MainWindow.show()
 
 }

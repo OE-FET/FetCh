@@ -20,5 +20,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="JISA" level="project" />
+    <orderEntry type="library" name="com.expression.parser" level="project" />
   </component>
 </module>
