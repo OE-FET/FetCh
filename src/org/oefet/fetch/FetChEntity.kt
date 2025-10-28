@@ -13,16 +13,20 @@ import jisa.maths.Range
 import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.quant.Quantity
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.isSuperclassOf
 
 abstract class FetChEntity : MeasurementOld() {
 
-    private val errors  = LinkedList<String>()
-    private val setters = LinkedList<() -> Unit>()
-    private val columns = LinkedList<Column<*>>()
+    private val errors     = LinkedList<String>()
+    private val setters    = LinkedList<() -> Unit>()
+    private val columns    = LinkedList<Column<*>>()
+    private val parameters = LinkedList<Quantity<*>>()
+
     abstract val image: Image
 
     open fun createDisplay(data: ResultTable): Element {
@@ -78,6 +82,22 @@ abstract class FetChEntity : MeasurementOld() {
 
         super.start()
 
+    }
+
+    fun addParameter(parameter: Quantity<*>) {
+        parameters.add(parameter)
+    }
+
+    fun <T : Any> getParameter(name: String, data: KClass<T>): Quantity<T>? {
+        return parameters.find { it.name == name && data.isSuperclassOf(it.value::class) } as Quantity<T>?
+    }
+
+    fun getParameter(name: String): Quantity<*>? {
+        return parameters.find { it.name == name }
+    }
+
+    fun getParameterList(): List<Quantity<*>> {
+        return parameters
     }
 
     fun message(message: String) {
@@ -192,14 +212,15 @@ abstract class FetChEntity : MeasurementOld() {
         writer: (I) -> String
     ): PDelegate<I> {
 
-        return userInput(CustomParameter(
-            tag,
-            element,
-            getter,
-            setter,
-            { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() },
-            { b, v -> b.stringValue(tag).set(writer(v)) }
-        ))
+        return userInput(
+            CustomParameter(
+                tag,
+                element,
+                getter,
+                setter,
+                { b -> reader(b.stringValue(tag).getOrDefault(null)) ?: getter() },
+                { b, v -> b.stringValue(tag).set(writer(v)) }
+            ))
 
     }
 
@@ -350,11 +371,20 @@ abstract class FetChEntity : MeasurementOld() {
 
     open class Columns {
 
-        protected fun decimalColumn(name: String, units: String? = null) = Column.ofDecimals(name, units).also { COLUMNS += it }
-        protected fun integerColumn(name: String, units: String? = null) = Column.ofIntegers(name, units).also { COLUMNS += it }
-        protected fun longColumn(name: String, units: String? = null)    = Column.ofLongs(name, units).also { COLUMNS += it }
-        protected fun textColumn(name: String, units: String? = null)    = Column.ofText(name, units).also { COLUMNS += it }
-        protected fun booleanColumn(name: String, units: String? = null) = Column.ofBooleans(name, units).also { COLUMNS += it }
+        protected fun decimalColumn(name: String, units: String? = null) =
+            Column.ofDecimals(name, units).also { COLUMNS += it }
+
+        protected fun integerColumn(name: String, units: String? = null) =
+            Column.ofIntegers(name, units).also { COLUMNS += it }
+
+        protected fun longColumn(name: String, units: String? = null) =
+            Column.ofLongs(name, units).also { COLUMNS += it }
+
+        protected fun textColumn(name: String, units: String? = null) =
+            Column.ofText(name, units).also { COLUMNS += it }
+
+        protected fun booleanColumn(name: String, units: String? = null) =
+            Column.ofBooleans(name, units).also { COLUMNS += it }
 
         private val COLUMNS = ArrayList<Column<*>>()
 

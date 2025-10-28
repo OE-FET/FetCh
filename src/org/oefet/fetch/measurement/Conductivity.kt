@@ -10,7 +10,7 @@ import jisa.enums.Icon
 import jisa.maths.Range
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FPPPlot
-import org.oefet.fetch.results.CondResult
+import org.oefet.fetch.data.CondData
 import java.lang.Double.min
 
 class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP Conductivity", Icon.ELECTRICITY.blackImage) {
@@ -52,8 +52,8 @@ class Conductivity : FetChMeasurement("Conductivity Measurement", "Cond", "FPP C
         return FPPPlot(data)
     }
 
-    override fun processResults(data: ResultTable): CondResult {
-        return CondResult(data)
+    override fun processResults(data: ResultTable): CondData {
+        return CondData(data)
     }
 
     override fun run(results: ResultTable) {

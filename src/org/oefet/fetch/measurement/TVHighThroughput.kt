@@ -9,6 +9,7 @@ import jisa.devices.smu.SMU
 import jisa.enums.AMode
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.data.TVHighThroughputData
 import org.oefet.fetch.gui.elements.TVHTPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.TVHighThroughputResult
@@ -50,8 +51,8 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
 
     }
 
-    override fun processResults(data: ResultTable): TVHighThroughputResult {
-        return TVHighThroughputResult(data)
+    override fun processResults(data: ResultTable): TVHighThroughputData {
+        return TVHighThroughputData(data)
     }
 
     override fun run(results: ResultTable) {

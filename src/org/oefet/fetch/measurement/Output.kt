@@ -8,6 +8,7 @@ import jisa.devices.smu.SMU
 import jisa.devices.source.VSource
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.data.OutputData
 import org.oefet.fetch.gui.elements.OutputPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.OutputResult
@@ -50,8 +51,8 @@ class Output : FetChMeasurement("Output Measurement", "Output", "Output", Images
         return OutputPlot(data)
     }
 
-    override fun processResults(data: ResultTable): OutputResult {
-        return OutputResult(data)
+    override fun processResults(data: ResultTable): OutputData {
+        return OutputData(data)
     }
 
     override fun run(results: ResultTable) {

@@ -4,14 +4,17 @@ import jisa.Util
 import jisa.enums.Icon
 import jisa.experiment.queue.ActionQueue
 import jisa.experiment.queue.ActionQueue.Result.*
-import jisa.experiment.queue.MeasurementAction
 import jisa.gui.*
 import jisa.logging.Logger
 import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
+import org.oefet.fetch.FetChEntityAction
 import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChQueue
 import org.oefet.fetch.measurement.Log
+import org.oefet.fetch.quant.DoubleQuantity
+import org.oefet.fetch.quant.StringQuantity
+import org.oefet.fetch.quant.Type
 import java.util.*
 
 object Measure : Grid("Measurement", 1) {
@@ -82,17 +85,17 @@ object Measure : Grid("Measurement", 1) {
 
     }
 
-    fun display(action: MeasurementAction) {
+    fun display(action: FetChEntityAction) {
 
-        action.data.setAttribute("Name", name.get())
-        action.data.setAttribute("Length", "${length.value} m")
-        action.data.setAttribute("FPP Separation", "${fppLength.value} m")
-        action.data.setAttribute("Width", "${width.value} m")
-        action.data.setAttribute("Thickness", "${cThick.value} m")
-        action.data.setAttribute("Dielectric Thickness", "${dThick.value} m")
-        action.data.setAttribute("Dielectric Permittivity", dielConst.value)
+        action.addParameter(StringQuantity("Name", "dev", Type.LABEL, name.value))
+        action.addParameter(DoubleQuantity("Length", "l", Type.DISTANCE, length.value, 0.0))
+        action.addParameter(DoubleQuantity("FPP Separation", "l_fpp", Type.DISTANCE, fppLength.value, 0.0))
+        action.addParameter(DoubleQuantity("Width", "w", Type.DISTANCE, width.value, 0.0))
+        action.addParameter(DoubleQuantity("Thickness", "d", Type.DISTANCE, cThick.value, 0.0))
+        action.addParameter(DoubleQuantity("Dielectric Thickness", "d_deil", Type.DISTANCE, dThick.value, 0.0))
+        action.addParameter(DoubleQuantity("Dielectric Permittivity", "ε_r", Type.RELATIVE_PERMITTIVITY, dielConst.value, 0.0))
 
-        val table = Table("Data", action.data)
+        val table   = Table("Data", action.data)
         val element = (action.measurement as FetChEntity).createDisplay(action.data)
 
         topRow.remove(this.element)
@@ -135,7 +138,7 @@ object Measure : Grid("Measurement", 1) {
                 errors.add("Output directory is blank")
             }
 
-            if (queue.actions.size < 1) {
+            if (queue.actions.isEmpty()) {
                 errors.add("Measurement sequence is empty")
             }
 

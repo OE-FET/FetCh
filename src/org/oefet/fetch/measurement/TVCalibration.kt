@@ -12,6 +12,7 @@ import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.data.TVCalibrationData
 import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.TVCResult
@@ -71,8 +72,8 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     /**
      * What class should FetCh use to process data from this type of measurement?
      */
-    override fun processResults(data: ResultTable): TVCResult {
-        return TVCResult(data)
+    override fun processResults(data: ResultTable): TVCalibrationData {
+        return TVCalibrationData(data)
     }
 
     override fun run(results: ResultTable) {

@@ -281,8 +281,8 @@ object FileLoad : BorderDisplay("Results") {
         val result = Measurements.loadResultFile(data) ?: throw UnknownResultException("Unknown result file")
 
         // Add the loaded ResultFile to the list display and overall list of loaded results
-        fileList.add(result, result.name, result.getParameterString(), result.image)
-        results += result
+//        fileList.add(result, result.name, result.getParameterString(), result.image)
+//        results += result
 
     }
 

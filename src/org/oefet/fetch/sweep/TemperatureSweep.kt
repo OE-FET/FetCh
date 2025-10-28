@@ -12,13 +12,15 @@ import jisa.gui.Series
 import jisa.maths.Range
 import jisa.results.Column
 import jisa.results.ResultTable
+import org.oefet.fetch.FetChEntityAction
 import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.action.TemperatureChange.Companion.TEMPERATURE
 import org.oefet.fetch.action.TemperatureChange.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.quant.Type
 import java.util.*
 
-class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERMOMETER.blackImage) {
+class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Type.TEMPERATURE, Icon.THERMOMETER.blackImage) {
 
     val temperatures  by userInput("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
     val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
@@ -33,7 +35,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
 
         val list = LinkedList<Action<*>>()
 
-        list += MeasurementAction(SweepPoint(value, interval, stabilityPct, stabilityTime.toLong()))
+        list += FetChEntityAction(SweepPoint(value, interval, stabilityPct, stabilityTime.toLong()))
         list += actions
 
         return list

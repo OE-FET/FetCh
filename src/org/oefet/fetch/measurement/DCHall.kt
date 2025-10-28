@@ -13,6 +13,7 @@ import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.data.DCHallData
 import org.oefet.fetch.gui.elements.DCHallPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.DCHallResult
@@ -93,8 +94,8 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
     /**
      * This method defined how to process a given set of DC Hall data.
      */
-    override fun processResults(data: ResultTable): DCHallResult {
-        return DCHallResult(data)
+    override fun processResults(data: ResultTable): DCHallData {
+        return DCHallData(data)
     }
 
     /**

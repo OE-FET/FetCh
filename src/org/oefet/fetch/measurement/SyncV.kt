@@ -7,6 +7,7 @@ import jisa.devices.smu.SMU
 import jisa.enums.Icon
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.data.SimpleData
 import org.oefet.fetch.gui.elements.SyncPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.quantities.Quantity
@@ -45,18 +46,6 @@ class SyncV : FetChMeasurement("Synced Voltage Measurement", "Sync", "VSync", Im
 
     override fun createDisplay(data: ResultTable): SyncPlot {
         return SyncPlot(data)
-    }
-
-    override fun processResults(data: ResultTable): FetChResult {
-
-        return object : FetChResult("Synced Voltage Measurement", "VSync", Icon.CLOCK.blackImage, data) {
-
-            override fun calculateHybrids(otherQuantities: List<Quantity<*>>): List<Quantity<*>> {
-                return emptyList()
-            }
-
-        }
-
     }
 
     override fun run(results: ResultTable) {

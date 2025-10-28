@@ -13,6 +13,7 @@ import jisa.experiment.queue.Action
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.data.TVData
 import org.oefet.fetch.gui.elements.TVPlot
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.results.TVResult
@@ -53,8 +54,8 @@ class TVMeasurement : FetChMeasurement("Thermal Voltage Measurement", "TV", "The
         return TVPlot(data)
     }
 
-    override fun processResults(data: ResultTable): TVResult {
-        return TVResult(data)
+    override fun processResults(data: ResultTable): TVData {
+        return TVData(data)
     }
 
     // Constants for referring to result table columns

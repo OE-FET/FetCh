@@ -8,11 +8,14 @@ import jisa.experiment.queue.SweepAction
 import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
+import org.oefet.fetch.FetChEntityAction
+import org.oefet.fetch.FetChSweepAction
+import org.oefet.fetch.quant.*
 
-abstract class FetChSweep<T>(private val name: String, tagDefault: String, override val image: Image) : FetChEntity() {
+abstract class FetChSweep<T>(private val name: String, defaultQuantityName: String, private val quantityType: Type, override val image: Image) : FetChEntity() {
 
     val queue = ActionQueue()
-    val tag   = tagDefault
+    val tag   by userInput("Basic", "Name", defaultQuantityName)
 
     /**
      * Returns the list of all values this sweep is to sweep over.
@@ -47,9 +50,19 @@ abstract class FetChSweep<T>(private val name: String, tagDefault: String, overr
 
     fun generate(value: T, actions: List<Action<*>>): List<Action<*>> {
 
-        val generated = generateForValue(value, actions)
+        val generated  = generateForValue(value, actions)
+        val quantities = getParameterList() + generateQuantitiesForValue(tag, value)
 
         generated.forEach {
+
+            if (it is FetChEntityAction) {
+                quantities.forEach(it::addParameter)
+            }
+
+            if (it is FetChSweepAction<*>) {
+                quantities.forEach(it.sweep::addParameter)
+                it.regenerateActions()
+            }
 
             it.setAttribute(tag, formatValueForAttribute(value))
             it.addTag("$tag = ${formatValue(value)}")
@@ -57,6 +70,24 @@ abstract class FetChSweep<T>(private val name: String, tagDefault: String, overr
         }
 
         return generated
+
+    }
+
+    open fun generateQuantitiesForValue(tag: String, value: T): List<Quantity<*>> {
+
+        if (value is Number) {
+            return listOf(DoubleQuantity(tag, quantityType, value.toDouble(), 0.0))
+        }
+
+        if (value is XYPoint) {
+            return listOf(XYQuantity(tag, tag, quantityType, value.x, value.y, 0.0, 0.0))
+        }
+
+        if (value is XYZPoint) {
+            return listOf(XYZQuantity(tag, tag, quantityType, value.x, value.y, value.z, 0.0, 0.0, 0.0))
+        }
+
+        return listOf(StringQuantity(tag, tag, quantityType, value.toString()))
 
     }
 
@@ -87,8 +118,8 @@ abstract class FetChSweep<T>(private val name: String, tagDefault: String, overr
 
     }
 
-    fun createSweepAction(): SweepAction<T> {
-        return SweepAction(name, getValues(), this::generate).apply {
+    fun createSweepAction(): FetChSweepAction<T> {
+        return FetChSweepAction(name, getValues(), this::generate, this).apply {
             setFormatter(this@FetChSweep::formatValue)
             addFinalActions(generateFinalActions())
         }

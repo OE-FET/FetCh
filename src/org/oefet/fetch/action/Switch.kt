@@ -6,7 +6,7 @@ import jisa.gui.Doc
 import jisa.gui.Element
 import jisa.results.ResultTable
 
-class Switch : FetChAction("Relay Switch", Icon.DEVICE.blackImage) {
+class Switch : FetChAction("Switch On/Off", Icon.DEVICE.blackImage) {
 
     // Config (parameter and instrument)
     val on     by userInput ("Basic", "On", false)

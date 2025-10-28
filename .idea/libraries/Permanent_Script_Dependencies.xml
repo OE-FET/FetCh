@@ -1,0 +1,23 @@
+<component name="libraryTable">
+  <library name="Permanent Script Dependencies">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.cache/JetBrains/IntelliJIdea2025.2/kotlinNotebook/fetch.69401e8f/kernels/0.13.0-600-1/kotlin-jupyter-ide-classpath-shadowed-jar/kotlin-jupyter-ide-classpath-shadowed-0.13.0-600-1.jar" />
+      <root url="file://$KOTLIN_BUNDLED$/lib/kotlin-stdlib.jar" />
+      <root url="file://$KOTLIN_BUNDLED$/lib/kotlin-reflect.jar" />
+      <root url="file://$KOTLIN_BUNDLED$/lib/kotlin-test.jar" />
+      <root url="file://$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk7.jar" />
+      <root url="file://$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk8.jar" />
+      <root url="file://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib-jdk8/2.1.21/kotlin-stdlib-jdk8-2.1.21.jar" />
+      <root url="file://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib/2.1.21/kotlin-stdlib-2.1.21.jar" />
+      <root url="file://$MAVEN_REPOSITORY$/org/jetbrains/annotations/13.0/annotations-13.0.jar" />
+      <root url="file://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib-jdk7/2.1.21/kotlin-stdlib-jdk7-2.1.21.jar" />
+      <root url="file://$PROJECT_DIR$/JISA.jar" />
+      <root url="file://$PROJECT_DIR$/com.expression.parser.jar" />
+      <root url="file://$PROJECT_DIR$/../JISA/JISA.jar" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$USER_HOME$/.cache/JetBrains/IntelliJIdea2025.2/kotlinNotebook/fetch.69401e8f/kernels/0.13.0-600-1/kotlin-jupyter-script-classpath-shadowed-sources-jar/kotlin-jupyter-script-classpath-shadowed-0.13.0-600-1-sources.jar" />
+    </SOURCES>
+  </library>
+</component>

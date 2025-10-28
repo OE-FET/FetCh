@@ -16,9 +16,10 @@ import org.oefet.fetch.action.VoltageHold.Companion.SD_VOLTAGE
 import org.oefet.fetch.action.VoltageHold.Companion.SG_VOLTAGE
 import org.oefet.fetch.action.VoltageHold.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
+import org.oefet.fetch.quant.Type
 import java.util.*
 
-class StressSweep : FetChSweep<Int>("Stress", "S", Icon.CLOCK.blackImage) {
+class StressSweep : FetChSweep<Int>("Stress", "S", Type.TIME, Icon.CLOCK.blackImage) {
 
     var task: RTask? = null
 

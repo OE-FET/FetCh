@@ -4,8 +4,8 @@ import javafx.scene.image.Image
 import jisa.enums.Icon
 import jisa.results.ResultTable
 import org.oefet.fetch.FetChEntity
-import org.oefet.fetch.results.FetChResult
-import org.oefet.fetch.results.SimpleResult
+import org.oefet.fetch.data.FetChData
+import org.oefet.fetch.data.SimpleData
 import kotlin.reflect.KClass
 
 abstract class FetChMeasurement(private val name: String, fileLabel: String, val tag: String, override val image: Image) : FetChEntity() {
@@ -20,8 +20,8 @@ abstract class FetChMeasurement(private val name: String, fileLabel: String, val
         return this.takeIf { type.isInstance(this) } as T?
     }
 
-    open fun processResults(data: ResultTable): FetChResult {
-        return SimpleResult(name, tag, data)
+    open fun processResults(data: ResultTable): FetChData {
+        return SimpleData(name, tag, data)
     }
 
     override fun start() {

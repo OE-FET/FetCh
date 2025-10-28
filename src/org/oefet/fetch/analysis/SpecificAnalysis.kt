@@ -1,7 +1,8 @@
 package org.oefet.fetch.analysis
 
 import jisa.experiment.Combination
-import jisa.gui.Plot
+import jisa.gui.Element
+import jisa.gui.HeatMap
 import jisa.gui.Series
 import jisa.results.*
 import org.oefet.fetch.gui.elements.FetChPlot
@@ -14,16 +15,17 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
     override fun analyse(quantities: List<Quantity<*>>): Analysis.Output {
 
         val distinctTypes = quantities.filter { it is DoubleQuantity }.map { it::class }.distinct()
-        val tabulated     = ArrayList<Analysis.Tabulated>(distinctTypes.size)
-        val plots         = ArrayList<Plot>(distinctTypes.size)
+        val tabulated = ArrayList<Analysis.Tabulated>(distinctTypes.size)
+        val plots = ArrayList<Element>(distinctTypes.size)
 
         distinctTypes.parallelStream().forEach { type ->
 
             val typeQuantities = quantities.filter { it::class == type }.map { it as DoubleQuantity }
-            val example        = typeQuantities.first()
-            val flatMap        = typeQuantities.flatMap { it.parameters }
-            val distinct       = flatMap.distinctBy { it::class }.filter { types.isEmpty() || it::class in types }
-            val varied         = distinct.filter { p -> flatMap.filter { it::class == p::class }.distinctBy { it.value }.size > 1 }
+            val example = typeQuantities.first()
+            val flatMap = typeQuantities.flatMap { it.parameters }
+            val distinct = flatMap.distinctBy { it::class }.filter { types.isEmpty() || it::class in types }
+            val varied =
+                distinct.filter { p -> flatMap.filter { it::class == p::class }.distinctBy { it.value }.size > 1 }
 
             val columns = varied.map {
 
@@ -44,8 +46,8 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
             val valueColumn = DoubleColumn(example.name, unit)
             val errorColumn = DoubleColumn("${example.name} Error", unit)
 
-            columns += valueColumn
-            columns += errorColumn
+            columns += listOf(valueColumn)
+            columns += listOf(errorColumn)
 
             val table = ResultList(columns)
 
@@ -56,7 +58,7 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
                     for ((index, pType) in varied.withIndex()) {
 
                         val column = columns[index] as Column<Any>
-                        val param  = quantity.getParameter(pType::class)
+                        val param = quantity.getParameter(pType::class)
 
                         row[column] = when (param?.value) {
 
@@ -76,27 +78,34 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
             }
 
             val processed = Analysis.Tabulated(varied, example, table)
-            val n         = tabulated.size
+            val n = tabulated.size
 
             tabulated += processed
 
-            val params  = table.columns.subList(0, processed.parameters.size)
-            val value   = table.columns[processed.parameters.size] as DoubleColumn
-            val error   = table.columns.last() as DoubleColumn
-            val xColumn = (params.filter { it is DoubleColumn }.maxByOrNull { table.getUniqueValues(it).size } ?: params.firstOrNull { it is DoubleColumn }) as DoubleColumn?
+            val params = table.columns.subList(0, processed.parameters.size)
+            val value = table.columns[processed.parameters.size] as DoubleColumn
+            val error = table.columns.last() as DoubleColumn
+            val xColumn = (params.filter { it is DoubleColumn }.maxByOrNull { table.getUniqueValues(it).size }
+                ?: params.firstOrNull { it is DoubleColumn }) as DoubleColumn?
 
             if (xColumn != null) {
 
-                val plot    = FetChPlot("${value.name} vs ${xColumn.name}", xColumn.title, value.title)
+                val plot = FetChPlot("${value.name} vs ${xColumn.name}", xColumn.title, value.title)
                 val splitBy = params.filter { it != xColumn }
                 val symbols = processed.parameters.filterIndexed { i, _ -> params[i] != xColumn }.map { it.symbol }
-                val series  = plot.createSeries().watch(table, xColumn, value, error).setName(value.name).setLineVisible(false).setColour(Series.defaultColours[n % Series.defaultColours.size]).setPointOrder(Series.Ordering.X_AXIS)
+                val series =
+                    plot.createSeries().watch(table, xColumn, value, error).setName(value.name).setLineVisible(false)
+                        .setColour(Series.defaultColours[n % Series.defaultColours.size])
+                        .setPointOrder(Series.Ordering.X_AXIS)
 
                 if (splitBy.isNotEmpty()) {
 
                     series.split(
-                        { r -> Combination(*splitBy.map{ r[it] }.toTypedArray()) },
-                        { r -> splitBy.mapIndexed { i, it -> "${symbols[i]} = ${r[it]} ${it.units}" }.joinToString("\n") + "\n" }
+                        { r -> Combination(*splitBy.map { r[it] }.toTypedArray()) },
+                        { r ->
+                            splitBy.mapIndexed { i, it -> "${symbols[i]} = ${r[it]} ${it.units}" }
+                                .joinToString("\n") + "\n"
+                        }
                     )
 
                     plot.isLegendVisible = true
@@ -113,6 +122,23 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
 
             }
 
+            val xyIndex =
+                params.filter { it is StringColumn && table[0, it].startsWith("XYIndex") } as List<StringColumn>
+
+            for (column in xyIndex) {
+
+                val plot = HeatMap("${value.name} vs ${column.name}")
+                val xy = table[column].map {
+                    it.removePrefix("XYIndex(").removeSuffix(")").split(",").map { it.trim().removePrefix("x=").removePrefix("y=").toInt() }.toIntArray()
+                }
+                val v = table[value]
+
+                plot.setColourMap(HeatMap.ColourMap.VIRIDIS)
+                plot.drawMesh(xy.map { it[0] }, xy.map { it[1] }, v)
+
+                plots += plot
+
+            }
 
         }
 

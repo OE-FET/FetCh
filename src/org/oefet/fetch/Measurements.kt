@@ -4,6 +4,7 @@ import jisa.experiment.MeasurementOld
 import jisa.gui.Element
 import jisa.results.Column
 import jisa.results.ResultTable
+import org.oefet.fetch.data.FetChData
 import org.oefet.fetch.measurement.ACHall
 import org.oefet.fetch.measurement.Conductivity
 import org.oefet.fetch.measurement.FetChMeasurement
@@ -36,16 +37,16 @@ object Measurements {
         val image  = example.image
         val rClass = (example::processResults).reflect()?.returnType?.jvmErasure
 
-        fun createMeasurement(): FetChMeasurement                                             = mClass.primaryConstructor!!.call()
-        fun createResult(data: ResultTable): FetChResult = example.processResults(data)
-        fun createPlot(data: ResultTable)                                                     = example.createDisplay(data)
+        fun createMeasurement(): FetChMeasurement      = mClass.primaryConstructor!!.call()
+        fun createResult(data: ResultTable): FetChData = example.processResults(data)
+        fun createPlot(data: ResultTable)              = example.createDisplay(data)
 
 
     }
 
-    fun loadResultFile(data: ResultTable): FetChResult? {
+    fun loadResultFile(data: ResultTable): FetChData? {
 
-        return types.find { it.type == data.getAttribute("Type") }?.createResult(data) ?: convertFile(data)
+        return types.find { it.type == data.getAttribute("Type") }?.createResult(data)
 
     }
 

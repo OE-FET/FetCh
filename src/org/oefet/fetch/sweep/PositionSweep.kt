@@ -10,9 +10,10 @@ import jisa.results.Column
 import jisa.results.ResultTable
 import org.oefet.fetch.action.PositionCalibration
 import org.oefet.fetch.gui.images.Images
+import org.oefet.fetch.quant.Type
 
 
-class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P", Images.getImage("calibration.png")) {
+class PositionSweep : FetChSweep<PositionSweep.Position>("Position Sweep", "P", Type.DISTANCE, Images.getImage("calibration.png")) {
 
     val fineLift       by userInput("Sample Setup", "Fine Lift [m]", 0.02)
     val useCalibration by userInput("Sample Setup", "Use values from 3-point calibration", true)

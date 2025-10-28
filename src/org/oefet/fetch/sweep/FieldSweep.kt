@@ -10,14 +10,16 @@ import jisa.gui.Series
 import jisa.maths.Range
 import jisa.results.Column
 import jisa.results.ResultTable
+import org.oefet.fetch.FetChEntityAction
 import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.action.FieldChange.Companion.FIELD
 import org.oefet.fetch.action.FieldChange.Companion.TIME
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.gui.tabs.Measure
+import org.oefet.fetch.quant.Type
 import java.util.*
 
-class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage) {
+class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Type.B_FIELD, Icon.MAGNET.blackImage) {
 
     val fields    by userInput("Field", "Set-Points [T]", Range.step(-1, +1, 0.5))
     val interval  by userTimeInput("Field", "Logging Interval", 500)
@@ -31,7 +33,7 @@ class FieldSweep : FetChSweep<Double>("Field Sweep", "B", Icon.MAGNET.blackImage
 
         val list = LinkedList<Action<out Any>>()
 
-        list += MeasurementAction(SweepPoint(value, interval.toLong())).apply { setOnMeasurementStart { Measure.display(it) }  }
+        list += MeasurementAction(SweepPoint(value, interval.toLong())).apply { setOnMeasurementStart { Measure.display(it as FetChEntityAction) }  }
         list += actions
 
         return list

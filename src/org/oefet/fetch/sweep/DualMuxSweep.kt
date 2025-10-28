@@ -6,8 +6,10 @@ import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.CheckGrid
 import jisa.gui.Form
+import org.oefet.fetch.quant.Type
+import org.oefet.fetch.quant.XYPoint
 
-class DualMuxSweep : FetChSweep<Pair<Int, Int>>("Dual Multiplexer Sweep", "MUX", Icon.DEVICE.blackImage) {
+class DualMuxSweep : FetChSweep<XYPoint>("Dual Multiplexer Sweep", "XY", Type.INDEX, Icon.DEVICE.blackImage) {
 
     val A by requiredInstrument("Multiplexer Channel A", Multiplexer::class)
     val B by requiredInstrument("Multiplexer Channel B", Multiplexer::class)
@@ -27,16 +29,16 @@ class DualMuxSweep : FetChSweep<Pair<Int, Int>>("Dual Multiplexer Sweep", "MUX",
     val countB  by customInput(counts, nB)
     val checked by customInput(checkGrid)
 
-    override fun getValues(): List<Pair<Int, Int>> {
+    override fun getValues(): List<XYPoint> {
 
-        val list = mutableListOf<Pair<Int, Int>>()
+        val list = mutableListOf<XYPoint>()
 
         for (i in 0 until countA) {
 
             for (j in 0 until countB) {
 
                 if (checked[i][j]) {
-                    list += Pair(i, j)
+                    list += XYPoint(i.toDouble(), j.toDouble())
                 }
 
             }
@@ -47,15 +49,15 @@ class DualMuxSweep : FetChSweep<Pair<Int, Int>>("Dual Multiplexer Sweep", "MUX",
 
     }
 
-    override fun formatValue(value: Pair<Int, Int>): String {
-        return "(%d, %d)".format(value.first, value.second)
+    override fun formatValue(value: XYPoint): String {
+        return "%d, %d".format(value.x.toInt(), value.y.toInt())
     }
 
-    override fun generateForValue(value: Pair<Int, Int>, actions: List<Action<*>>): List<Action<*>> {
+    override fun generateForValue(value: XYPoint, actions: List<Action<*>>): List<Action<*>> {
 
-        val switch = SimpleAction("Change MUX Route to (%d, %d)".format(value.first, value.second)) {
-            A.route = value.first
-            B.route = value.second
+        val switch = SimpleAction("Change MUX Route to (%d, %d)".format(value.x.toInt(), value.y.toInt())) {
+            A.route = value.x.toInt()
+            B.route = value.y.toInt()
         }
 
         return listOf(switch) + actions

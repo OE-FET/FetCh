@@ -12,6 +12,7 @@ import jisa.enums.Icon
 import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.data.ACHallData
 import org.oefet.fetch.gui.elements.SimpleACHallPlot
 import org.oefet.fetch.results.ACHallResult
 import kotlin.Double.Companion.NaN
@@ -278,8 +279,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
     }
 
-    override fun processResults(data: ResultTable): ACHallResult {
-        return ACHallResult(data)
+    override fun processResults(data: ResultTable): ACHallData {
+        return ACHallData(data)
     }
 
     override fun createDisplay(data: ResultTable): SimpleACHallPlot {

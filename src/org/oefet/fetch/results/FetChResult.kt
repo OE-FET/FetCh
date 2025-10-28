@@ -28,6 +28,8 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
     var positionY    = data.getAttribute("P")?.trim('(', ')')?.split(",")?.get(1)?.toDouble() ?: Double.NaN
     var voltage      = data.getAttribute("V")?.removeSuffix("V")?.toDouble() ?: Double.NaN
     var current      = data.getAttribute("I")?.removeSuffix("A")?.toDouble() ?: Double.NaN
+    var position     = data.getAttribute("POS")?.split(", ")?.map { it.toDouble() }?.toDoubleArray()
+    var xyIndex      = data.getAttribute("XY")?.split(", ")?.map { it.toInt() }?.toIntArray()
 
     init {
 
@@ -49,6 +51,18 @@ abstract class FetChResult(val name: String, val tag: String, val image: Image, 
         parameters += YPosition(positionY, 0.0)
         parameters += Voltage(voltage, 0.0)
         parameters += Current(current, 0.0)
+
+        if (position != null) {
+            val p = position!!
+            parameters += XPosition(p[0], 0.0)
+            parameters += YPosition(p[1], 0.0)
+            parameters += ZPosition(p[2], 0.0)
+        }
+
+        if (xyIndex != null) {
+            val xy = xyIndex!!
+            parameters += XYIndexQuantity(XYIndex(xy[0], xy[1]))
+        }
 
         if (temperature.isFinite()) {
             parameters += Temperature(temperature, 0.0)

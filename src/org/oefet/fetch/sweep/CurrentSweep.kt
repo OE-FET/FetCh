@@ -6,8 +6,9 @@ import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
 import jisa.gui.GUI
 import jisa.maths.Range
+import org.oefet.fetch.quant.Type
 
-class CurrentSweep : FetChSweep<Double>("Current Sweep", "I", Image(GUI::class.java.getResource("images/smu.png").toString())) {
+class CurrentSweep : FetChSweep<Double>("Current Sweep", "I", Type.CURRENT, Image(GUI::class.java.getResource("images/smu.png").toString())) {
 
     private val currents by userInput("Currents", "Current [A]", Range.linear(0, 10e-6, 11))
     private val off      by userInput("Currents", "Turn Off Afterwards?", true)

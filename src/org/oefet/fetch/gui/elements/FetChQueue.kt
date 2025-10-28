@@ -7,13 +7,11 @@ import jisa.gui.GUI
 import jisa.gui.Grid
 import jisa.gui.ListDisplay
 import jisa.gui.queue.ActionQueueDisplay
-import org.oefet.fetch.Actions
-import org.oefet.fetch.Measurements
-import org.oefet.fetch.Settings
-import org.oefet.fetch.Sweeps
+import org.oefet.fetch.*
 import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
+import org.oefet.fetch.gui.tabs.Results
 import org.oefet.fetch.measurement.FetChMeasurement
 import org.oefet.fetch.sweep.FetChSweep
 import java.util.*
@@ -212,13 +210,13 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
             if (input.showInput()) {
 
-                val action = queue.addAction(MeasurementAction(measurement))
+                val action = queue.addAction(FetChEntityAction(measurement))
 
                 action.setFileNameGenerator { params, label -> "${Measure.baseFile}-$params-$label.csv" }
-                if (action is MeasurementAction) action.setOnMeasurementStart { Measure.display(it) }
+                if (action is FetChEntityAction) action.setOnMeasurementStart { Measure.display(it as FetChEntityAction) }
 
                 action.setOnFinish {
-                    FileLoad.addData(it.data)
+                    Results.load(measurement.processResults(it.data))
                     System.gc()
                 }
 
@@ -253,7 +251,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
                 val action = queue.addAction(MeasurementAction(measurement))
 
-                action.setOnMeasurementStart { Measure.display(it) }
+                action.setOnMeasurementStart { Measure.display(it as FetChEntityAction) }
                 action.setOnMeasurementFinish { System.gc() }
                 action.setOnEdit {
                     input.showInput()
@@ -330,7 +328,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
     private fun setUpDisplay(action: SweepAction<*>) {
 
         action.children.forEach {
-            if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it) }
+            if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it as FetChEntityAction) }
             if (it is SweepAction<*>) setUpDisplay(it)
         }
 
