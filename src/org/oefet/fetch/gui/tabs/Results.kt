@@ -1,5 +1,6 @@
 package org.oefet.fetch.gui.tabs
 
+import javafx.scene.layout.ColumnConstraints
 import jisa.enums.Icon
 import jisa.gui.BorderDisplay
 import jisa.gui.GUI
@@ -18,6 +19,7 @@ object Results : Tabs("Results") {
     private val grid = Grid("Loaded Files", 3).apply {
         setGrowth(true, false)
     }
+
     private val list = mutableListOf<FetChData>()
 
     init {
@@ -87,10 +89,7 @@ object Results : Tabs("Results") {
         }
 
         addToolbarButton("Close All") {
-
-            clear()
-            add(grid)
-
+            removeAll(elements - grid)
         }
 
         add(grid)
@@ -101,6 +100,15 @@ object Results : Tabs("Results") {
 
             grid.numColumns = nCols
 
+            grid.pane.columnConstraints.clear()
+            grid.pane.columnConstraints.addAll((1..nCols).map {
+
+                ColumnConstraints().apply {
+                    percentWidth = 100.0 / nCols
+                }
+
+            })
+
         }
 
     }
@@ -110,6 +118,14 @@ object Results : Tabs("Results") {
         val display = ResultDisplay(data.name, data)
         grid.add(display)
         list.add(data)
+
+    }
+
+    fun remove(data: FetChData) {
+
+        val index = list.indexOf(data)
+        list.removeAt(index)
+        grid.remove(grid.elements[index])
 
     }
 

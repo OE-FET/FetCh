@@ -6,7 +6,9 @@ import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Label
+import javafx.scene.control.MenuItem
 import javafx.scene.control.Separator
+import javafx.scene.control.SplitMenuButton
 import javafx.scene.control.Tooltip
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
@@ -41,10 +43,31 @@ class ResultDisplay(title: String, val data: FetChData) : JFXElement(title) {
     private val titleVBox     = VBox()
     private val titleLabel    = Label()
     private val subTitleLabel = Label()
-    private val viewButton    = Button("Open")
+    private val viewButton    = SplitMenuButton().apply {
+
+        text = "Open"
+
+        val view = MenuItem("Open and view...")
+        view.onAction = EventHandler { open(true) }
+
+        val open = MenuItem("Open in background...")
+        open.onAction = EventHandler { open(false) }
+
+        val window = MenuItem("Open in new window...")
+        window.onAction = EventHandler { open(true, true) }
+
+        items.addAll(view, open, window)
+
+        onAction = EventHandler { open(true) }
+
+    }
+
+    private val openButton    = Button("⬈")
     private val remButton     = Button("Remove")
     private val results       = GridPane()
     private val tags          = GridPane()
+
+    private var uiElement: Grid? = null
 
     init {
 
@@ -67,7 +90,7 @@ class ResultDisplay(title: String, val data: FetChData) : JFXElement(title) {
         )
 
         mainVBox.children.addAll(titleHBox, Separator(), Label("Results"), results, Separator(), Label("Parameters"), tags)
-        titleHBox.children.addAll(icon, titleVBox, VBox(viewButton, remButton))
+        titleHBox.children.addAll(icon, titleVBox, VBox(5.0, viewButton, remButton))
         titleVBox.children.addAll(titleLabel, subTitleLabel)
 
         HBox.setHgrow(titleVBox, Priority.ALWAYS)
@@ -100,6 +123,7 @@ class ResultDisplay(title: String, val data: FetChData) : JFXElement(title) {
                     else      -> "%s = %s %s".format(result.symbol, result.value, result.type.units)
 
                 }
+
             } else {
 
                 val min = list.minOf { it.value }
@@ -140,7 +164,9 @@ class ResultDisplay(title: String, val data: FetChData) : JFXElement(title) {
 
             GridPane.setHgrow(tag, Priority.ALWAYS)
 
-            viewButton.onAction = EventHandler { open() }
+            viewButton.onAction = EventHandler { open(true) }
+            openButton.onAction = EventHandler { open(false) }
+            remButton.onAction = EventHandler { remove() }
 
         }
 
@@ -155,43 +181,108 @@ class ResultDisplay(title: String, val data: FetChData) : JFXElement(title) {
 
         tooltip.graphic = display.node
 
-        Tooltip.install(icon, tooltip)
+        Tooltip.install(titleHBox, tooltip)
 
     }
 
-    fun open() {
+    fun open(switch: Boolean, window: Boolean = false) {
 
-        val grid    = Grid(data.name, 1)
-        val topRow  = Grid(2)
-        val topLeft = Grid(1)
+        if (uiElement == null || window) {
 
-        val display = data.getDisplay()
-        val results = DataDisplay("Results")
-        val params  = DataDisplay("Parameters")
+            val grid = Grid(data.name, 1)
+            val topRow = Grid(2)
+            val topLeft = Grid(1)
 
-        data.results.groupBy { it.name }.forEach { (name, list) -> when {
+            val display = data.getDisplay()
+            val results = DataDisplay("Results")
+            val params = DataDisplay("Parameters")
 
-            list.size > 1                        -> { results.addParameter(name, "%.02e to %.02e %s".format(list.minOf { it.value }, list.maxOf { it.value }, list.first().type.units)) }
-            list.first().error.absoluteValue > 0 -> { results.addParameter(name, "%.02e ± %.02e %s".format(list.first().value, list.first().error, list.first().type.units)) }
-            else                                 -> { results.addParameter(name, "%.02e %s".format(list.first().value, list.first().type.units)) }
+            data.results.groupBy { it.name }.forEach { (name, list) ->
+                when {
 
-        } }
+                    list.size > 1 -> {
+                        results.addParameter(
+                            name,
+                            "%.02e to %.02e %s".format(
+                                list.minOf { it.value },
+                                list.maxOf { it.value },
+                                list.first().type.units
+                            )
+                        )
+                    }
 
-        data.parameters.forEach { when {
+                    list.first().error.absoluteValue > 0 -> {
+                        results.addParameter(
+                            name,
+                            "%.02e ± %.02e %s".format(list.first().value, list.first().error, list.first().type.units)
+                        )
+                    }
 
-            it is DoubleQuantity && it.error.absoluteValue > 0 -> { params.addParameter(it.name, "%.02e ± %.02e %s".format(it.value, it.error, it.type.units)) }
-            it is DoubleQuantity && it.error == 0.0            -> { params.addParameter(it.name, "%.02e %s".format(it.value, it.type.units)) }
-            else                                               -> { params.addParameter(it.name, "%s %s".format(it.value, it.type.units)) }
+                    else -> {
+                        results.addParameter(name, "%.02e %s".format(list.first().value, list.first().type.units))
+                    }
 
-        } }
+                }
+            }
 
-        topLeft.addAll(results, params)
-        topRow.addAll(topLeft, display)
-        grid.addAll(topRow, Table("Data", data.data))
+            data.parameters.forEach {
+                when {
 
-        Results.addCloseable(grid)
-        Results.select(grid)
+                    it is DoubleQuantity && it.error.absoluteValue > 0 -> {
+                        params.addParameter(it.name, "%.02e ± %.02e %s".format(it.value, it.error, it.type.units))
+                    }
 
+                    it is DoubleQuantity && it.error == 0.0            -> {
+                        params.addParameter(it.name, "%.02e %s".format(it.value, it.type.units))
+                    }
+
+                    else                                               -> {
+                        params.addParameter(it.name, "%s %s".format(it.value, it.type.units))
+                    }
+
+                }
+            }
+
+            topLeft.addAll(results, params)
+            topRow.addAll(topLeft, display)
+            grid.addAll(topRow, Table("Data", data.data))
+
+            topRow.node.widthProperty().addListener { _, _, newValue ->
+
+                val nCols = (newValue.toDouble() / 1000.0).toInt()
+
+                topRow.numColumns = nCols
+
+            }
+
+            grid.node.widthProperty().addListener { _, _, newValue ->
+
+                val nCols = (newValue.toDouble() / 1280.0).toInt()
+
+                grid.numColumns = nCols
+
+            }
+
+            if (window) {
+                grid.show()
+                grid.isMaximised = true
+            } else {
+                uiElement = grid
+            }
+
+        }
+
+
+        if (uiElement !in Results.elements) {
+            Results.addCloseable(uiElement)
+        }
+
+        if (switch) Results.select(uiElement)
+
+    }
+
+    fun remove() {
+        Results.remove(data)
     }
 
 }

@@ -1,5 +1,6 @@
 package org.oefet.fetch.data
 
+import jisa.devices.spectrometer.spectrum.Spectrum
 import jisa.enums.Icon
 import jisa.gui.Colour
 import jisa.gui.Element
@@ -20,17 +21,17 @@ class SpectralData(data: ResultTable) : FetChData("Spectral Data", "Spectra", da
 
     override fun processData(data: ResultTable): List<Result> {
 
-        val list = mutableListOf<Result>()
+        var spectrum: Spectrum? = null
 
-        for ((wl, wlData) in data.split(WAVELENGTH)) {
+        var count = 0
+        for ((n, wlData) in data.findGroups(NUMBER)) {
 
-            val average = wlData.mean(COUNTS)
-
-            list += Result("Average Count", "mean(C)", Type.COUNT, average, sqrt(wlData.mean { it[COUNTS].pow(2) } - average.pow(2)), parameters + DoubleQuantity("Wavelength", "λ", Type.WAVELENGTH, wl, 0.0))
+            spectrum = spectrum?.add(Spectrum(wlData[WAVELENGTH], wlData[COUNTS])) ?: Spectrum(wlData[WAVELENGTH], wlData[COUNTS])
+            count++
 
         }
 
-        return list
+        return spectrum?.map { p ->  Result("Mean Count", "mean(C)", Type.COUNT, p.counts / count, 0.0, parameters + DoubleQuantity("Wavelength", "λ", Type.WAVELENGTH, p.wavelength, 0.0))} ?: emptyList()
 
     }
 

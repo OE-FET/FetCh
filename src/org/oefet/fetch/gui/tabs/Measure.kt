@@ -92,7 +92,7 @@ object Measure : Grid("Measurement", 1) {
         action.addParameter(DoubleQuantity("FPP Separation", "l_fpp", Type.DISTANCE, fppLength.value, 0.0))
         action.addParameter(DoubleQuantity("Width", "w", Type.DISTANCE, width.value, 0.0))
         action.addParameter(DoubleQuantity("Thickness", "d", Type.DISTANCE, cThick.value, 0.0))
-        action.addParameter(DoubleQuantity("Dielectric Thickness", "d_deil", Type.DISTANCE, dThick.value, 0.0))
+        action.addParameter(DoubleQuantity("Dielectric Thickness", "d_diel", Type.DISTANCE, dThick.value, 0.0))
         action.addParameter(DoubleQuantity("Dielectric Permittivity", "ε_r", Type.RELATIVE_PERMITTIVITY, dielConst.value, 0.0))
 
         val table   = Table("Data", action.data)
