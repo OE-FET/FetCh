@@ -5,13 +5,13 @@ import jisa.enums.Icon
 import jisa.gui.*
 import jisa.results.ResultTable
 import org.oefet.fetch.Settings
-import org.oefet.fetch.analysis.Analysis
+import org.oefet.fetch.analysis.AnalysisOld
 import org.oefet.fetch.analysis.SpecificAnalysis
 import org.oefet.fetch.quantities.*
 
 object Analysis : BorderDisplay("Analysis") {
 
-    val sidebar       = ListDisplay<Analysis>("Available Analyses")
+    val sidebar       = ListDisplay<AnalysisOld>("Available Analyses")
     val analyseButton = sidebar.addToolbarButton("Analyse") { analyse() }
     val saveButton    = sidebar.addToolbarMenuButton("Save...").apply {
         addItem("Plots...") { savePlots() }
@@ -19,7 +19,7 @@ object Analysis : BorderDisplay("Analysis") {
         addItem("Plots and Tables...") { save() }
     }
 
-    var output: Analysis.Output? = null
+    var output: AnalysisOld.Output? = null
 
     init {
 

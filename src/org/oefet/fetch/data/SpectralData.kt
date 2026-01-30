@@ -10,8 +10,6 @@ import org.oefet.fetch.measurement.TakeSpectra
 import org.oefet.fetch.quant.DoubleQuantity
 import org.oefet.fetch.quant.Result
 import org.oefet.fetch.quant.Type
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 class SpectralData(data: ResultTable) : FetChData("Spectral Data", "Spectra", data, Icon.WAVE.blackImage) {
 
@@ -31,7 +29,7 @@ class SpectralData(data: ResultTable) : FetChData("Spectral Data", "Spectra", da
 
         }
 
-        return spectrum?.map { p ->  Result("Mean Count", "mean(C)", Type.COUNT, p.counts / count, 0.0, parameters + DoubleQuantity("Wavelength", "λ", Type.WAVELENGTH, p.wavelength, 0.0))} ?: emptyList()
+        return spectrum?.map { p ->  Result("Mean Count", "<cnt>", Type.COUNT, p.counts / count, 0.0, parameters + DoubleQuantity("Wavelength", "λ", Type.WAVELENGTH, p.wavelength, 0.0))} ?: emptyList()
 
     }
 

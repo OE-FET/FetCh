@@ -36,6 +36,9 @@ class Result(name: String, symbol: String, type: Type, value: Double, error: Dou
         return findParameter(name, DoubleQuantity::class) ?: DoubleQuantity(name, Type.UNKNOWN, orElse, 0.0)
     }
 
+    fun hasParameter(name: String): Boolean {
+        return parameters.any { it.name == name }
+    }
 
     fun overlappingParametersMatch(other: Result, vararg exclude: String): Boolean {
 

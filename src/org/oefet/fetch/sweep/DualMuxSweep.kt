@@ -4,8 +4,7 @@ import jisa.devices.mux.Multiplexer
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
-import jisa.gui.CheckGrid
-import jisa.gui.Form
+import jisa.maths.Range
 import org.oefet.fetch.quant.Type
 import org.oefet.fetch.quant.XYPoint
 
@@ -14,34 +13,25 @@ class DualMuxSweep : FetChSweep<XYPoint>("Dual Multiplexer Sweep", "XY", Type.IN
     val A by requiredInstrument("Multiplexer Channel A", Multiplexer::class)
     val B by requiredInstrument("Multiplexer Channel B", Multiplexer::class)
 
-    // Custom input fields
-    val counts    = Form("Counts")
-    val nA        = counts.addIntegerField("No. Routes A", 24)
-    val nB        = counts.addIntegerField("No. Routes B", 24)
-    val checkGrid = CheckGrid("Active Devices", nA.value, nB.value)
-
-    init {
-        nA.addChangeListener { _ -> checkGrid.setSize(nA.value, nB.value) }
-        nB.addChangeListener { _ -> checkGrid.setSize(nA.value, nB.value) }
-    }
-
-    val countA  by customInput(counts, nA)
-    val countB  by customInput(counts, nB)
-    val checked by customInput(checkGrid)
+    val type    by userChoice("Basic", "Sweep Type", "Combinatorial", "Pairs")
+    val routesA by userInput("MUX Channel A", "Routes", Range.linear(0, 23))
+    val routesB by userInput("MUX Channel B", "Routes", Range.linear(0, 23))
 
     override fun getValues(): List<XYPoint> {
 
         val list = mutableListOf<XYPoint>()
 
-        for (i in 0 until countA) {
+        if (type == 0) {
 
-            for (j in 0 until countB) {
-
-                if (checked[i][j]) {
-                    list += XYPoint(i.toDouble(), j.toDouble())
+            for (a in routesA) {
+                for (b in routesB) {
+                    list.add(XYPoint(a, b))
                 }
-
             }
+
+        } else {
+
+            list += routesA.zip(routesB) { a, b -> XYPoint(a, b) }
 
         }
 

@@ -9,7 +9,6 @@ import jisa.gui.ListDisplay
 import jisa.gui.queue.ActionQueueDisplay
 import org.oefet.fetch.*
 import org.oefet.fetch.action.FetChAction
-import org.oefet.fetch.gui.tabs.FileLoad
 import org.oefet.fetch.gui.tabs.Measure
 import org.oefet.fetch.gui.tabs.Results
 import org.oefet.fetch.measurement.FetChMeasurement
@@ -328,7 +327,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
     private fun setUpDisplay(action: SweepAction<*>) {
 
         action.children.forEach {
-            if (it is MeasurementAction) it.setOnMeasurementStart { Measure.display(it as FetChEntityAction) }
+            if (it is FetChEntityAction) it.setOnMeasurementStart { Measure.display(it as FetChEntityAction) }
             if (it is SweepAction<*>) setUpDisplay(it)
         }
 

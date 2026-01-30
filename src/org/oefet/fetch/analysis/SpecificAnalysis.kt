@@ -4,18 +4,21 @@ import jisa.experiment.Combination
 import jisa.gui.Element
 import jisa.gui.HeatMap
 import jisa.gui.Series
-import jisa.results.*
+import jisa.results.Column
+import jisa.results.DoubleColumn
+import jisa.results.ResultList
+import jisa.results.StringColumn
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.quantities.DoubleQuantity
 import org.oefet.fetch.quantities.Quantity
 import kotlin.reflect.KClass
 
-class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
+class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : AnalysisOld {
 
-    override fun analyse(quantities: List<Quantity<*>>): Analysis.Output {
+    override fun analyse(quantities: List<Quantity<*>>): AnalysisOld.Output {
 
         val distinctTypes = quantities.filter { it is DoubleQuantity }.map { it::class }.distinct()
-        val tabulated = ArrayList<Analysis.Tabulated>(distinctTypes.size)
+        val tabulated = ArrayList<AnalysisOld.Tabulated>(distinctTypes.size)
         val plots = ArrayList<Element>(distinctTypes.size)
 
         distinctTypes.parallelStream().forEach { type ->
@@ -31,11 +34,11 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
 
                 when (it.value) {
 
-                    is String  -> StringColumn(it.name, it.unit)
-                    is Int     -> IntColumn(it.name, it.unit)
-                    is Boolean -> BooleanColumn(it.name, it.unit)
-                    is Number  -> DoubleColumn(it.name, it.unit)
-                    else       -> StringColumn(it.name, it.unit)
+                    is String  -> Column.ofStrings(it.name, it.unit)
+                    is Int     -> Column.ofIntegers(it.name, it.unit)
+                    is Boolean -> Column.ofBooleans(it.name, it.unit)
+                    is Number  -> Column.ofDoubles(it.name, it.unit)
+                    else       -> Column.ofStrings(it.name, it.unit)
 
                 } as Column<*>
 
@@ -77,7 +80,7 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
 
             }
 
-            val processed = Analysis.Tabulated(varied, example, table)
+            val processed = AnalysisOld.Tabulated(varied, example, table)
             val n = tabulated.size
 
             tabulated += processed
@@ -142,7 +145,7 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : Analysis {
 
         }
 
-        return Analysis.Output(tabulated, plots)
+        return AnalysisOld.Output(tabulated, plots)
 
     }
 

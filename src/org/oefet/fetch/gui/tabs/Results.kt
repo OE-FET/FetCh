@@ -2,7 +2,6 @@ package org.oefet.fetch.gui.tabs
 
 import javafx.scene.layout.ColumnConstraints
 import jisa.enums.Icon
-import jisa.gui.BorderDisplay
 import jisa.gui.GUI
 import jisa.gui.Grid
 import jisa.gui.Tabs
@@ -11,8 +10,8 @@ import jisa.results.ResultList
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.data.FetChData
 import org.oefet.fetch.gui.elements.ResultDisplay
+import org.oefet.fetch.quant.Result
 import java.io.File
-import java.nio.file.Path
 
 object Results : Tabs("Results") {
 
@@ -126,6 +125,14 @@ object Results : Tabs("Results") {
         val index = list.indexOf(data)
         list.removeAt(index)
         grid.remove(grid.elements[index])
+
+    }
+
+    fun getAllResults(): List<Result> {
+
+        val quantities = list.flatMap { it.results }.toMutableList()
+
+        return quantities + list.distinctBy { it::class }.flatMap { it.generateHybrids(quantities) }
 
     }
 

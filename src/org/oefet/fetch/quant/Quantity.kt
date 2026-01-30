@@ -1,6 +1,5 @@
 package org.oefet.fetch.quant
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.sym
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -152,7 +151,7 @@ open class DoubleQuantity(name: String, symbol: String, type: Type, value: Doubl
 
 }
 
-data class XYPoint(val x: Double, val y: Double) {
+open class XYPoint(val x: Double, val y: Double) {
 
     override fun toString(): String {
         return "($x,$y)"
