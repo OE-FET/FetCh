@@ -18,10 +18,11 @@ object Actions : Grid("Settings", 1) {
     val actions      = Form("Enabled Actions")
     val sweeps       = Form("Enabled Sweeps")
 
-    init {
+    val type = config.addChoice("Display Type", Settings.actionDisplay.intValue("type").getOrDefault(0), "Dropdown Menu", "List")
+    val size = config.addChoice("Display Size", if (Settings.wide) 0 else 1, "Wide", "Narrow")
+    val load = config.addCheckBox("Auto-Load Results", true)
 
-        val type = config.addChoice("Display Type", Settings.actionDisplay.intValue("type").getOrDefault(0), "Dropdown Menu", "List")
-        val size = config.addChoice("Display Size", if (Settings.wide) 0 else 1, "Wide", "Narrow")
+    init {
 
         type.addChangeListener { _ ->
             Settings.actionDisplay.intValue("type").set(type.value)

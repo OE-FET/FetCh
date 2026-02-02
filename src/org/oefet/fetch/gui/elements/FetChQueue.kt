@@ -214,8 +214,10 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
                 if (action is FetChEntityAction) action.setOnMeasurementStart { Measure.display(it as FetChEntityAction) }
 
                 action.setOnFinish {
-                    Results.load(measurement.processResults(it.data))
-                    System.gc()
+                    if (org.oefet.fetch.gui.tabs.Actions.load.get()) {
+                        Results.load(measurement.processResults(it.data))
+                        System.gc()
+                    }
                 }
 
                 action.setOnEdit {

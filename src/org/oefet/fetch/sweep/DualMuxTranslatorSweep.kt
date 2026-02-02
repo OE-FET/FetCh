@@ -163,7 +163,10 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
     inner class Translate(val x: Double, val y: Double) : FetChAction("Move to (%.02e m, %.02e m)".format(x, y), Icon.COGS.blackImage) {
 
-        override fun createDisplay(data: ResultTable) = disp
+        override fun createDisplay(data: ResultTable) = disp.apply {
+            addCrosshairs(5, Colour.BLACK)
+            addCrosshairs(3, Colour.WHITE)
+        }
 
         override fun run(results: ResultTable?) {
 
