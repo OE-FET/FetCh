@@ -53,18 +53,19 @@ class TranslatorSweep : FetChSweep<XYZPoint>("Translator Sweep", "POS", Type.DIS
 
     }
 
-    inner class Translate(val x: Double, val y: Double, val z: Double) : FetChAction("Translate", Icon.COGS.blackImage) {
+    inner class Translate(val x: Double, val y: Double, val z: Double) :
+        FetChAction("Translate", Icon.COGS.blackImage) {
 
         override fun createDisplay(data: ResultTable) = disp
 
         override fun run(results: ResultTable?) {
 
-            camera?.addFrameListener(disp::drawFrame)
+            val listener = camera?.addFrameListener(disp::drawFrame)
             camera?.startAcquisition()
 
-            xAxis?.position = x
-            yAxis?.position = y
-            zAxis?.position = z
+            xAxis?.setPositionAndWait(x)
+            yAxis?.setPositionAndWait(y)
+            zAxis?.setPositionAndWait(z)
 
             Util.runInParallel(
                 { xAxis?.waitUntilStationary() },
@@ -73,7 +74,7 @@ class TranslatorSweep : FetChSweep<XYZPoint>("Translator Sweep", "POS", Type.DIS
             )
 
             camera?.stopAcquisition()
-            camera?.removeFrameListener(disp::drawFrame)
+            camera?.removeFrameListener(listener)
 
         }
 

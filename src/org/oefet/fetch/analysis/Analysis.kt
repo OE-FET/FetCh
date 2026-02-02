@@ -37,6 +37,7 @@ class Analysis(val name: String, val results: List<Result>) {
                 val row = params.flatMap {
 
                     when (it.value) {
+
                         is Number   -> listOf(value.findDoubleParameter(it.name)?.value ?: Double.NaN)
 
                         is XYPoint  -> {
@@ -69,7 +70,7 @@ class Analysis(val name: String, val results: List<Result>) {
 
                 } + value.value + value.error
 
-                table.mapRow(columns.zip(table).associate { it.first to it.second })
+                table.mapRow(columns.zip(row).associate { it.first to it.second })
 
             }
 
