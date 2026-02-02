@@ -122,10 +122,10 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
         val list = mutableListOf<MuxPosPair>()
 
-        val rightX = (topRightX - topLeftX) / countX
-        val rightY = (topRightY - topLeftY) / countX
-        val downX  = (bottomLeftX - topLeftX) / countY
-        val downY  = (bottomLeftY - topLeftY) / countY
+        val rightX = (topRightX - topLeftX) / (countX - 1)
+        val rightY = (topRightY - topLeftY) / (countX - 1)
+        val downX  = (bottomLeftX - topLeftX) / (countY - 1)
+        val downY  = (bottomLeftY - topLeftY) / (countY - 1)
 
         for (i in 0 until countX) {
 
