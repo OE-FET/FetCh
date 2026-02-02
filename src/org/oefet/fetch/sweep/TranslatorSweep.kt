@@ -5,10 +5,10 @@ import jisa.devices.camera.Camera
 import jisa.devices.translator.Translator
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
-import jisa.experiment.queue.MeasurementAction
 import jisa.gui.ImageDisplay
 import jisa.maths.Range
 import jisa.results.ResultTable
+import org.oefet.fetch.FetChEntityAction
 import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.quant.Type
 import org.oefet.fetch.quant.XYZPoint
@@ -53,8 +53,7 @@ class TranslatorSweep : FetChSweep<XYZPoint>("Translator Sweep", "POS", Type.DIS
 
     }
 
-    inner class Translate(val x: Double, val y: Double, val z: Double) :
-        FetChAction("Translate", Icon.COGS.blackImage) {
+    inner class Translate(val x: Double, val y: Double, val z: Double) : FetChAction("Translate", Icon.COGS.blackImage) {
 
         override fun createDisplay(data: ResultTable) = disp
 
@@ -88,7 +87,7 @@ class TranslatorSweep : FetChSweep<XYZPoint>("Translator Sweep", "POS", Type.DIS
 
         val list = ArrayList<Action<*>>()
 
-        list += MeasurementAction(Translate(value.x, value.y, value.z))
+        list += FetChEntityAction(Translate(value.x, value.y, value.z))
         list += actions
 
         return list

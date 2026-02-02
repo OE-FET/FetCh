@@ -1,7 +1,6 @@
 package org.oefet.fetch.gui.elements
 
 import jisa.experiment.queue.ActionQueue
-import jisa.experiment.queue.MeasurementAction
 import jisa.experiment.queue.SweepAction
 import jisa.gui.GUI
 import jisa.gui.Grid
@@ -248,7 +247,7 @@ class FetChQueue(name: String, private val queue: ActionQueue) : ActionQueueDisp
 
             if (input.showInput()) {
 
-                val action = queue.addAction(MeasurementAction(measurement))
+                val action = queue.addAction(FetChEntityAction(measurement))
 
                 action.setOnMeasurementStart { Measure.display(it as FetChEntityAction) }
                 action.setOnMeasurementFinish { System.gc() }

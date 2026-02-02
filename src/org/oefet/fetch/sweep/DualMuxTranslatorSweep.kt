@@ -7,7 +7,11 @@ import jisa.devices.translator.Translator
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
+import jisa.gui.ImageDisplay
 import jisa.maths.Range
+import jisa.results.ResultTable
+import org.oefet.fetch.FetChEntityAction
+import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.quant.Type
 import org.oefet.fetch.quant.XYPoint
 
@@ -23,6 +27,8 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
     val routesB    by userInput("MUX Channel B", "Routes", Range.linear(0, 23))
     val xPositions by userInput("X Axis", "Positions [m]", Range.linear(-10e-3, 10e-3, 11))
     val yPositions by userInput("Y Axis", "Positions [m]", Range.linear(-10e-3, 10e-3, 11))
+
+    val disp = ImageDisplay("Moving...")
 
     override fun getValues(): List<MuxPosPair> {
 
@@ -49,19 +55,37 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
             B.route        = value.mux.y.toInt()
         }
 
-        val move = SimpleAction("Move to (%s m, %s m)".format(value.pos.x, value.pos.y)) {
+        val move = FetChEntityAction(Translate(value.pos.x, value.pos.y))
 
-            xAxis.position = value.pos.x
-            yAxis.position = value.pos.y
+        return listOf(switch, move) + actions
+
+    }
+
+    inner class Translate(val x: Double, val y: Double) : FetChAction("Translate", Icon.COGS.blackImage) {
+
+        override fun createDisplay(data: ResultTable) = disp
+
+        override fun run(results: ResultTable?) {
+
+            val listener = camera?.addFrameListener(disp::drawFrame)
+            camera?.startAcquisition()
+
+            xAxis?.setPositionAndWait(x)
+            yAxis?.setPositionAndWait(y)
 
             Util.runInParallel(
-                { xAxis.waitUntilStationary() },
-                { yAxis.waitUntilStationary() },
+                { xAxis?.waitUntilStationary() },
+                { yAxis?.waitUntilStationary() },
             )
+
+            camera?.stopAcquisition()
+            camera?.removeFrameListener(listener)
 
         }
 
-        return listOf(switch, move) + actions
+        override fun getLabel(): String {
+            return "$x, $y"
+        }
 
     }
 
