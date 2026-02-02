@@ -1,5 +1,6 @@
 package org.oefet.fetch.sweep
 
+import jisa.Util
 import jisa.devices.camera.Camera
 import jisa.devices.mux.Multiplexer
 import jisa.devices.translator.Translator
@@ -49,8 +50,15 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
         }
 
         val move = SimpleAction("Move to (%s m, %s m)".format(value.pos.x, value.pos.y)) {
+
             xAxis.position = value.pos.x
             yAxis.position = value.pos.y
+
+            Util.runInParallel(
+                { xAxis.waitUntilStationary() },
+                { yAxis.waitUntilStationary() },
+            )
+
         }
 
         return listOf(switch, move) + actions
