@@ -90,7 +90,8 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
     var countX      by userInput("Count", "X", 24)
     var countY      by userInput("Count", "Y", 24)
 
-    val disp = ImageDisplay("Moving...")
+    val moveDisplay  = ImageDisplay("Moving...")
+    val alignDisplay = ImageDisplay("Camera View")
 
     fun getPosition(): XYZPoint? {
 
@@ -100,18 +101,17 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
         if (camera != null) {
 
-            val display  = ImageDisplay("Camera View")
-            val listener = camera.sendFramesTo(display)
+            val listener = camera.sendFramesTo(alignDisplay)
             val running  = camera.isAcquiring
 
-            display.addCrosshairs(5, Colour.BLACK)
-            display.addCrosshairs(3, Colour.WHITE)
+            alignDisplay.addCrosshairs(5, Colour.BLACK)
+            alignDisplay.addCrosshairs(3, Colour.WHITE)
 
             if (!running) {
                 camera.startAcquisition()
             }
 
-            val result = display.showAsConfirmation()
+            val result = alignDisplay.showAsConfirmation()
 
             if (!running) {
                 camera.stopAcquisition()
@@ -135,8 +135,10 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
         val rightX = (topRightX - topLeftX) / (countX - 1)
         val rightY = (topRightY - topLeftY) / (countX - 1)
+        val rightZ = (topRightZ - topLeftZ) / (countX - 1)
         val downX  = (bottomLeftX - topLeftX) / (countY - 1)
         val downY  = (bottomLeftY - topLeftY) / (countY - 1)
+        val downZ  = (bottomLeftZ - topLeftZ) / (countY - 1)
 
         for (i in 0 until countX) {
 
@@ -144,8 +146,9 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
                 val x = topLeftX + (i * rightX) + (j * downX)
                 val y = topLeftY + (i * rightY) + (j * downY)
+                val z = topLeftZ + (i * rightZ) + (j * downZ)
 
-                list += MuxPosPair(XYPoint(routesA[i], routesB[j]), XYPoint(x, y))
+                list += MuxPosPair(XYPoint(routesA[i], routesB[j]), XYZPoint(x, y, z))
 
             }
 
@@ -166,30 +169,32 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
             B.route        = value.mux.y.toInt()
         }
 
-        val move = FetChEntityAction(Translate(value.pos.x, value.pos.y))
+        val move = FetChEntityAction(Translate(value.pos.x, value.pos.y, value.pos.z))
 
         return listOf(switch, move) + actions
 
     }
 
-    inner class Translate(val x: Double, val y: Double) : FetChAction("Move to (%.02e m, %.02e m)".format(x, y), Icon.COGS.blackImage) {
+    inner class Translate(val x: Double, val y: Double, val z: Double) : FetChAction("Move to (%.02e m, %.02e m)".format(x, y), Icon.COGS.blackImage) {
 
-        override fun createDisplay(data: ResultTable) = disp.apply {
+        override fun createDisplay(data: ResultTable) = moveDisplay.apply {
             addCrosshairs(5, Colour.BLACK)
             addCrosshairs(3, Colour.WHITE)
         }
 
         override fun run(results: ResultTable?) {
 
-            val listener = camera?.addFrameListener(disp::drawFrame)
+            val listener = camera?.addFrameListener(moveDisplay::drawFrame)
             camera?.startAcquisition()
 
-            xAxis?.setPositionAndWait(x)
-            yAxis?.setPositionAndWait(y)
+            xAxis.setPositionAndWait(x)
+            yAxis.setPositionAndWait(y)
+            zAxis?.setPositionAndWait(z)
 
             Util.runInParallel(
-                { xAxis?.waitUntilStationary() },
-                { yAxis?.waitUntilStationary() },
+                { xAxis.waitUntilStationary() },
+                { yAxis.waitUntilStationary() },
+                { zAxis?.waitUntilStationary() }
             )
 
             camera?.stopAcquisition()
@@ -205,4 +210,4 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
 }
 
-class MuxPosPair(val mux: XYPoint, val pos: XYPoint) : XYPoint(mux.x, mux.y)
+class MuxPosPair(val mux: XYPoint, val pos: XYZPoint) : XYPoint(mux.x, mux.y)
