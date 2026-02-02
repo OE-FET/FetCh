@@ -7,6 +7,8 @@ import jisa.devices.translator.Translator
 import jisa.enums.Icon
 import jisa.experiment.queue.Action
 import jisa.experiment.queue.SimpleAction
+import jisa.gui.Colour
+import jisa.gui.Form
 import jisa.gui.ImageDisplay
 import jisa.maths.Range
 import jisa.results.ResultTable
@@ -15,7 +17,7 @@ import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.quant.Type
 import org.oefet.fetch.quant.XYPoint
 
-class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Translator Sweep", "XY", Type.DISTANCE, Icon.DEVICE.blackImage) {
+class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Translator Sweep", "MUX", Type.INDEX, Icon.DEVICE.blackImage) {
 
     val A      by requiredInstrument("Multiplexer Channel A", Multiplexer::class)
     val B      by requiredInstrument("Multiplexer Channel B", Multiplexer::class)
@@ -23,21 +25,119 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
     val yAxis  by requiredInstrument("Y Axis", Translator::class)
     val camera by optionalInstrument("Camera", Camera::class)
 
-    val routesA    by userInput("MUX Channel A", "Routes", Range.linear(0, 23))
-    val routesB    by userInput("MUX Channel B", "Routes", Range.linear(0, 23))
-    val xPositions by userInput("X Axis", "Positions [m]", Range.linear(-10e-3, 10e-3, 11))
-    val yPositions by userInput("Y Axis", "Positions [m]", Range.linear(-10e-3, 10e-3, 11))
+    val routesA     by userInput("MUX Channel A", "Routes", Range.linear(0, 23))
+    val routesB     by userInput("MUX Channel B", "Routes", Range.linear(0, 23))
+
+    val topLeft = Form("Top Left")
+    val tlX     = topLeft.addDoubleField("X [m]", 0.0)
+    val tlY     = topLeft.addDoubleField("Y [m]", 0.0)
+    val btn1    = topLeft.addButton("Use Camera...") {
+
+        val point = getPosition()
+
+        if (point != null) {
+            topLeftX = point.x
+            topLeftY = point.y
+        }
+
+    }
+
+    val topRight = Form("Top Right")
+    val trX      = topRight.addDoubleField("X [m]", 0.0)
+    val trY      = topRight.addDoubleField("Y [m]", 0.0)
+    val btn2     = topRight.addButton("Use Camera...") {
+
+        val point = getPosition()
+
+        if (point != null) {
+            topRightX = point.x
+            topRightY = point.y
+        }
+
+    }
+
+    val bottomLeft = Form("Bottom Left")
+    val blX    = bottomLeft.addDoubleField("X [m]", 0.0)
+    val blY    = bottomLeft.addDoubleField("Y [m]", 0.0)
+    val btn3   = bottomLeft.addButton("Use Camera...") {
+
+        val point = getPosition()
+
+        if (point != null) {
+            bottomLeftX = point.x
+            bottomLeftY = point.y
+        }
+
+    }
+
+    var topLeftX    by customInput(topLeft, tlX)
+    var topLeftY    by customInput(topLeft, tlY)
+    var topRightX   by customInput(topRight, trX)
+    var topRightY   by customInput(topRight, trY)
+    var bottomLeftX by customInput(bottomLeft, blX)
+    var bottomLeftY by customInput(bottomLeft, blY)
+    var countX      by userInput("Count", "X", 24)
+    var countY      by userInput("Count", "Y", 24)
 
     val disp = ImageDisplay("Moving...")
+
+    fun getPosition(): XYPoint? {
+
+        loadInstruments()
+
+        val camera = this.camera
+
+        if (camera != null) {
+
+            val display  = ImageDisplay("Camera View")
+            val listener = camera.sendFramesTo(display)
+            val running  = camera.isAcquiring
+
+            display.addCrosshairs(5, Colour.BLACK)
+            display.addCrosshairs(3, Colour.WHITE)
+
+            if (!running) {
+                camera.startAcquisition()
+            }
+
+            val result = display.showAsConfirmation()
+
+            if (!running) {
+                camera.stopAcquisition()
+            }
+
+            camera.removeFrameListener(listener)
+
+            if (result) {
+                return XYPoint(xAxis.position, yAxis.position)
+            }
+
+        }
+
+        return null
+
+    }
 
     override fun getValues(): List<MuxPosPair> {
 
         val list = mutableListOf<MuxPosPair>()
 
-        for ((a, x) in routesA.zip(xPositions)) {
-            for ((b, y) in routesB.zip(yPositions)) {
-                list.add(MuxPosPair(XYPoint(a, b), XYPoint(x, y)))
+        val rightX = (topRightX - topLeftX) / countX
+        val rightY = (topRightY - topLeftY) / countX
+        val downX  = (bottomLeftX - topLeftX) / countY
+        val downY  = (bottomLeftY - topLeftY) / countY
+
+        for (i in 0 until countX) {
+
+            for (j in 0 until countY) {
+
+                val x = topLeftX + (i * rightX) + (j * downX)
+                val y = topLeftY + (i * rightY) + (j * downY)
+
+                list += MuxPosPair(XYPoint(routesA[i], routesB[j]), XYPoint(x, y))
+
             }
+
         }
 
         return list.toList()
@@ -61,7 +161,7 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
     }
 
-    inner class Translate(val x: Double, val y: Double) : FetChAction("Translate", Icon.COGS.blackImage) {
+    inner class Translate(val x: Double, val y: Double) : FetChAction("Move to (%.02e m, %.02e m)".format(x, y), Icon.COGS.blackImage) {
 
         override fun createDisplay(data: ResultTable) = disp
 
@@ -91,4 +191,4 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
 
 }
 
-class MuxPosPair(val mux: XYPoint, val pos: XYPoint) : XYPoint(pos.x, pos.y)
+class MuxPosPair(val mux: XYPoint, val pos: XYPoint) : XYPoint(mux.x, mux.y)
