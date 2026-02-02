@@ -64,6 +64,7 @@ class Analysis(val name: String, val results: List<Result>) {
                         }
 
                         else -> listOf(value.findParameter(it.name)?.value?.toString() ?: "")
+
                     }
 
                 } + value.value + value.error
@@ -77,6 +78,12 @@ class Analysis(val name: String, val results: List<Result>) {
         }
 
         return tables
+
+    }
+
+    class Plot {
+
+        private val results = LinkedList<Result>()
 
     }
 
