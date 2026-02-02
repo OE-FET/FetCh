@@ -16,6 +16,7 @@ import org.oefet.fetch.FetChEntityAction
 import org.oefet.fetch.action.FetChAction
 import org.oefet.fetch.quant.Type
 import org.oefet.fetch.quant.XYPoint
+import org.oefet.fetch.quant.XYZPoint
 
 class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Translator Sweep", "MUX", Type.INDEX, Icon.DEVICE.blackImage) {
 
@@ -23,14 +24,16 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
     val B      by requiredInstrument("Multiplexer Channel B", Multiplexer::class)
     val xAxis  by requiredInstrument("X Axis", Translator::class)
     val yAxis  by requiredInstrument("Y Axis", Translator::class)
+    val zAxis  by optionalInstrument("Z Axis", Translator::class)
     val camera by optionalInstrument("Camera", Camera::class)
 
-    val routesA     by userInput("MUX Channel A", "Routes", Range.linear(0, 23))
-    val routesB     by userInput("MUX Channel B", "Routes", Range.linear(0, 23))
+    val routesA by userInput("MUX Channel A", "Routes", Range.linear(0, 23))
+    val routesB by userInput("MUX Channel B", "Routes", Range.linear(0, 23))
 
     val topLeft = Form("Top Left")
-    val tlX     = topLeft.addDoubleField("X [m]", 0.0)
-    val tlY     = topLeft.addDoubleField("Y [m]", 0.0)
+    val tlX     = topLeft.addDoubleField("Top-Left X [m]", 0.0)
+    val tlY     = topLeft.addDoubleField("Top-Left Y [m]", 0.0)
+    val tlZ     = topLeft.addDoubleField("Top-Left Z [m]", 0.0)
     val btn1    = topLeft.addButton("Use Camera...") {
 
         val point = getPosition()
@@ -38,13 +41,15 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
         if (point != null) {
             topLeftX = point.x
             topLeftY = point.y
+            topLeftZ = point.z
         }
 
     }
 
     val topRight = Form("Top Right")
-    val trX      = topRight.addDoubleField("X [m]", 0.0)
-    val trY      = topRight.addDoubleField("Y [m]", 0.0)
+    val trX      = topRight.addDoubleField("Top-Right X [m]", 0.0)
+    val trY      = topRight.addDoubleField("Top-Right Y [m]", 0.0)
+    val trZ      = topRight.addDoubleField("Top-Right Z [m]", 0.0)
     val btn2     = topRight.addButton("Use Camera...") {
 
         val point = getPosition()
@@ -52,13 +57,15 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
         if (point != null) {
             topRightX = point.x
             topRightY = point.y
+            topRightZ = point.z
         }
 
     }
 
     val bottomLeft = Form("Bottom Left")
-    val blX    = bottomLeft.addDoubleField("X [m]", 0.0)
-    val blY    = bottomLeft.addDoubleField("Y [m]", 0.0)
+    val blX    = bottomLeft.addDoubleField("Bottom-Left X [m]", 0.0)
+    val blY    = bottomLeft.addDoubleField("Bottom-Left Y [m]", 0.0)
+    val blZ    = bottomLeft.addDoubleField("Bottom-Left Z [m]", 0.0)
     val btn3   = bottomLeft.addButton("Use Camera...") {
 
         val point = getPosition()
@@ -66,22 +73,26 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
         if (point != null) {
             bottomLeftX = point.x
             bottomLeftY = point.y
+            bottomLeftZ = point.z
         }
 
     }
 
     var topLeftX    by customInput(topLeft, tlX)
     var topLeftY    by customInput(topLeft, tlY)
+    var topLeftZ    by customInput(topLeft, tlZ)
     var topRightX   by customInput(topRight, trX)
     var topRightY   by customInput(topRight, trY)
+    var topRightZ   by customInput(topRight, trZ)
     var bottomLeftX by customInput(bottomLeft, blX)
     var bottomLeftY by customInput(bottomLeft, blY)
+    var bottomLeftZ by customInput(bottomLeft, blZ)
     var countX      by userInput("Count", "X", 24)
     var countY      by userInput("Count", "Y", 24)
 
     val disp = ImageDisplay("Moving...")
 
-    fun getPosition(): XYPoint? {
+    fun getPosition(): XYZPoint? {
 
         loadInstruments()
 
@@ -109,7 +120,7 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
             camera.removeFrameListener(listener)
 
             if (result) {
-                return XYPoint(xAxis.position, yAxis.position)
+                return XYZPoint(xAxis.position, yAxis.position, zAxis?.position ?: 0.0)
             }
 
         }
