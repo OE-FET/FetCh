@@ -7,44 +7,44 @@ import jisa.gui.Series
 import jisa.results.Column
 import jisa.results.DoubleColumn
 import jisa.results.ResultList
-import jisa.results.StringColumn
 import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.quantities.DoubleQuantity
-import org.oefet.fetch.quantities.Quantity
-import kotlin.reflect.KClass
+import org.oefet.fetch.quant.Result
+import org.oefet.fetch.quant.XYPoint
+import org.oefet.fetch.quant.XYQuantity
+import org.oefet.fetch.quant.XYZPoint
 
-class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : AnalysisOld {
+class SpecificAnalysis(vararg val types: String) : AnalysisOld {
 
-    override fun analyse(quantities: List<Quantity<*>>): AnalysisOld.Output {
+    override fun analyse(quantities: List<Result>): AnalysisOld.Output {
 
-        val distinctTypes = quantities.filter { it is DoubleQuantity }.map { it::class }.distinct()
-        val tabulated = ArrayList<AnalysisOld.Tabulated>(distinctTypes.size)
-        val plots = ArrayList<Element>(distinctTypes.size)
+        val grouped       = quantities.groupBy { it.name }
+        val tabulated     = ArrayList<AnalysisOld.Tabulated>(grouped.size)
+        val plots         = ArrayList<Element>(grouped.size)
 
-        distinctTypes.parallelStream().forEach { type ->
+        grouped.entries.parallelStream().forEach { (_, typeQuantities) ->
 
-            val typeQuantities = quantities.filter { it::class == type }.map { it as DoubleQuantity }
-            val example = typeQuantities.first()
-            val flatMap = typeQuantities.flatMap { it.parameters }
-            val distinct = flatMap.distinctBy { it::class }.filter { types.isEmpty() || it::class in types }
-            val varied =
-                distinct.filter { p -> flatMap.filter { it::class == p::class }.distinctBy { it.value }.size > 1 }
+            val example        = typeQuantities.first()
+            val flatMap        = typeQuantities.flatMap { it.parameters }
+            val distinct       = flatMap.distinctBy { it.name }.filter { types.isEmpty() || it.name in types }
+            val varied         = distinct.filter { p -> flatMap.filter { it.name == p.name }.distinctBy { it.value }.size > 1 }
 
-            val columns = varied.map {
+            val columns = varied.flatMap {
 
                 when (it.value) {
 
-                    is String  -> Column.ofStrings(it.name, it.unit)
-                    is Int     -> Column.ofIntegers(it.name, it.unit)
-                    is Boolean -> Column.ofBooleans(it.name, it.unit)
-                    is Number  -> Column.ofDoubles(it.name, it.unit)
-                    else       -> Column.ofStrings(it.name, it.unit)
+                    is String   -> listOf(Column.ofStrings(it.name, it.type.units))
+                    is Int      -> listOf(Column.ofIntegers(it.name, it.type.units))
+                    is Boolean  -> listOf(Column.ofBooleans(it.name, it.type.units))
+                    is Number   -> listOf(Column.ofDoubles(it.name, it.type.units))
+                    is XYPoint  -> listOf(Column.ofDoubles(it.name + " X", it.type.units), Column.ofDoubles(it.name + " Y", it.type.units))
+                    is XYZPoint -> listOf(Column.ofDoubles(it.name + " X", it.type.units), Column.ofDoubles(it.name + " Y", it.type.units), Column.ofDoubles(it.name + " Z", it.type.units))
+                    else        -> listOf(Column.ofStrings(it.name, it.type.units))
 
-                } as Column<*>
+                } as List<Column<*>>
 
             }.toMutableList()
 
-            val unit = example.unit.ifBlank { null }
+            val unit = example.type.units.ifBlank { null }
 
             val valueColumn = DoubleColumn(example.name, unit)
             val errorColumn = DoubleColumn("${example.name} Error", unit)
@@ -58,16 +58,46 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : AnalysisOld 
 
                 table.addRow { row ->
 
-                    for ((index, pType) in varied.withIndex()) {
+                    var index = 0
+                    for (pType in varied) {
 
-                        val column = columns[index] as Column<Any>
-                        val param = quantity.getParameter(pType::class)
+                        val param = quantity.findParameter(pType.name)
 
-                        row[column] = when (param?.value) {
+                        if (param is XYQuantity) {
 
-                            null                                     -> null
-                            is String, is Int, is Boolean, is Number -> param.value
-                            else                                     -> param.value.toString()
+                            val xColumn = columns[index]     as Column<Double>
+                            val yColumn = columns[index + 1] as Column<Double>
+
+                            row[xColumn] = param?.value?.x ?: Double.NaN
+                            row[yColumn] = param?.value?.y ?: Double.NaN
+
+                            index += 2
+
+                        } else if (param?.value is XYZPoint) {
+
+                            val xColumn = columns[index]     as Column<Double>
+                            val yColumn = columns[index + 1] as Column<Double>
+                            val zColumn = columns[index + 2] as Column<Double>
+
+                            row[xColumn] = param?.value?.x ?: Double.NaN
+                            row[yColumn] = param?.value?.y ?: Double.NaN
+                            row[zColumn] = param?.value?.z ?: Double.NaN
+
+                            index += 3
+
+                        } else {
+
+                            val column = columns[index] as Column<Any>
+
+                            row[column] = when (param?.value) {
+
+                                null                                     -> null
+                                is String, is Int, is Boolean, is Number -> param.value
+                                else                                     -> param.value.toString()
+
+                            }
+
+                            index++
 
                         }
 
@@ -81,15 +111,14 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : AnalysisOld 
             }
 
             val processed = AnalysisOld.Tabulated(varied, example, table)
-            val n = tabulated.size
+            val n         = tabulated.size
 
             tabulated += processed
 
-            val params = table.columns.subList(0, processed.parameters.size)
-            val value = table.columns[processed.parameters.size] as DoubleColumn
-            val error = table.columns.last() as DoubleColumn
-            val xColumn = (params.filter { it is DoubleColumn }.maxByOrNull { table.getUniqueValues(it).size }
-                ?: params.firstOrNull { it is DoubleColumn }) as DoubleColumn?
+            val params  = table.columns.subList(0, table.columns.lastIndex - 2)
+            val value   = table.columns[table.columns.lastIndex - 1] as DoubleColumn
+            val error   = table.columns.last() as DoubleColumn
+            val xColumn = (params.filter { it is DoubleColumn }.maxByOrNull { table.getUniqueValues(it).size } ?: params.firstOrNull { it is DoubleColumn }) as DoubleColumn?
 
             if (xColumn != null) {
 
@@ -125,19 +154,19 @@ class SpecificAnalysis(vararg val types: KClass<out Quantity<*>>) : AnalysisOld 
 
             }
 
-            val xyIndex =
-                params.filter { it is StringColumn && table[0, it].startsWith("XYIndex") } as List<StringColumn>
+            val xyPoints = processed.parameters.filter { it.value is XYPoint }
 
-            for (column in xyIndex) {
+            for (parameter in xyPoints) {
 
-                val plot = HeatMap("${value.name} vs ${column.name}")
-                val xy = table[column].map {
-                    it.removePrefix("XYIndex(").removeSuffix(")").split(",").map { it.trim().removePrefix("x=").removePrefix("y=").toInt() }.toIntArray()
-                }
+                val plot    = HeatMap("${value.name} vs ${parameter.name}")
+                val xColumn = table.findDoubleColumn(parameter.name + " X")
+                val yColumn = table.findDoubleColumn(parameter.name + " Y")
+                val x = table[xColumn]
+                val y = table[yColumn]
                 val v = table[value]
 
                 plot.setColourMap(HeatMap.ColourMap.VIRIDIS)
-                plot.drawMesh(xy.map { it[0] }, xy.map { it[1] }, v)
+                plot.drawMesh(x, y, v)
 
                 plots += plot
 

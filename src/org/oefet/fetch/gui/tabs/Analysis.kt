@@ -7,7 +7,6 @@ import jisa.results.ResultTable
 import org.oefet.fetch.Settings
 import org.oefet.fetch.analysis.AnalysisOld
 import org.oefet.fetch.analysis.SpecificAnalysis
-import org.oefet.fetch.quantities.*
 
 object Analysis : BorderDisplay("Analysis") {
 
@@ -33,40 +32,11 @@ object Analysis : BorderDisplay("Analysis") {
         )
 
         sidebar.add(
-            SpecificAnalysis(Frequency::class, Temperature::class, Device::class, Gate::class, MaxConductivity::class, Voltage::class),
+            SpecificAnalysis("Frequency", "Temperature", "Device", "Gate", "MaxConductivity", "Voltage"),
             "Hall Analysis",
             "Plot quantities in ways useful for Hall analysis",
             Icon.HALL.blackImage
         )
-
-        sidebar.add(
-            SpecificAnalysis(Temperature::class, Device::class),
-            "Temperature Only",
-            "Plot everything against temperature",
-            Icon.THERMOMETER.blackImage
-        )
-
-        sidebar.add(
-            SpecificAnalysis(Time::class, Device::class),
-            "Time Only",
-            "Plot everything against time",
-            Icon.CLOCK.blackImage
-        )
-
-        sidebar.add(
-            SpecificAnalysis(Repeat::class, Device::class),
-            "Repeat Only",
-            "Plot everything against repeat number",
-            Icon.REPEAT.blackImage
-        )
-
-        sidebar.add(
-            SpecificAnalysis(BField::class, Device::class),
-            "Magnetic Field Only",
-            "Plot everything against magnetic field",
-            Icon.MAGNET.blackImage
-        )
-
         sidebar.select(0)
 
         if (Settings.wide) {
@@ -81,8 +51,7 @@ object Analysis : BorderDisplay("Analysis") {
 
         try {
 
-            val quantities = FileLoad.getQuantities()
-            val names      = FileLoad.getNames()
+            val quantities = Results.getAllResults()
             val analysis   = sidebar.selected.getObject()
             val plots      = Grid("Plots", if (Settings.wide) 2 else 1)
             val tables     = Grid("Tables", 1)

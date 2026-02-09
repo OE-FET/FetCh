@@ -93,6 +93,7 @@ class DualMuxTranslatorSweep : FetChSweep<MuxPosPair>("Dual Multiplexer and Tran
     val moveDisplay  = ImageDisplay("Moving...")
     val alignDisplay = ImageDisplay("Camera View")
 
+
     fun getPosition(): XYZPoint? {
 
         loadInstruments()

@@ -4,9 +4,11 @@ import javafx.scene.layout.ColumnConstraints
 import jisa.enums.Icon
 import jisa.gui.GUI
 import jisa.gui.Grid
+import jisa.gui.Progress
 import jisa.gui.Tabs
 import jisa.results.ResultGroup
 import jisa.results.ResultList
+import jisa.results.ResultStream
 import org.oefet.fetch.Measurements
 import org.oefet.fetch.data.FetChData
 import org.oefet.fetch.gui.elements.ResultDisplay
@@ -29,13 +31,17 @@ object Results : Tabs("Results") {
 
             addItem("File(s)...")  {
 
-                val files = GUI.openFileMultipleSelect()
+                val files    = GUI.openFileMultipleSelect()
 
                 if (files != null) {
 
                     for (file in files) {
-                        val data = Measurements.loadResultFile(ResultList.loadCSVFile(file)) ?: continue
-                        load(data)
+                        try {
+                            val data = Measurements.loadResultFile(ResultList.loadCSVFile(file)) ?: continue
+                            load(data)
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                        }
                     }
 
                 }
@@ -52,9 +58,14 @@ object Results : Tabs("Results") {
 
                         val group = ResultGroup.loadFile(file)
 
-                        for (data in group.allTables) {
-                            val data = Measurements.loadResultFile(ResultList.loadCSVFile(file)) ?: continue
-                            load(data)
+                        for (loaded in group.allTables.values) {
+
+                            try {
+                                val data = Measurements.loadResultFile(loaded) ?: continue
+                                load(data)
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                            }
                         }
 
                     }
@@ -71,10 +82,31 @@ object Results : Tabs("Results") {
 
                     val files  = File(dir).listFiles { f -> !f.isDirectory }?.map { it.absolutePath } ?: emptyList()
 
-                    for (file in files) {
-                        val data = Measurements.loadResultFile(ResultList.loadCSVFile(file)) ?: continue
-                        load(data)
+                    val progress = Progress("Loading Files...")
+
+                    val count = files.size
+
+                    progress.setProgress(0, files.size)
+                    progress.show()
+
+                    files.parallelStream().forEach { file ->
+
+                        if (file.endsWith(".csv") || file.endsWith(".jdf")) {
+
+                            try {
+                                val data = Measurements.loadResultFile(ResultStream.loadFile(file)) ?: return@forEach
+                                load(data)
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                            }
+
+                        }
+
+                        progress.incrementProgress()
+
                     }
+
+                    progress.close()
 
                 }
 
