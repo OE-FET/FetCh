@@ -6,16 +6,12 @@ import jisa.devices.meter.VMeter
 import jisa.devices.smu.SMU
 import jisa.devices.source.ISource
 import jisa.devices.source.VSource
-
 import jisa.enums.AMode
-import jisa.experiment.queue.Action
-import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import jisa.results.ResultTable
 import org.oefet.fetch.data.TVCalibrationData
 import org.oefet.fetch.gui.elements.TVCPlot
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.results.TVCResult
 
 class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement", "TVC", "Thermal Voltage Calibration", Images.getImage("calibration.png")) {
 
@@ -36,9 +32,6 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
     private val fpp2   by optionalInstrument("Four-Point Probe Channel 2", VMeter::class)
     private val tMeter by optionalInstrument("Thermometer", TMeter::class)
 
-    private val actionHeater = MeasurementSubAction("Hold Heater")
-    private val actionSweep  = MeasurementSubAction("Sweep Current")
-
     /** Result Table Columns */
     companion object : Columns() {
 
@@ -53,13 +46,6 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
         val STRIP_CURRENT       = decimalColumn("Strip Current", "A")
         val TEMPERATURE         = decimalColumn("Temperature", "K")
 
-    }
-
-    /**
-     * Sub-actions to show within the action in the queue GUI
-     */
-    override fun getActions(): List<Action<*>> {
-        return listOf(actionHeater, actionSweep)
     }
 
     /**
@@ -118,19 +104,10 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
 
         for (heaterVoltage in heaterV) {
 
-            // Tell the queue that we've started the heater portion of the measurement (to update GUI)
-            actionHeater.start()
-
             // Set the heater voltage, turn on the heater and wait for the heater hold time
             heater.voltage = heaterVoltage
             heater.turnOn()
             sleep(holdHV)
-
-            // Tell the queue that we've finished the heater portion
-            actionHeater.reset()
-
-            // Let the queue know we've started the current sweep portion
-            actionSweep.start()
 
             for (stripCurrent in currents) {
 
@@ -160,9 +137,6 @@ class TVCalibration : FetChMeasurement("Thermal Voltage Calibration Measurement"
                 )
 
             }
-
-            // Tell the queue that we've finished the sweep portion
-            actionSweep.reset()
 
         }
 

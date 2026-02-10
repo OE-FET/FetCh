@@ -4,6 +4,7 @@ import jisa.experiment.Measurement
 import jisa.results.Column
 import jisa.results.ResultStream
 import jisa.results.ResultTable
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.companionObjectInstance
 
@@ -47,6 +48,22 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
 
     }
 
+    fun <I: jisa.devices.Instrument> requiredInstrument(name: String, type: KClass<I>): RIDelegate<I> {
+
+        val delegate = RIDelegate<I>()
+        addInstrument(name, type.java, { delegate.instrument }, { delegate.instrument = it }, true)
+        return delegate
+
+    }
+
+    fun <I: jisa.devices.Instrument> optionalInstrument(name: String, type: KClass<I>): OIDelegate<I> {
+
+        val delegate = OIDelegate<I>()
+        addInstrument(name, type.java, { delegate.instrument }, { delegate.instrument = it }, false)
+        return delegate
+
+    }
+
     open class Columns {
 
         protected fun decimalColumn(name: String, units: String? = null) =
@@ -82,5 +99,28 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
 
     }
 
+    class RIDelegate<I: jisa.devices.Instrument>(var instrument: I? = null) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): I {
+            return instrument!!
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: I) {
+            instrument = value
+        }
+
+    }
+
+    class OIDelegate<I: jisa.devices.Instrument> (var instrument: I? = null) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): I? {
+            return instrument
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: I?) {
+            instrument = value
+        }
+
+    }
 
 }
