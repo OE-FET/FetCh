@@ -5,8 +5,6 @@ import jisa.gui.Element
 import jisa.results.ResultTable
 import org.oefet.fetch.data.SpectralData
 import org.oefet.fetch.gui.elements.FetChPlot
-import org.oefet.fetch.results.FetChResult
-import org.oefet.fetch.results.SpectraResult
 
 class TakeSpectra : FetChMeasurement("Take Spectra", "Spectra") {
 
@@ -32,16 +30,12 @@ class TakeSpectra : FetChMeasurement("Take Spectra", "Spectra") {
 
             val spectrum = channel.getSpectrum()
 
-            for (point in spectrum) {
-
-                results.mapRow(
-                    NUMBER     to i,
-                    TIMESTAMP  to spectrum.timestamp,
-                    WAVELENGTH to point.wavelength,
-                    COUNTS     to point.counts
-                )
-
-            }
+            results.mapRows(
+                NUMBER     to List(spectrum.size()) { i },
+                TIMESTAMP  to List(spectrum.size()) { spectrum.timestamp },
+                WAVELENGTH to spectrum.listWavelengths(),
+                COUNTS     to spectrum.listCounts()
+            )
 
             checkPoint()
 

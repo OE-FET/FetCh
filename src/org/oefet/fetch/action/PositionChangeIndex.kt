@@ -40,11 +40,6 @@ class PositionChangeIndex : FetChAction("Change Position to Index", Images.getIm
         pControl.zPosition = grossLift
         pControl.isLocked = true
 
-
-
-
-
-
     }
 
 

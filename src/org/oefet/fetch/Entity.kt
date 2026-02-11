@@ -1,25 +1,60 @@
 package org.oefet.fetch
 
 import jisa.experiment.Measurement
+import jisa.gui.Doc
+import jisa.gui.Element
+import jisa.gui.measurement.MeasurementSetup
 import jisa.results.Column
+import jisa.results.ResultList
 import jisa.results.ResultStream
 import jisa.results.ResultTable
+import org.oefet.fetch.gui.elements.FetChPlot
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.companionObjectInstance
 
-abstract class Entity(name: String, label: String) : Measurement<ResultTable>(name, label) {
+abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
 
     var currentFile: String = ""
+    val setup by lazy { MeasurementSetup(this) }
+    var label by userInput("Basic", "Name", name)
 
-    override fun createData(): ResultTable? {
+    fun applyAll() { setup.apply() }
+
+    override fun getLabel(): String {
+        return label
+    }
+
+    override fun setLabel(value: String) {
+        label = value
+    }
+
+    override fun createData(): ResultTable {
 
         val companion = this::class.companionObjectInstance
 
         if (companion is Columns) {
             return ResultStream(currentFile, *companion.getColumns())
         } else {
-            return null
+            return ResultList(emptyList())
+        }
+
+    }
+
+    open fun createDisplay(data: ResultTable): Element {
+
+        if (data.numericColumns.size >= 2) {
+
+            return FetChPlot(name).apply {
+                createSeries().watch(data, data.getNthNumericColumn(0), data.getNthNumericColumn(1))
+            }
+
+        } else {
+
+            return Doc(name).apply {
+                addHeading(name).setAlignment(Doc.Align.CENTRE)
+            }
+
         }
 
     }
@@ -27,7 +62,29 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
     fun <T> userInput(section: String, name: String, defaultValue: T): PDelegate<T> {
 
         val delegate = PDelegate<T>(defaultValue)
-        addParameter(section, name, defaultValue!!.javaClass, Type.AUTO, defaultValue, { delegate.value!! }, { delegate.value = it })
+        addParameter(
+            section,
+            name,
+            defaultValue!!.javaClass,
+            Type.AUTO,
+            defaultValue,
+            { delegate.value!! },
+            { delegate.value = it })
+        return delegate
+
+    }
+
+    fun <T> customInput(name: String, defaultValue: T, getter: () -> T, setter: (T) -> Unit): PDelegate<T> {
+
+        val delegate = PDelegate<T>(defaultValue)
+        addParameter(
+            name,
+            name,
+            defaultValue!!.javaClass,
+            Type.CUSTOM,
+            defaultValue,
+            { delegate.value = getter() },
+            { setter(delegate.value) })
         return delegate
 
     }
@@ -35,7 +92,16 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
     fun userChoice(section: String, name: String, vararg options: String): PDelegate<Int> {
 
         val delegate = PDelegate<Int>(0)
-        addParameter(section, name, Int::class.java, Type.AUTO, 0, { delegate.value }, { delegate.value = it }, *options)
+        addParameter(
+            section,
+            name,
+            Int::class.java,
+            Type.AUTO,
+            0,
+            { delegate.value },
+            { delegate.value = it },
+            *options
+        )
         return delegate
 
     }
@@ -43,12 +109,19 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
     fun userTimeInput(section: String, name: String, defaultValue: Int): PDelegate<Int> {
 
         val delegate = PDelegate<Int>(defaultValue)
-        addParameter(section, name, Int::class.java, Type.TIME, defaultValue, { delegate.value }, { delegate.value = it })
+        addParameter(
+            section,
+            name,
+            Int::class.java,
+            Type.TIME,
+            defaultValue,
+            { delegate.value },
+            { delegate.value = it })
         return delegate
 
     }
 
-    fun <I: jisa.devices.Instrument> requiredInstrument(name: String, type: KClass<I>): RIDelegate<I> {
+    fun <I : jisa.devices.Instrument> requiredInstrument(name: String, type: KClass<I>): RIDelegate<I> {
 
         val delegate = RIDelegate<I>()
         addInstrument(name, type.java, { delegate.instrument }, { delegate.instrument = it }, true)
@@ -56,7 +129,7 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
 
     }
 
-    fun <I: jisa.devices.Instrument> optionalInstrument(name: String, type: KClass<I>): OIDelegate<I> {
+    fun <I : jisa.devices.Instrument> optionalInstrument(name: String, type: KClass<I>): OIDelegate<I> {
 
         val delegate = OIDelegate<I>()
         addInstrument(name, type.java, { delegate.instrument }, { delegate.instrument = it }, false)
@@ -99,7 +172,7 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
 
     }
 
-    class RIDelegate<I: jisa.devices.Instrument>(var instrument: I? = null) {
+    class RIDelegate<I : jisa.devices.Instrument>(var instrument: I? = null) {
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I {
             return instrument!!
@@ -111,7 +184,7 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
 
     }
 
-    class OIDelegate<I: jisa.devices.Instrument> (var instrument: I? = null) {
+    class OIDelegate<I : jisa.devices.Instrument>(var instrument: I? = null) {
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I? {
             return instrument
@@ -121,6 +194,14 @@ abstract class Entity(name: String, label: String) : Measurement<ResultTable>(na
             instrument = value
         }
 
+    }
+
+    fun Double.toMSec(): Int {
+        return (1e3 * this).toInt()
+    }
+
+    fun Int.toSeconds(): Double {
+        return this.toDouble() / 1e3
     }
 
 }
