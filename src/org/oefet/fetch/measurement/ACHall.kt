@@ -8,18 +8,15 @@ import jisa.devices.power.DCPower
 import jisa.devices.preamp.VPreAmp
 import jisa.devices.smu.SMU
 import jisa.devices.source.VSource
-import jisa.enums.Icon
-import jisa.experiment.queue.MeasurementSubAction
 import jisa.maths.Range
 import jisa.results.ResultTable
 import org.oefet.fetch.data.ACHallData
 import org.oefet.fetch.gui.elements.SimpleACHallPlot
-import org.oefet.fetch.results.ACHallResult
 import kotlin.Double.Companion.NaN
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon.CIRCLES.blackImage) {
+class ACHall : Measurement("AC Hall Measurement", "AC Hall") {
 
     // User input parameters
     private val intTime         by userInput("Basic", "Integration Time [s]", 100.0)
@@ -30,7 +27,6 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     private val autoUse         by userInput("Basic", "Use Auto Ranging", false)
     private val autoRange       by userInput("Basic", "Auto-Range Tolerance [%]", 66.0) map { it / 100.0 }
     private val autoTime        by userInput("Basic", "Auto-Range Integration Time [s]", 100e-3)
-    private val autoDelay       by userTimeInput("Basic", "Auto-Range Delay Time", 10000) map { it.toLong() }
     private val rmsField        by userInput("Magnets", "RMS Field Strength [T]", 0.666 / sqrt(2.0))
     private val hallFrequencies by userInput("Magnets", "Frequencies [Hz]", Range.manual(1.2))
     private val spin            by userTimeInput("Magnets", "Spin-Up Time", 600000)
@@ -47,14 +43,8 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
     private val sdSMU   by requiredInstrument("Source-Drain Channel", SMU::class)
     private val dcPower by requiredInstrument("Motor Power Supply", DCPower::class)
     private val lockIn  by requiredInstrument("Lock-In Amplifier", DPLockIn::class)
-    private val preAmp  by optionalInstrument("Voltage Pre-Amplifier", VPreAmp::class) requiredIf { paGain != 1.0 }
+    private val preAmp  by optionalInstrument("Voltage Pre-Amplifier", VPreAmp::class)
     private val tMeter  by optionalInstrument("Thermometer", TMeter::class)
-
-    private val stageSpinUp    = MeasurementSubAction("Spin-up magnets")
-    private val stageAutoRange = MeasurementSubAction("Auto-range lock-in amplifier")
-    private val stageStabilise = MeasurementSubAction("Waiting for system to stabilise")
-    private val stageMeasure   = MeasurementSubAction("Measuring")
-    private val stageFaraday   = MeasurementSubAction("Faraday Sweep")
 
     private lateinit var fControl: FControl
 
@@ -75,9 +65,9 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
     }
 
-    override fun run(results: ResultTable) {
+    override fun main(results: ResultTable) {
 
-        message("Setting up measurement.")
+        infoMessage("Setting up measurement.")
 
         fControl = FControl(lockIn, dcPower).apply {
             outputMin = minCurrent
@@ -114,38 +104,33 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
         val xValues = Repeat.prepare(repeats, 1000) { lockIn.lockedX / totGain }
         val yValues = Repeat.prepare(repeats, 1000) { lockIn.lockedY / totGain }
 
-        message("Spinning up magnets to max frequency.")
-
-        stageSpinUp.start()
+        infoMessage("Spinning up magnets to max frequency.")
 
         fControl.target = hallFrequencies.maxOrNull() ?: 1.0
         fControl.waitForStableFrequency(25.0, 60000)
 
-        message("Auto ranging lock-in amplifier.")
-
         if (autoUse) {
-            // Auto range and offset lock-in amplifier
-            stageAutoRange.start()
-            lockIn.autoRange()
-            stageAutoRange.complete()
-        }
 
-        stageSpinUp.complete()
+            // Auto range and offset lock-in amplifier
+            infoMessage("Auto ranging lock-in amplifier.")
+            val time = lockIn.integrationTime
+            lockIn.integrationTime = autoTime
+            lockIn.autoRange(autoRange)
+            lockIn.integrationTime = time
+
+        }
 
         for (frequency in hallFrequencies) {
 
-            message("Adjusting magnet frequency to $frequency Hz.")
 
             // Adjust magnet frequency and wait enough time to stabilise
-            stageSpinUp.start()
-
+            infoMessage("Adjusting magnet frequency to $frequency Hz.")
             fControl.target = frequency
             fControl.waitForStableFrequency(25.0, 60000)
 
-            stageSpinUp.complete()
 
             // Wait for lock-in to stabilise fully
-            stageStabilise.start()
+            infoMessage("Waiting for lock-in to stabilised.")
             sleep(spin)
 
             if (hallFrequencies.indexOf(frequency) == 0) {
@@ -157,19 +142,15 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
             for (current in currents) {
 
-                message("Sourcing current $current A.")
+                infoMessage("Sourcing current $current A.")
 
                 sdSMU.current = current
 
-                message("Waiting ${Util.msToString(delTime.toLong())} for lock-in to stabilise.")
-                stageStabilise.start()
+                infoMessage("Waiting ${Util.msToString(delTime.toLong())} for lock-in to stabilise.")
                 sleep(delTime)
-                stageStabilise.reset()
 
-                message("Sampling locked voltages over ${Util.msToString(repeats * 1000L)}.")
-                stageMeasure.start()
+                infoMessage("Sampling locked voltages over ${Util.msToString(repeats * 1000L)}.")
                 Repeat.runTogether(xValues, yValues)
-                stageMeasure.reset()
 
                 val x  = xValues.mean
                 val y  = yValues.mean
@@ -183,7 +164,7 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
                 val hallValue = sqrt((x - startX).pow(2) + (y - startY).pow(2))
                 val hallError = sqrt(((x / r) * eX).pow(2) + ((y / r) * eY).pow(2))
 
-                message("Sampling complete, writing data to table.")
+                infoMessage("Sampling complete, writing data to table.")
 
                 results.mapRow(
                     FARADAY      to false,
@@ -204,15 +185,13 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
         }
 
-        message("Main measurement complete.")
+        infoMessage("Main measurement complete.")
 
         sdSMU.turnOff()
 
         if (doFaraday) {
 
-            message("Starting Faraday sweep.")
-
-            stageFaraday.start()
+            infoMessage("Starting Faraday sweep.")
 
             lockIn.integrationTime = 10.0 / (faraFrequencies.minOrNull() ?: 1.0)
 
@@ -221,17 +200,17 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
             for (frequency in faraFrequencies) {
 
-                message("Adjusting magnet frequency to $frequency Hz.")
+                infoMessage("Adjusting magnet frequency to $frequency Hz.")
 
                 fControl.target = frequency
 
                 sleep(((lockIn.integrationTime * 10) * 1000).toInt())
 
-                message("Sampling locked voltages over ${Util.msToString((lockIn.integrationTime * 10).toLong() * 1000L)}")
+                infoMessage("Sampling locked voltages over ${Util.msToString((lockIn.integrationTime * 10).toLong() * 1000L)}")
 
                 Repeat.runTogether(xValues, yValues)
 
-                message("Sampling complete, writing data to table.")
+                infoMessage("Sampling complete, writing data to table.")
 
                 results.mapRow(
                     FARADAY      to true,
@@ -250,32 +229,19 @@ class ACHall : FetChMeasurement("AC Hall Measurement", "ACHall", "AC Hall", Icon
 
             }
 
-            stageFaraday.complete()
-            message("Faraday sweep complete.")
+            infoMessage("Faraday sweep complete.")
 
         }
 
     }
 
-    override fun getActions(): List<MeasurementSubAction> {
-
-        return if (doFaraday) {
-            listOf(stageSpinUp, stageAutoRange, stageStabilise, stageMeasure, stageFaraday)
-        } else {
-            listOf(stageSpinUp, stageAutoRange, stageStabilise, stageMeasure)
-        }
-
-    }
-
-    override fun onFinish() {
+    override fun after(data: ResultTable) {
 
         runRegardless (
             { sdSMU.turnOff() },
             { gdSMU?.turnOff() },
             { fControl.stop() }
         )
-
-        actions.forEach { it.reset() }
 
     }
 

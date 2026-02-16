@@ -5,15 +5,12 @@ import jisa.gui.Doc
 import jisa.gui.Element
 import jisa.gui.measurement.MeasurementSetup
 import jisa.results.Column
-import jisa.results.ResultList
-import jisa.results.ResultStream
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FetChPlot
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
-import kotlin.reflect.full.companionObjectInstance
 
-abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
+abstract class Entity<T>(name: String) : Measurement<T>(name, "") {
 
     var currentFile: String = ""
     val setup by lazy { MeasurementSetup(this) }
@@ -29,29 +26,17 @@ abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
         label = value
     }
 
-    override fun createData(): ResultTable {
-
-        val companion = this::class.companionObjectInstance
-
-        if (companion is Columns) {
-            return ResultStream(currentFile, *companion.getColumns())
-        } else {
-            return ResultList(emptyList())
-        }
-
-    }
-
     open fun createDisplay(data: ResultTable): Element {
 
-        if (data.numericColumns.size >= 2) {
+        return if (data.numericColumns.size >= 2) {
 
-            return FetChPlot(name).apply {
+            FetChPlot(name).apply {
                 createSeries().watch(data, data.getNthNumericColumn(0), data.getNthNumericColumn(1))
             }
 
         } else {
 
-            return Doc(name).apply {
+            Doc(name).apply {
                 addHeading(name).setAlignment(Doc.Align.CENTRE)
             }
 
@@ -131,7 +116,7 @@ abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
 
     fun <I : jisa.devices.Instrument> optionalInstrument(name: String, type: KClass<I>): OIDelegate<I> {
 
-        val delegate = OIDelegate<I>()
+        val delegate = OIDelegate<I>(name)
         addInstrument(name, type.java, { delegate.instrument }, { delegate.instrument = it }, false)
         return delegate
 
@@ -160,7 +145,7 @@ abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
 
     }
 
-    class PDelegate<I>(var value: I) {
+    open class PDelegate<I>(var value: I) {
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I {
             return value
@@ -168,6 +153,18 @@ abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: I) {
             this.value = value
+        }
+
+        infix fun <R> map(transform: (I) -> R): MDelegate<I, R> {
+            return MDelegate(this, transform)
+        }
+
+    }
+
+    class MDelegate<I, R>(val pDelegate: PDelegate<I>, val map: (I) -> R) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): R {
+            return map(pDelegate.getValue(thisRef, property))
         }
 
     }
@@ -184,14 +181,27 @@ abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
 
     }
 
-    class OIDelegate<I : jisa.devices.Instrument>(var instrument: I? = null) {
+    class OIDelegate<I : jisa.devices.Instrument>(val name: String, var instrument: I? = null) {
+
+        private var predicate: () -> Boolean = { false }
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): I? {
             return instrument
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: I?) {
+
+            if (predicate() && value == null) {
+                throw MissingInstrumentException("The instrument \"$name\" is required under these circumstances.")
+            }
+
             instrument = value
+
+        }
+
+        infix fun requiredIf(predicate: () -> Boolean): OIDelegate<I> {
+            this.predicate = predicate
+            return this
         }
 
     }
@@ -202,6 +212,16 @@ abstract class Entity(name: String) : Measurement<ResultTable>(name, "") {
 
     fun Int.toSeconds(): Double {
         return this.toDouble() / 1e3
+    }
+
+    fun runRegardless(vararg toRun: () -> Unit) {
+        for (run in toRun) {
+            try {
+                run()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
     }
 
 }

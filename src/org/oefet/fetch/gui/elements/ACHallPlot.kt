@@ -65,8 +65,6 @@ class ACHallPlot(data: ResultTable, optimised: ResultTable?, faraday: ResultTabl
                     .split(ACHallResult.ROT_FREQUENCY, "PO (%s Hz)")
                     .setColourSequence(*PO_COLOURS)
                     .polyFit(1)
-
-
                 plot1.createSeries()
                     .setName("Faraday Voltage")
                     .setMarkerVisible(false)

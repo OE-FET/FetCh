@@ -7,8 +7,6 @@ import jisa.devices.meter.TMeter
 import jisa.devices.meter.VMeter
 import jisa.devices.smu.SMU
 import jisa.devices.source.VSource
-import jisa.experiment.queue.Action
-import jisa.experiment.queue.MeasurementSubAction
 import jisa.gui.Colour
 import jisa.gui.Doc
 import jisa.maths.Range
@@ -16,7 +14,6 @@ import jisa.results.ResultTable
 import org.oefet.fetch.data.DCHallData
 import org.oefet.fetch.gui.elements.DCHallPlot
 import org.oefet.fetch.gui.images.Images
-import org.oefet.fetch.results.DCHallResult
 
 /**
  * Measurement class for DC Hall measurements.
@@ -56,9 +53,6 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
     private val hvm4   by optionalInstrument("Hall Voltmeter 4", VMeter::class)
     private val tMeter by optionalInstrument("Thermometer", TMeter::class)
     private val magnet by optionalInstrument("Magnet Controller", EMController::class) requiredIf { fields.distinct().size > 1 }
-
-    private val actionMagnet  = MeasurementSubAction("Ramp Magnet")
-    private val actionCurrent = MeasurementSubAction("Sweep Current")
 
     /**
      * Constants to refer to columns in this measurement's result table
@@ -145,11 +139,7 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
 
             for (field in fields) {
 
-                actionMagnet.start()
                 magnet?.field = field
-                actionMagnet.reset()
-
-                actionCurrent.start()
 
                 for (current in currents) {
 
@@ -180,8 +170,6 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
 
                 }
 
-                actionCurrent.reset()
-
             }
 
         }
@@ -208,9 +196,6 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
      */
     override fun onFinish() {
 
-        actions.forEach { it.reset() }
-        actionMagnet.start()
-
         // "runRegardless" just makes sure any error given by any of these commands is ignored, otherwise one of them
         // failing would prevent the rest from running.
         runRegardless (
@@ -225,7 +210,6 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
         )
 
         notice.close()
-        actionMagnet.reset()
 
     }
 
@@ -238,10 +222,6 @@ class DCHall : FetChMeasurement("DC Hall Measurement", "DCHall", "DC Hall", Imag
         val results =  super.newResults(path)
         results.setAttribute("Field Sweep", if (fields.maxOrNull() != fields.minOrNull()) "true" else "false")
         return results
-    }
-
-    override fun getActions(): List<Action<*>> {
-        return listOf(actionMagnet, actionCurrent)
     }
 
 }

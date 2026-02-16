@@ -21,7 +21,7 @@ class DCHallPlot(data: ResultTable) : FetChPlot("DC Hall", "Field [T]", "Hall Vo
 
         isMouseEnabled = true
 
-        val noField = (data.getUniqueValues(FIELD).size == 0 && data.getUniqueValues(SET_SD_CURRENT).size > 0) || data.getAttribute("Field Sweep") == "false"
+        val noField = (data.getUniqueValues(FIELD).isEmpty() && data.getUniqueValues(SET_SD_CURRENT).isNotEmpty()) || data.getAttribute("Field Sweep") == "false"
 
         val xValue: (Row) -> Double = if (noField) {
             xLabel = "Source-Drain Current [A]"

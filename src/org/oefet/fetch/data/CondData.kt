@@ -5,7 +5,6 @@ import jisa.gui.Element
 import jisa.maths.fits.Fitting
 import jisa.results.ResultTable
 import org.oefet.fetch.gui.elements.FPPPlot
-import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.measurement.Conductivity
 import org.oefet.fetch.quant.DoubleQuantity
 import org.oefet.fetch.quant.Result

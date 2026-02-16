@@ -74,8 +74,8 @@ class OutputData(data: ResultTable) : FetChData("Output Measurement", "Output", 
 
                 if (data.rowCount < 2) continue
 
-                val vG = data.toList(SGV)
-                val iD = data.toList(SDI)
+                val iD = data[SDI]
+                val vG = data[SGV]
 
                 val linGrad = Interpolation.interpolate1D(vG, iD.map { x -> abs(x) }).derivative()
                 val satGrad = Interpolation.interpolate1D(vG, iD.map { x -> sqrt(abs(x)) }).derivative()
