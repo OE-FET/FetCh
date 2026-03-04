@@ -26,7 +26,9 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val durStabChip by userTimeInput("Chip Stabilisation", "For at least", 10000) map { it.toLong() }
     private val tmoStabChip by userTimeInput("Chip Stabilisation", "Timeout", 180000) map { it.toLong() }
     private val coldTemps   by userInput("Temperature", "Cold Side [K]", Range.linear(295.15, 274, 3))
+    private val coldOff      by userInput("Temperature", "Auto-Off Cold Side", false)
     private val hotTemps    by userInput("Temperature", "Hot Side [K]", Range.linear(295.15, 312, 3))
+    private val hotOff      by userInput("Temperature", "Auto-Off Hot Side", false)
 
     // Instruments
     private val vMeter1     by requiredInstrument("Thermal Voltage Meter 1", VMeter::class)
@@ -132,12 +134,26 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
         runRegardless(
             { vMeter1.turnOff() },
             { vMeter2?.turnOff() },
-            { ground?.turnOff() },
-            { hotPeltier.manualValue  = 0.0},
-            { hotPeltier.isPIDEnabled = false },
-            { coldPeltier.manualValue = 0.0},
-            { hotPeltier.isPIDEnabled = false }
+            { ground?.turnOff() }
         )
+
+        if (coldOff) {
+
+            runRegardless(
+                { coldPeltier.manualValue = 0.0},
+                { hotPeltier.isPIDEnabled = false }
+            )
+
+        }
+
+        if (hotOff) {
+
+            runRegardless(
+                { hotPeltier.manualValue  = 0.0},
+                { hotPeltier.isPIDEnabled = false }
+            )
+
+        }
 
     }
 
