@@ -95,8 +95,8 @@ object Log {
                 }
 
                 if (inst is Camera<*>) {
-                    sources += Source("$name Acquisition Framerate", "Hz") { inst.acquisitionFPS }
-                    sources += Source("$name Processing Framerate", "Hz") { inst.processingFPS }
+                    sources += Source("$name Acquisition Framerate", "Hz") { inst.acquisitionRate }
+                    sources += Source("$name Processing Framerate", "Hz") { inst.processingRate }
                 }
 
             }

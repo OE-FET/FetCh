@@ -16,6 +16,7 @@ import jisa.devices.relay.MSwitch
 import jisa.devices.smu.MCSMU
 import jisa.devices.smu.SMU
 import jisa.devices.smu.SPA
+import jisa.devices.spectrometer.Spectrometer
 import jisa.results.Column
 import jisa.results.ResultStream
 import jisa.results.ResultTable
@@ -194,8 +195,13 @@ object Log {
                 is Camera<*> -> {
                     columns.add(Column.ofDoubles("$name Acquisition Framerate", "Hz"))
                     columns.add(Column.ofDoubles("$name Processing Framerate", "Hz"))
-                    logTasks.add { inst.acquisitionFPS }
-                    logTasks.add { inst.processingFPS }
+                    logTasks.add { inst.acquisitionRate }
+                    logTasks.add { inst.processingRate }
+                }
+
+                is Spectrometer -> {
+                    columns.add(Column.ofDoubles("$name Acquisition Rate", "Hz"))
+                    logTasks.add { inst.acquisitionRate }
                 }
 
             }
