@@ -27,6 +27,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
     val loop          by requiredInstrument("Temperature Controller", TC.Loop::class)
 
 
+
     override fun getValues(): List<Double> = temperatures.array().toList()
 
     override fun generateForValue(value: Double, actions: List<Action<*>>): List<Action<*>> {
@@ -51,6 +52,8 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
 
         private var task:   RTask?  = null
         private var series: Series? = null
+        var skip = false
+        var thread: Thread? = null
 
         override fun createDisplay(data: ResultTable): FetChPlot {
 
@@ -78,37 +81,67 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
                 .setMarkerVisible(false)
                 .setColour(Colour.RED)
 
+            plot.addToolbarSeparator()
+
+            plot.addToolbarButton("Skip Wait", this::skip)
+
             return plot
+
+        }
+
+        fun skip() {
+
+            skip = true
+            thread?.interrupt()
 
         }
 
         override fun run(results: ResultTable) {
 
-            if (loop == null) {
-                throw Exception("Temperature Controller is not configured")
+            try {
+
+                if (loop == null) {
+                    throw Exception("Temperature Controller is not configured")
+                }
+
+                thread = Thread.currentThread()
+
+                val min = (1 - (stabilityPct / 100.0)) * temperature
+                val max = (1 + (stabilityPct / 100.0)) * temperature
+
+                val input = loop.input
+
+                task = RTask(interval) { _ ->
+
+                    val t = input.value
+
+                    results.addData(System.currentTimeMillis(), t)
+
+                    series?.colour = if (Util.isBetween(t, min, max)) {
+                        Colour.TEAL
+                    } else {
+                        Colour.RED
+                    }
+
+                }
+
+                task?.start()
+
+                loop.setPoint = temperature
+                loop.isPIDEnabled = true
+
+                loop.waitForStableTemperature(temperature, stabilityPct, stabilityTime)
+
+            } catch (e: InterruptedException) {
+
+                if (skip){
+                    skip = false
+                    return
+                } else {
+                    throw e
+                }
+
             }
-
-            val min = (1 - (stabilityPct / 100.0)) * temperature
-            val max = (1 + (stabilityPct / 100.0)) * temperature
-
-            val input = loop.input
-
-            task = RTask(interval) { _ ->
-
-                val t = input.value
-
-                results.addData(System.currentTimeMillis(), t)
-
-                series?.colour = if (Util.isBetween(t, min, max)) { Colour.TEAL } else { Colour.RED }
-
-            }
-
-            task?.start()
-
-            loop.setPoint     = temperature
-            loop.isPIDEnabled = true
-
-            loop.waitForStableTemperature(temperature, stabilityPct, stabilityTime)
 
         }
 
