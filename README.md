@@ -47,3 +47,67 @@ FetCh can take all results currently loaded and automatically determine how best
 <p align="center">
     <img src="media/analysis.gif"/>
 </p>
+
+### Extensible
+
+Easily extend FetCh to run your own measurement routines by using the simple-to-understand Kotlin measurement framework
+defined by FetCh. Define new functionality and have FetCh generate the GUI for you around it, no GUI-programming experience
+required.
+
+<p align="center">
+    <img src="media/mgui.png"/>
+</p>
+
+```kotlin
+class IVCurve : FetChMeasurement("IV Curve") {
+
+    // Define instruments needed for measurement
+    val voltSource  by requiredInstrument("Voltage Source", VSource::class)
+    val currMeter   by requiredInstrument("Ammeter", IMeter::class)
+    val thermometer by optionalInstrument("Thermometer", TMeter::class)
+
+    // Define user input parameters that FetCh should ask for
+    val voltages by userInput("Voltages [V]", Range.linear(0, 60))
+    val delay    by userTimeInput("Delay Time", 50)
+
+    // Define columns of data table
+    companion object : Columns() {
+        val VOLTAGE     = decimalColumn("Voltage", "V")
+        val CURRENT     = decimalColumn("Current", "A")
+        val TEMPERATURE = decimalColumn("Temperature", "K")
+    }
+    
+    // Measurement routine goes in here
+    override fun run(results: ResultTable) {
+
+        // Turn everything on
+        voltSource.isOn   = true
+        currMeter.isOn    = true
+        thermometer?.isOn = true  // "?" means ignore if not set
+
+        // Sweep over voltages, measuring current after delay each time
+        for (voltage in voltages) {
+
+            voltSource.voltage = voltage
+
+            sleep(delay)
+            
+            results.mapRow(
+                VOLTAGE     to voltage,
+                CURRENT     to currMeter.current,
+                TEMPERATURE to (thermometer?.temperature ?: Double.NaN), // Records "NaN" if no thermometer
+            )
+
+        }
+
+    }
+
+    // Cleanup when done
+    override fun onFinish() {
+        voltSource.isOn   = false
+        currMeter.isOn    = false
+        thermometer?.isOn = false
+    }
+    
+}
+```
