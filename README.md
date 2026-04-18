@@ -20,22 +20,30 @@ Measurement suite for common FET and other electrical measurements, based on the
 
 Queue up measurements and actions to automatically run one after the other, allowing you to fully customise your measurement routine
 
-![](https://i.imgur.com/sEIlf4n.gif)
+<p align="center">
+    <img src="media/queue.gif"/>
+</p>
 
 ### Sweeps
 
 Automatically generate queue actions by using a sweep. Just specify the sweep points and what actions to undertake at each point. For instance, with a temperature sweep:
 
-![](https://i.imgur.com/CJNS5Tz.gif)
+<p align="center">
+    <img src="media/sweep.gif"/>
+</p>
 
 ### Live Plotting
 
 Measurement data is plotted live as it comes in
 
-![](https://i.imgur.com/IwhnFa4.gif)
+<p align="center">
+    <img src="media/plots.gif"/>
+</p>
 
 ### Automatic Analysis
 
 FetCh can take all results currently loaded and automatically determine how best to analyse them and plot the results
 
-![](https://i.imgur.com/6jWtjqb.gif)
+<p align="center">
+    <img src="media/analysis.gif"/>
+</p>
