@@ -19,6 +19,7 @@ fun main() {
 
     GUI.touch()
 
+    Splash.show()
     Connection.addListener { Log.populateSources() }
 
     Logger.start(
@@ -48,7 +49,6 @@ fun main() {
     System.setErr(PrintStream(stream))
     System.setOut(PrintStream(stream))
 
-    Splash.show()
     MainWindow.select(0)
     Splash.close()
 
