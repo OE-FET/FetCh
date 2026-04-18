@@ -23,7 +23,7 @@ object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
         isMaximised = true
         setExitOnClose(true)
-        setIcon(Images.getURL("fEt.png"))
+        setIcon(Images.getURL("fetch.svg.png"))
 
     }
 

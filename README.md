@@ -1,4 +1,4 @@
-<h1 align="center"><img src="https://i.imgur.com/4Me4gtE.png"/><br/>FetCh - FET Characterisation Suite</h1>
+<h1 align="center"><img src="src/org/oefet/fetch/gui/images/fetch.svg" width="125"><br/>FetCh - FET Characterisation Suite</h1>
 
 <p align="center">
   <a href="fetchExpose.png">
