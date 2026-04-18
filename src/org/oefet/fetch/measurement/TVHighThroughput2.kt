@@ -165,7 +165,7 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
 
             runRegardless(
                 { coldPeltier.manualValue = 0.0},
-                { hotPeltier.isPIDEnabled = false }
+                { coldPeltier.isPIDEnabled = false }
             )
 
         }
