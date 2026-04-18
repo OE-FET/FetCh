@@ -1,0 +1,4 @@
+[submodule "JISA"]
+	path = JISA
+	url = git@github.com:OE-FET/JISA.git
+	branch = devices_revamp

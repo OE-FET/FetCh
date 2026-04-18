@@ -1,0 +1,43 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/JISA/lib/usb4java-javax-1.3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/JTransforms-3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/fastutil-8.3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/libusb4java-1.3.0-win32-x86-64.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/JLargeArrays-1.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/usb4java-1.3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/chartfx-math-11.2.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/usb-api-1.0.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/json-20180813.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/chartfx-dataset-11.2.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/javassist-3.21.0-GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/pngj-2.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/jcodec-0.2.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/commons-math-2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/jython-standalone-2.7.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/controlsfx-11.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/OO.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/kotlin.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/guava-20.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/reflections-0.9.11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/webcam-capture-0.3.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/chartfx-chart-11.2.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/icu4j-65.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/jhdf-0.9.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/jssc-2.10.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/org.apache.commons.compress-1.9.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/jlibmodbus-1.2.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/libusb4java-1.3.0-linux-x86-64.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/pretty-tools-JDDE-2.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/jna.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/libusb4java-1.3.0-darwin-x86-64.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/commons-lang3-3.12.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/bridj-0.7.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/javafx-16-combined.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JISA/lib/dx-1.7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

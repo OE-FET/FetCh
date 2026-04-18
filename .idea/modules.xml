@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/FetCh.iml" filepath="$PROJECT_DIR$/FetCh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/JISA/JISA.iml" filepath="$PROJECT_DIR$/JISA/JISA.iml" />
     </modules>
   </component>
 </project>

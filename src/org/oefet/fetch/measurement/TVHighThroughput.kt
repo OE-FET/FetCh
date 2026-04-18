@@ -26,7 +26,7 @@ class TVHighThroughput : FetChMeasurement("Thermal Voltage High Throughput", "TV
     private val durStabChip by userTimeInput("Chip Stabilisation", "For at least", 10000) map { it.toLong() }
     private val tmoStabChip by userTimeInput("Chip Stabilisation", "Timeout", 180000) map { it.toLong() }
     private val coldTemps   by userInput("Temperature", "Cold Side [K]", Range.linear(295.15, 274, 3))
-    private val coldOff      by userInput("Temperature", "Auto-Off Cold Side", false)
+    private val coldOff     by userInput("Temperature", "Auto-Off Cold Side", false)
     private val hotTemps    by userInput("Temperature", "Hot Side [K]", Range.linear(295.15, 312, 3))
     private val hotOff      by userInput("Temperature", "Auto-Off Hot Side", false)
 
