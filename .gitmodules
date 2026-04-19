@@ -1,4 +1,11 @@
 [submodule "JISA"]
 	path = JISA
 	url = https://github.com/OE-FET/JISA.git
-	branch = devices_revamp
+#	branch = devices_revamp
+   branch = Yongyi
+
+# git submodule sync --recursive
+# git -C JISA reset --hard
+# git -C JISA clean -fd
+# git submodule update --init --remote --recursive
+
