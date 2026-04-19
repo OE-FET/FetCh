@@ -20,12 +20,11 @@ import java.util.*
 
 class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERMOMETER.blackImage) {
 
-    val temperatures  by userInput("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
-    val interval      by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
-    val stabilityPct  by userInput("Temperature", "Stays within [%]", 1.0)
+    val temperatures by userInput("Temperature", "Set-Points [K]", Range.step(50, 300, 50))
+    val interval by userInput("Temperature", "Logging Interval [s]", 0.5) map { it.toMSec().toLong() }
+    val stabilityPct by userInput("Temperature", "Stays within [%]", 1.0)
     val stabilityTime by userTimeInput("Temperature", "For at least", 600000)
-    val loop          by requiredInstrument("Temperature Controller", TC.Loop::class)
-
+    val loop by requiredInstrument("Temperature Controller", TC.Loop::class)
 
 
     override fun getValues(): List<Double> = temperatures.array().toList()
@@ -50,7 +49,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
         val stabilityTime: Long
     ) : FetChAction("Change Temperature", Icon.THERMOMETER.blackImage) {
 
-        private var task:   RTask?  = null
+        private var task: RTask? = null
         private var series: Series? = null
         var skip = false
         var thread: Thread? = null
@@ -134,7 +133,7 @@ class TemperatureSweep : FetChSweep<Double>("Temperature Sweep", "T", Icon.THERM
 
             } catch (e: InterruptedException) {
 
-                if (skip){
+                if (skip) {
                     skip = false
                     return
                 } else {
