@@ -20,6 +20,7 @@ fun main() {
     GUI.touch()
 
     Splash.show()
+
     Connection.addListener { Log.populateSources() }
 
     Logger.start(
@@ -50,11 +51,14 @@ fun main() {
     System.setOut(PrintStream(stream))
 
     MainWindow.select(0)
+
+    Util.sleep(1000)
+
     Splash.close()
 
     Logger.addMessage("Connecting to configured instruments started.")
 
-    val display = Connections.connectAllWithList()
+    val display   = Connections.connectAllWithList()
     val numFailed = Connections.connections.count { it.status == Connection.Status.ERROR }
 
     when {

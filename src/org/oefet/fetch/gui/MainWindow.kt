@@ -1,16 +1,14 @@
 package org.oefet.fetch.gui
 
-import com.sun.jna.Platform
-import jisa.gui.GUI
-import jisa.gui.JFXElement
 import jisa.gui.Pages
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.*
 
 object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
-
     init {
+
+        setScrollDirections(false, true)
 
         addSeparator("Measure")
 
@@ -24,8 +22,9 @@ object MainWindow : Pages("FetCh - FET Characterisation Suite") {
 
         addAll(Connections, Actions)
 
-        isMaximised = true
-        setExitOnClose(true)
+        isMaximised   = true
+        isExitOnClose = true
+
         setIcon(Images.getURL("fetch.svg.png"))
 
     }

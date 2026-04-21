@@ -34,6 +34,7 @@ object Measure : Grid("Measurement", 1) {
 
     init {
         basic.addSeparator()
+        topRow.setMinColumnWidth(500.0)
     }
 
     val length     = basic.addDoubleField("Channel Length [m]")

@@ -13,7 +13,7 @@ import org.oefet.fetch.Settings
 import org.oefet.fetch.gui.elements.FetChPlot
 import org.oefet.fetch.measurement.Log
 
-object Dashboard : Grid("Dashboard", 3) {
+object Dashboard : Grid("Dashboard") {
 
     private val plots   = ArrayList<Element>()
     private val shown   = ArrayList<Boolean>()
@@ -21,7 +21,10 @@ object Dashboard : Grid("Dashboard", 3) {
 
     init {
 
-        numColumns = Settings.dashboard.intValue("columns").getOrDefault(if (Settings.wide) 3 else 1)
+//        numColumns = Settings.dashboard.intValue("columns").getOrDefault(if (Settings.wide) 3 else 1)
+
+        setMinColumnWidth(500.0)
+        setScrollDirections(false, true)
 
         setIcon(Icon.DASHBOARD)
         setGrowth(true, false)
@@ -65,17 +68,17 @@ object Dashboard : Grid("Dashboard", 3) {
 
         }
 
-        addToolbarButton("Columns") {
-
-            val input = Form("Change Column Count")
-            val cols  = input.addIntegerField("Columns", numColumns)
-
-            if (input.showAsConfirmation()) {
-                numColumns = cols.value
-                Settings.dashboard.intValue("columns").set(cols.value)
-            }
-
-        }
+//        addToolbarButton("Columns") {
+//
+//            val input = Form("Change Column Count")
+//            val cols  = input.addIntegerField("Columns", numColumns)
+//
+//            if (input.showAsConfirmation()) {
+//                numColumns = cols.value
+//                Settings.dashboard.intValue("columns").set(cols.value)
+//            }
+//
+//        }
 
         addToolbarSeparator()
 
@@ -247,6 +250,12 @@ object Dashboard : Grid("Dashboard", 3) {
             Settings.logged.save()
 
         }
+
+    }
+
+    fun configureLogging() {
+
+
 
     }
 

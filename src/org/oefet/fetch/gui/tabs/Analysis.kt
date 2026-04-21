@@ -84,8 +84,14 @@ object Analysis : BorderDisplay("Analysis") {
             val quantities = FileLoad.getQuantities()
             val names      = FileLoad.getNames()
             val analysis   = sidebar.selected.getObject()
-            val plots      = Grid("Plots", if (Settings.wide) 2 else 1)
-            val tables     = Grid("Tables", 1)
+            val plots      = Grid("Plots")
+            val tables     = Grid("Tables")
+
+            plots.setScrollDirections(false, true)
+            tables.setScrollDirections(false, true)
+
+            plots.setMinColumnWidth(600.0)
+            tables.setMinColumnWidth(600.0)
 
             plots.setGrowth(true, false)
             tables.setGrowth(true, true)

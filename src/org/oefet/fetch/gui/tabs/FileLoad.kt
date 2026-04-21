@@ -138,10 +138,10 @@ object FileLoad : BorderDisplay("Results") {
 
                 }
 
-                val row = Grid(if (Settings.wide) 2 else 1, params, selected?.getPlot() ?: Measurements.createElement(selected.data))
+                val row  = Grid(params, selected?.getPlot() ?: Measurements.createElement(selected.data))
                 val grid = Grid(selected.name, 1, row, Table("Table of Data", selected.data))
 
-                centreElement = grid
+                centreElement    = grid
                 cached[selected] = grid
 
             } else {

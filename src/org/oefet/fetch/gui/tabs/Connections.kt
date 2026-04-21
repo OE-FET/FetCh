@@ -12,7 +12,7 @@ object Connections : ConnectorGrid("Connections", 3) {
 
     init {
 
-        numColumns =  if (Settings.wide) 3 else 1
+        setMinColumnWidth(600.0)
 
         setIcon(Icon.CONNECTION)
 
