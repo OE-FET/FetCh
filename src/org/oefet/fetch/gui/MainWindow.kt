@@ -1,5 +1,8 @@
 package org.oefet.fetch.gui
 
+import com.sun.jna.Platform
+import jisa.gui.GUI
+import jisa.gui.JFXElement
 import jisa.gui.Pages
 import org.oefet.fetch.gui.images.Images
 import org.oefet.fetch.gui.tabs.*
