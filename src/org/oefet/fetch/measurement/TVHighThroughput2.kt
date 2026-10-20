@@ -23,16 +23,26 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
     private val spacing     by userInput("Basic", "Thermometer Spacing [m]", 1e-2)
     private val length      by userInput("Basic", "Electrode Distance [m]", 1e-3)
     private val repeats     by userInput("Basic", "Repeats", 50)
-    private val pctStabPelt by userInput("Peltier Stabilisation", "Stays within [%]", 0.3)
-    private val durStabPelt by userTimeInput("Peltier Stabilisation", "For at least", 60000) map { it.toLong() }
-    private val tmoStabPelt by userTimeInput("Peltier Stabilisation", "Timeout", 180000) map { it.toLong() }
+    private val controlModeInput = userChoice("Control Mode", "Mode", "Temperature PID", "Constant Current")
+    private val controlMode       by controlModeInput
+    private val pctStabPelt by userInput("Temperature Control", "Stays within [%]", 0.3).visibleIf(controlModeInput, 0)
+    private val durStabPelt by userTimeInput("Temperature Control", "For at least", 60000).visibleIf(controlModeInput, 0) map { it.toLong() }
+    private val tmoStabPelt by userTimeInput("Temperature Control", "Timeout", 180000).visibleIf(controlModeInput, 0) map { it.toLong() }
     private val pctStabChip by userInput("Chip Stabilisation", "Stays within [%]", 1.0)
     private val durStabChip by userTimeInput("Chip Stabilisation", "For at least", 10000) map { it.toLong() }
     private val tmoStabChip by userTimeInput("Chip Stabilisation", "Timeout", 180000) map { it.toLong() }
-    private val coldTemps   by userInput("Temperature", "Cold Side [K]", Range.linear(295.15, 274, 3))
-    private val coldOff      by userInput("Temperature", "Auto-Off Cold Side", false)
-    private val hotTemps    by userInput("Temperature", "Hot Side [K]", Range.linear(295.15, 312, 3))
-    private val hotOff      by userInput("Temperature", "Auto-Off Hot Side", false)
+    private val coldTemps   by userInput("Temperature Control", "Cold Side [K]", Range.linear(295.15, 274, 3)).visibleIf(controlModeInput, 0)
+    private val coldOff      by userInput("Temperature Control", "Auto-Off Cold Side", true).visibleIf(controlModeInput, 0)
+    private val hotTemps    by userInput("Temperature Control", "Hot Side [K]", Range.linear(295.15, 312, 3)).visibleIf(controlModeInput, 0)
+    private val hotOff      by userInput("Temperature Control", "Auto-Off Hot Side", true).visibleIf(controlModeInput, 0)
+    private val coldCurrents by userInput("Current Control", "Cold Side [A] (-5 to +5)", Range.linear(0.0, -5.0, 3)).visibleIf(controlModeInput, 1) map {
+        Range.manual(*it.array().map { current -> current.coerceIn(-5.0, 5.0) }.toTypedArray())
+    }
+    private val hotCurrents by userInput("Current Control", "Hot Side [A] (-5 to +5)", Range.linear(0.0, 5.0, 3)).visibleIf(controlModeInput, 1) map {
+        Range.manual(*it.array().map { current -> current.coerceIn(-5.0, 5.0) }.toTypedArray())
+    }
+    private val currentTime by userTimeInput("Current Control", "For at least", 60000).visibleIf(controlModeInput, 1) map { it.toLong() }
+    private val currentOff  by userInput("Current Control", "Auto-Off Both Sides", true).visibleIf(controlModeInput, 1)
 
 
     // Instruments
@@ -61,6 +71,8 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
         val TEMPERATURE_GRADIENT_ERROR   = decimalColumn("Temperature Gradient Error", "K/sensor")
         val TEMPERATURE_DIFFERENCE       = decimalColumn("Temperature Difference", "K")
         val TEMPERATURE_DIFFERENCE_ERROR = decimalColumn("Temperature Difference Error", "K")
+        val COLD_CURRENT_SETPOINT         = decimalColumn("Cold Current Setpoint", "A")
+        val HOT_CURRENT_SETPOINT          = decimalColumn("Hot Current Setpoint", "A")
 
     }
 
@@ -70,13 +82,20 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
 
     override fun run(results: ResultTable) {
 
-        if (coldTemps.size() != hotTemps.size()) {
-            throw Exception("Temperature Arrays have different size")
+        if (controlMode == 0 && coldTemps.size() != hotTemps.size()) {
+            throw Exception("Temperature arrays have different sizes")
+        }
+
+        if (controlMode == 1 && coldCurrents.size() != hotCurrents.size()) {
+            throw Exception("Current arrays have different sizes")
         }
 
         // Record measurement parameters into result file
         results.setAttribute("Cold Temperatures", "$coldTemps K")
         results.setAttribute("Hot Temperatures", "$hotTemps K")
+        results.setAttribute("Cold Control", if (controlMode == 1) "Constant current sweep: $coldCurrents A" else "PID temperature")
+        results.setAttribute("Hot Control", if (controlMode == 1) "Constant current sweep: $hotCurrents A" else "PID temperature")
+        if (controlMode == 1) results.setAttribute("Minimum Current Hold Time", "$currentTime ms")
 
         // Start with everything turned off
         vMeter1.turnOff()
@@ -105,16 +124,41 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
             else            -> { v1, _, _  -> v1 }
         }
 
-        for ((tHot, tCold) in coldTemps.zip(hotTemps)) {
+        val coldCurrentLoop = coldPeltier as? TC.CurrentLimitedLoop
+            ?: throw Exception("Cold Peltier does not support programmable current limits")
+        val hotCurrentLoop = hotPeltier as? TC.CurrentLimitedLoop
+            ?: throw Exception("Hot Peltier does not support programmable current limits")
 
-            coldPeltier.setPoint     = tCold
-            hotPeltier.setPoint      = tHot
+        coldCurrentLoop.currentLimit = 5.0
+        hotCurrentLoop.currentLimit = 5.0
+
+        val controlPoints = if (controlMode == 0) {
+            coldTemps.zip(hotTemps)
+        } else {
+            coldCurrents.zip(hotCurrents)
+        }
+
+        for ((coldValue, hotValue) in controlPoints) {
+
+            if (controlMode == 1) {
+                coldCurrentLoop.setCurrent(coldValue)
+            } else {
+                coldPeltier.setPoint = coldValue
+            }
+
+            if (controlMode == 1) {
+                hotCurrentLoop.setCurrent(hotValue)
+            } else {
+                hotPeltier.setPoint = hotValue
+            }
+
             coldPeltier.isPIDEnabled = true
             hotPeltier.isPIDEnabled  = true
 
             runInParallel(
-                { coldPeltier.waitForStableTemperature(tCold, pctStabPelt, durStabPelt) },
-                { hotPeltier.waitForStableTemperature(tHot, pctStabPelt, durStabPelt) },
+                { if (controlMode == 0) coldPeltier.waitForStableTemperature(coldValue, pctStabPelt, durStabPelt) },
+                { if (controlMode == 0) hotPeltier.waitForStableTemperature(hotValue, pctStabPelt, durStabPelt) },
+                { if (controlMode == 1) Thread.sleep(currentTime) },
                 { tMeter1.waitForStableTemperature(pctStabChip, durStabChip, tmoStabChip) },
                 { tMeter2.waitForStableTemperature(pctStabChip, durStabChip, tmoStabChip) }
             )
@@ -146,7 +190,9 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
                 TEMPERATURE_GRADIENT         to fit.gradient,
                 TEMPERATURE_GRADIENT_ERROR   to fit.gradientError,
                 TEMPERATURE_DIFFERENCE       to (fit.gradient * length),
-                TEMPERATURE_DIFFERENCE_ERROR to (fit.gradientError * length)
+                TEMPERATURE_DIFFERENCE_ERROR to (fit.gradientError * length),
+                COLD_CURRENT_SETPOINT         to if (controlMode == 1) coldValue else Double.NaN,
+                HOT_CURRENT_SETPOINT          to if (controlMode == 1) hotValue else Double.NaN
             )
 
         }
@@ -161,7 +207,7 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
             { vMeter2?.turnOff() },
             { ground?.turnOff() },
         )
-        if (coldOff) {
+        if (coldOff || (controlMode == 1 && currentOff)) {
 
             runRegardless(
                 { coldPeltier.manualValue = 0.0},
@@ -170,7 +216,7 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
 
         }
 
-        if (hotOff) {
+        if (hotOff || (controlMode == 1 && currentOff)) {
 
             runRegardless(
                 { hotPeltier.manualValue  = 0.0},

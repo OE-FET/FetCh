@@ -262,6 +262,11 @@ abstract class FetChEntity : MeasurementOld() {
             return MDelegate(parameter, mapper)
         }
 
+        fun visibleIf(controller: PDelegate<*>, expectedValue: Any?): PDelegate<I> {
+            parameter.setVisibleWhen(controller.parameter) { it == expectedValue }
+            return this
+        }
+
     }
 
     class ODelegate<I : Instrument?>(private val conf: Configuration<I>) {
