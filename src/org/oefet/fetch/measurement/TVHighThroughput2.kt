@@ -73,6 +73,8 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
         val TEMPERATURE_DIFFERENCE_ERROR = decimalColumn("Temperature Difference Error", "K")
         val COLD_CURRENT_SETPOINT         = decimalColumn("Cold Current Setpoint", "A")
         val HOT_CURRENT_SETPOINT          = decimalColumn("Hot Current Setpoint", "A")
+        val COLD_CURRENT_MEASURED         = decimalColumn("Cold Current Measured", "A")
+        val HOT_CURRENT_MEASURED          = decimalColumn("Hot Current Measured", "A")
 
     }
 
@@ -192,7 +194,9 @@ class TVHighThroughput2 : FetChMeasurement("Thermal Voltage High Throughput But 
                 TEMPERATURE_DIFFERENCE       to (fit.gradient * length),
                 TEMPERATURE_DIFFERENCE_ERROR to (fit.gradientError * length),
                 COLD_CURRENT_SETPOINT         to if (controlMode == 1) coldValue else Double.NaN,
-                HOT_CURRENT_SETPOINT          to if (controlMode == 1) hotValue else Double.NaN
+                HOT_CURRENT_SETPOINT          to if (controlMode == 1) hotValue else Double.NaN,
+                COLD_CURRENT_MEASURED         to if (controlMode == 1) coldCurrentLoop.current else Double.NaN,
+                HOT_CURRENT_MEASURED          to if (controlMode == 1) hotCurrentLoop.current else Double.NaN
             )
 
         }
